@@ -7,10 +7,10 @@ import { Camera } from "lucide-react";
 
 const productSchema = z.object({
   name: z.string().min(2, "O nome deve ter no mínimo 2 letras"),
-  categoryId: z.coerce.number({ invalid_type_error: "Selecione uma categoria válida" }).min(1, "Selecione uma categoria"),
-  price: z.coerce.number({ invalid_type_error: "O preço deve ser um número válido" }).positive("O preço deve ser maior que 0"),
+  categoryId: z.number({ invalid_type_error: "Selecione uma categoria" }).min(1, "Selecione uma categoria válida"),
+  price: z.number({ invalid_type_error: "Preço é obrigatório" }).positive("O preço deve ser maior que 0"),
   barcode: z.string().optional(),
-  stock: z.coerce.number({ invalid_type_error: "Estoque deve ser um número" }).min(0, "O estoque não pode ser negativo"),
+  stock: z.number({ invalid_type_error: "Estoque é obrigatório" }).min(0, "O estoque não pode ser negativo"),
 });
 
 export type ProductFormValues = z.infer<typeof productSchema>;
@@ -18,7 +18,7 @@ export type ProductFormValues = z.infer<typeof productSchema>;
 interface ProductFormProps {
   initialData?: Partial<ProductFormValues>;
   onSubmit: (data: ProductFormValues) => void;
-  categories: { id: number; name: string }[];
+  categories: { id?: number; name: string }[];
 }
 
 export function ProductForm({ initialData, onSubmit, categories }: ProductFormProps) {
@@ -31,7 +31,7 @@ export function ProductForm({ initialData, onSubmit, categories }: ProductFormPr
     defaultValues: {
       name: initialData?.name || "",
       categoryId: initialData?.categoryId || 0,
-      price: initialData?.price || ("" as unknown as number),
+      price: initialData?.price,
       barcode: initialData?.barcode || "",
       stock: initialData?.stock || 0,
     },
@@ -59,7 +59,7 @@ export function ProductForm({ initialData, onSubmit, categories }: ProductFormPr
           Categoria
         </label>
         <select 
-          {...register("categoryId")}
+          {...register("categoryId", { valueAsNumber: true })}
           className={`w-full bg-[#20201f] rounded-xl py-3 px-4 outline-none text-white transition-all font-medium border appearance-none ${errors.categoryId ? 'border-[#ff716c] focus:ring-1 focus:ring-[#ff716c]' : 'border-[#484847]/50 focus:border-[#06B6D4] focus:ring-1 focus:ring-[#06B6D4]'}`}
         >
           <option value={0} disabled>Selecione uma categoria...</option>
@@ -78,7 +78,7 @@ export function ProductForm({ initialData, onSubmit, categories }: ProductFormPr
         <div className="relative">
           <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-bold ${errors.price ? 'text-[#ff716c]' : 'text-[#adaaaa]'}`}>R$</span>
           <input 
-            {...register("price")}
+            {...register("price", { valueAsNumber: true })}
             type="number"
             step="0.01"
             placeholder="0.00"
@@ -113,7 +113,7 @@ export function ProductForm({ initialData, onSubmit, categories }: ProductFormPr
           Qtd. Inicial em Estoque
         </label>
         <input 
-          {...register("stock")}
+          {...register("stock", { valueAsNumber: true })}
           type="number"
           placeholder="0"
           className={`w-full bg-[#20201f] rounded-xl py-3 px-4 outline-none text-white transition-all font-medium border ${errors.stock ? 'border-[#ff716c] focus:ring-1 focus:ring-[#ff716c]' : 'border-[#484847]/50 focus:border-[#06B6D4] focus:ring-1 focus:ring-[#06B6D4]'}`}
