@@ -7,10 +7,10 @@ import { Camera } from "lucide-react";
 
 const productSchema = z.object({
   name: z.string().min(2, "O nome deve ter no mínimo 2 letras"),
-  categoryId: z.number({ invalid_type_error: "Selecione uma categoria" }).min(1, "Selecione uma categoria válida"),
-  price: z.number({ invalid_type_error: "Preço é obrigatório" }).positive("O preço deve ser maior que 0"),
+  categoryId: z.number().min(1, "Selecione uma categoria válida"),
+  price: z.number().positive("O preço deve ser maior que 0"),
   barcode: z.string().optional(),
-  stock: z.number({ invalid_type_error: "Estoque é obrigatório" }).min(0, "O estoque não pode ser negativo"),
+  stock: z.number().min(0, "O estoque não pode ser negativo"),
 });
 
 export type ProductFormValues = z.infer<typeof productSchema>;
