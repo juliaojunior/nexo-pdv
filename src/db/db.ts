@@ -11,6 +11,7 @@ export interface Product {
   categoryId: number;
   price: number;
   barcode?: string;
+  image?: string; // Compressed Base64 string for PWA local storage
   stock: number;
   createdAt: string;
   updatedAt: string;

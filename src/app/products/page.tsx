@@ -46,6 +46,7 @@ export default function ProductsPage() {
         categoryId: data.categoryId,
         price: data.price,
         barcode: data.barcode,
+        image: data.image,
         stock: data.stock,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
