@@ -31,15 +31,21 @@ export default function Home() {
     : products;
 
   // Scanner Fast Checkout Logic
-  const handleScanBarcode = (code: string) => {
+  const handleScanBarcode = (rawCode: string) => {
     setScannerOpen(false); // Fecha o modal da câmera da Home temporariamente
-    const foundProduct = products.find(p => p.barcode === code);
+    const code = rawCode.trim();
+    // Garante que o comparador limpe espaços e suporte tipos mistos que possam estar no indexedDB
+    const foundProduct = products.find(p => p.barcode && String(p.barcode).trim() === code);
     
     if (foundProduct) {
-      addItem(foundProduct, 1);
-      toast.success(`1x ${foundProduct.name} incluído no carrinho!`);
+      if (foundProduct.stock > 0) {
+        addItem(foundProduct, 1);
+        toast.success(`1x ${foundProduct.name} adicionado ao carrinho!`);
+      } else {
+        toast.error(`Produto "${foundProduct.name}" está sem estoque (0 und).`);
+      }
     } else {
-      toast.error(`Produto código ${code} não existe no seu estoque offline.`);
+      toast.error(`Produto [${code}] não encontrado.`);
     }
   };
 
