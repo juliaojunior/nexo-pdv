@@ -59,9 +59,9 @@ export default function ProductsPage() {
   };
 
   return (
-    <div className="bg-[#121212] min-h-screen text-[#F3F4F6] font-['Inter'] px-4 py-8 pb-28 relative">
+    <div className="bg-[#121212] min-h-screen text-[#F3F4F6] font-['Inter'] px-4 py-8 pb-28 relative max-w-md mx-auto">
       <header className="flex justify-between items-center mb-6">
-        <h1 className="text-[#53ddfc] font-black tracking-tighter text-2xl">Produtos</h1>
+        <h1 className="text-[#53ddfc] font-black tracking-tighter text-2xl">Gestão P.</h1>
       </header>
 
       {/* Buscar de Produtos */}
@@ -84,21 +84,34 @@ export default function ProductsPage() {
           products.map(product => {
              const catName = categories.find(c => c.id === product.categoryId)?.name || "Geral";
              return (
-               <div key={product.id} className="bg-[#1a1a1a] p-4 rounded-2xl flex justify-between items-center border border-[#484847]/30 shadow-sm active:scale-[0.98] transition-transform cursor-pointer hover:bg-[#20201f]">
-                 <div className="flex flex-col gap-1">
-                   <span className="text-white font-bold leading-tight">{product.name}</span>
-                   <div className="flex items-center gap-2 mt-0.5">
-                     <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest bg-[#20201f] px-2 py-0.5 rounded-md border border-[#484847]/20">{catName}</span>
-                     <span className="text-[#53ddfc] font-black tracking-tight text-sm px-1">{formatCurrency(product.price)}</span>
+               <div key={product.id} className="bg-[#1a1a1a] p-3 rounded-2xl flex justify-between items-center border border-[#484847]/30 shadow-sm transition-transform cursor-pointer hover:bg-[#20201f]">
+                 
+                 <div className="flex items-center gap-3 w-full">
+                   {/* Mini Thumbnail */}
+                   <div className="w-14 h-14 rounded-xl bg-[#20201f] border border-[#484847]/30 flex items-center justify-center overflow-hidden shrink-0">
+                     {product.image ? (
+                       <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                     ) : (
+                       <span className="font-bold text-[8px] text-[#adaaaa] tracking-widest uppercase">Foto</span>
+                     )}
+                   </div>
+                   
+                   <div className="flex flex-col gap-1 w-full justify-center">
+                     <span className="text-white font-bold leading-tight line-clamp-1 pr-2">{product.name}</span>
+                     <div className="flex items-center gap-2 mt-0.5 w-full">
+                       <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest bg-[#20201f] px-2 py-0.5 rounded-md border border-[#484847]/20 shrink-0">{catName}</span>
+                       <span className="text-[#53ddfc] font-black tracking-tight text-sm px-1 truncate">{formatCurrency(product.price)}</span>
+                     </div>
                    </div>
                  </div>
                  
-                 <div className="flex flex-col items-end gap-1">
-                   <div className="bg-[#20201f] text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-inner">
+                 <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
+                   <div className="bg-[#20201f] text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-inner border border-[#484847]/10">
                      <span className="font-black text-base">{product.stock}</span>
                      <span className="text-[#adaaaa] text-[10px] font-black uppercase tracking-widest leading-none">und</span>
                    </div>
                  </div>
+                 
                </div>
              )
           })
@@ -122,16 +135,16 @@ export default function ProductsPage() {
       {/* Componente FAB - Anchor Inferior */}
       <button 
         onClick={() => setModalOpen(true)}
-        className="fixed bottom-[96px] right-5 bg-[#06B6D4] text-[#004b58] p-4 rounded-full shadow-[0_8px_32px_rgba(6,182,212,0.4)] active:scale-90 hover:scale-105 transition-all z-30 flex items-center justify-center"
+        className="fixed bottom-[96px] right-2/4 translate-x-[9rem] bg-[#06B6D4] text-[#004b58] p-4 rounded-full shadow-[0_8px_32px_rgba(6,182,212,0.4)] active:scale-90 hover:scale-105 transition-all z-30 flex items-center justify-center"
       >
         <Plus size={28} strokeWidth={3} />
       </button>
 
       {/* Aba de Modal Sobreposta -> Criação de Novo Produto */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-[#0e0e0e]/90 flex flex-col justify-end sm:items-center sm:justify-center backdrop-blur-md p-0 sm:p-4 animate-in slide-in-from-bottom-full duration-300">
-          <div className="bg-[#121212] w-full max-w-md sm:rounded-2xl border-t sm:border border-[#484847]/50 shadow-2xl flex flex-col h-[90vh] sm:h-auto sm:max-h-[90vh]">
-            <div className="flex justify-between items-center p-6 border-b border-[#484847]/20">
+        <div className="fixed inset-0 z-50 bg-[#0e0e0e]/95 flex flex-col justify-end sm:items-center sm:justify-center backdrop-blur-xl p-0 sm:p-4 animate-in slide-in-from-bottom-full duration-300">
+          <div className="bg-[#121212] w-full max-w-md sm:rounded-2xl border-t sm:border border-[#484847]/50 shadow-2xl flex flex-col h-[95vh] sm:h-auto sm:max-h-[95vh]">
+            <div className="flex justify-between items-center p-6 border-b border-[#484847]/20 shrink-0">
               <h2 className="text-xl font-black text-white tracking-tight">Novo Produto</h2>
               <button onClick={() => setModalOpen(false)} className="text-[#adaaaa] hover:text-[#ff716c] transition-colors p-2 rounded-full bg-[#20201f]">
                 <X size={20} />
