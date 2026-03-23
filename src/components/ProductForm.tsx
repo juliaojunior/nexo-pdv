@@ -4,12 +4,10 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Camera, ImagePlus, X, PercentCircle } from "lucide-react";
+import { Camera, ImagePlus, X } from "lucide-react";
 import { BarcodeScannerModal } from "./BarcodeScannerModal";
 import { toast } from "sonner";
-import { isPromotionActive } from "@/lib/utils";
 
-// Schema refinado para garantir que ambos input e data da promoção existem SE ela for ativada
 const productSchema = z.object({
   name: z.string().min(2, "O nome deve ter no mínimo 2 letras"),
   categoryId: z.number().min(1, "Selecione uma categoria válida"),
@@ -17,25 +15,13 @@ const productSchema = z.object({
   barcode: z.string().optional(),
   stock: z.number().min(0, "O estoque não pode ser negativo"),
   image: z.string().optional(),
-  
-  hasPromotion: z.boolean().optional(),
-  promotionalPrice: z.number().min(0).optional(),
-  promotionEndDate: z.string().optional(),
-}).refine((data) => {
-  if (data.hasPromotion) {
-    return data.promotionalPrice && data.promotionalPrice > 0 && !!data.promotionEndDate;
-  }
-  return true;
-}, {
-  message: "Defina o valor e a validade corretamente.",
-  path: ["promotionalPrice"] // Lança o erro visual nesse campo
 });
 
 export type ProductFormValues = z.infer<typeof productSchema>;
 
 interface ProductFormProps {
   initialData?: Partial<ProductFormValues>;
-  onSubmit: (data: Omit<ProductFormValues, 'hasPromotion'>) => void;
+  onSubmit: (data: ProductFormValues) => void;
   categories: { id?: number; name: string }[];
 }
 
@@ -43,17 +29,10 @@ export function ProductForm({ initialData, onSubmit, categories }: ProductFormPr
   const [isScannerOpen, setScannerOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(initialData?.image || null);
 
-  // Calcula se já tinha uma prom ativa nos dados iniciais
-  const wasPromoActive = initialData ? isPromotionActive({
-      promotionalPrice: initialData.promotionalPrice,
-      promotionEndDate: initialData.promotionEndDate
-  }) : false;
-
   const {
     register,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -64,13 +43,8 @@ export function ProductForm({ initialData, onSubmit, categories }: ProductFormPr
       barcode: initialData?.barcode || "",
       stock: initialData?.stock || 0,
       image: initialData?.image || "",
-      hasPromotion: wasPromoActive,
-      promotionalPrice: initialData?.promotionalPrice,
-      promotionEndDate: initialData?.promotionEndDate ? new Date(initialData.promotionEndDate).toISOString().slice(0, 16) : undefined,
     },
   });
-
-  const hasPromoSelected = watch("hasPromotion");
 
   const handleImageCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -104,22 +78,9 @@ export function ProductForm({ initialData, onSubmit, categories }: ProductFormPr
     reader.readAsDataURL(file);
   };
 
-  // Prepara o interceptador isolando variáveis virtuais do banco de dados (Zod form data => DB interface)
-  const submitInterceptor = (data: any) => {
-    const payload = {
-       ...data,
-       promotionalPrice: data.hasPromotion ? data.promotionalPrice : undefined,
-       promotionEndDate: data.hasPromotion ? data.promotionEndDate : undefined,
-    };
-    // Desvincula
-    delete (payload as unknown as Record<string, unknown>).hasPromotion;
-    
-    onSubmit(payload as Omit<ProductFormValues, 'hasPromotion'>);
-  };
-
   return (
     <>
-      <form onSubmit={handleSubmit(submitInterceptor)} className="flex flex-col gap-6 w-full pb-20">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6 w-full pb-20">
         
         {/* Foto do Produto */}
         <div className="flex justify-center mb-2">
@@ -192,54 +153,6 @@ export function ProductForm({ initialData, onSubmit, categories }: ProductFormPr
               />
             </div>
             {errors.price && <span className="text-[#ff716c] text-xs font-semibold pl-1">{errors.price.message}</span>}
-          </div>
-
-          {/* SESSÃO PROMOÇÃO COM SWITCH ESTILIZADO */}
-          <div className="bg-[#1a1a1a] p-4 rounded-xl border border-[#06B6D4]/30 shadow-inner mt-2 duration-300 relative overflow-hidden group">
-            <div className="flex items-center justify-between z-10 relative">
-               <div className="flex items-center gap-2 text-white">
-                 <PercentCircle size={20} className={hasPromoSelected ? "text-[#53ddfc]" : "text-[#adaaaa]"} />
-                 <span className="font-bold text-sm tracking-wide">Configurar Oferta</span>
-               </div>
-               <label className="relative inline-flex items-center cursor-pointer">
-                 <input type="checkbox" {...register("hasPromotion")} className="sr-only peer" />
-                 <div className="w-11 h-6 bg-[#20201f] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#06B6D4]"></div>
-               </label>
-            </div>
-
-            {hasPromoSelected && (
-              <div className="mt-4 flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 z-10 relative">
-                <div className="flex gap-3">
-                   <div className="flex-1 flex flex-col gap-1.5">
-                     <label className={`text-[10px] font-bold uppercase tracking-widest pl-1 transition-colors ${errors.promotionalPrice ? 'text-[#ff716c]' : 'text-[#adaaaa]'}`}>
-                       Novo Preço
-                     </label>
-                     <input 
-                       {...register("promotionalPrice", { valueAsNumber: true })}
-                       type="number"
-                       step="0.01"
-                       placeholder="0.00"
-                       className={`w-full bg-[#121212] rounded-xl py-2.5 px-3 outline-none text-[#53ddfc] font-black border ${errors.promotionalPrice ? 'border-[#ff716c] focus:ring-1 focus:ring-[#ff716c]' : 'border-[#484847]/50 focus:border-[#06B6D4]'}`}
-                     />
-                   </div>
-                   
-                   <div className="flex-1 flex flex-col gap-1.5">
-                     <label className="text-[10px] font-bold uppercase tracking-widest pl-1 text-[#adaaaa] transition-colors">
-                       Validade (Até)
-                     </label>
-                     <input 
-                       {...register("promotionEndDate")}
-                       type="datetime-local" // O navegador cuidará do datepicker nativo em devices mobiles e desktops
-                       className="w-full bg-[#121212] rounded-xl py-2.5 px-3 outline-none text-white font-medium border border-[#484847]/50 focus:border-[#06B6D4] text-sm"
-                     />
-                   </div>
-                </div>
-                {errors.promotionalPrice && <span className="text-[#ff716c] text-xs font-semibold pl-1">{errors.promotionalPrice.message}</span>}
-              </div>
-            )}
-            
-            {/* Efeito Glow Lente Fundo Card Promoção */}
-            {hasPromoSelected && <div className="absolute -inset-10 bg-gradient-to-br from-[#06B6D4]/5 to-transparent pointer-events-none rounded-2xl" />}
           </div>
           
 

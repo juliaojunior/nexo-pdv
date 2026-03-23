@@ -4,13 +4,18 @@ import { useState, useEffect } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
 import { ProductForm, type ProductFormValues } from "@/components/ProductForm";
-import { Search, Plus, X, Trash2 } from "lucide-react";
+import { Search, Plus, X, Trash2, Tag, PercentCircle } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency, isPromotionActive, getEffectivePrice } from "@/lib/utils";
 
 export default function ProductsPage() {
   const [isModalOpen, setModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  
+  // Estados do Modal Rápido de Oferta
+  const [promoProduct, setPromoProduct] = useState<any>(null);
+  const [promoPriceValue, setPromoPriceValue] = useState("");
+  const [promoDateValue, setPromoDateValue] = useState("");
   
   // Seed inicial de Categorias Base (Muda nada caso já existam)
   useEffect(() => {
@@ -45,8 +50,6 @@ export default function ProductsPage() {
         name: data.name,
         categoryId: data.categoryId,
         price: data.price,
-        promotionalPrice: data.promotionalPrice,
-        promotionEndDate: data.promotionEndDate,
         barcode: data.barcode,
         image: data.image,
         stock: data.stock,
@@ -68,6 +71,40 @@ export default function ProductsPage() {
       } catch (error) {
         toast.error("Erro ao remover produto do banco local.");
       }
+    }
+  };
+
+  const handleSavePromo = async () => {
+    if (!promoProduct) return;
+    if (!promoPriceValue || !promoDateValue) {
+      toast.error("Preencha o valor promocional e a data limite corretamente.");
+      return;
+    }
+
+    try {
+      await db.products.update(promoProduct.id!, {
+        promotionalPrice: parseFloat(promoPriceValue),
+        promotionEndDate: new Date(promoDateValue).toISOString()
+      });
+      toast.success("Oferta ativada com sucesso!");
+      setPromoProduct(null);
+    } catch (e) {
+      toast.error("Erro ao disparar promoção no banco.");
+    }
+  };
+
+  const handleRemovePromo = async () => {
+    if (!promoProduct) return;
+    try {
+      // Revertendo a promoção no dexie
+      await db.products.update(promoProduct.id!, {
+        promotionalPrice: undefined,
+        promotionEndDate: undefined
+      });
+      toast.success("A promoção foi encerrada!");
+      setPromoProduct(null);
+    } catch (e) {
+      toast.error("Erro ao encerrar promoção.");
     }
   };
 
@@ -130,22 +167,36 @@ export default function ProductsPage() {
                    </div>
                  </div>
                  
-                 <div className="flex flex-col items-end gap-2 shrink-0 border-l border-[#484847]/20 pl-3 z-10">
-                   <div className="bg-[#20201f] text-white px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 shadow-inner border border-[#484847]/10 w-full justify-center mt-1">
+                 <div className="flex flex-col items-end gap-1.5 shrink-0 border-l border-[#484847]/20 pl-3 z-10">
+                   <div className="bg-[#20201f] text-white px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 shadow-inner border border-[#484847]/10 w-full justify-center mb-0.5">
                      <span className="font-black text-base leading-none">{product.stock}</span>
                      <span className="text-[#adaaaa] text-[9px] font-black uppercase tracking-widest leading-none mt-0.5">und</span>
                    </div>
                    
-                   <button 
-                     onClick={(e) => {
-                       e.stopPropagation(); // Evita cliques fantasmas no card pai de listagem
-                       handleDeleteProduct(product.id!, product.name);
-                     }}
-                     className="text-[#adaaaa] w-full justify-center flex items-center hover:text-[#ff716c] p-1.5 bg-[#20201f] rounded-lg transition-colors border border-transparent hover:border-[#ff716c]/30 active:scale-95 group-hover:bg-[#1a1a1a]"
-                     title="Excluir Produto"
-                   >
-                     <Trash2 size={16} />
-                   </button>
+                   <div className="flex items-center gap-1.5 w-full">
+                     <button 
+                       onClick={(e) => {
+                         e.stopPropagation();
+                         setPromoProduct(product);
+                         setPromoPriceValue(product.promotionalPrice ? product.promotionalPrice.toString() : "");
+                         setPromoDateValue(product.promotionEndDate ? new Date(product.promotionEndDate).toISOString().slice(0, 16) : "");
+                       }}
+                       className="text-[#adaaaa] w-full justify-center flex items-center hover:text-[#53ddfc] p-1.5 bg-[#20201f] rounded-lg transition-colors border border-transparent hover:border-[#53ddfc]/30 active:scale-95 group-hover:bg-[#1a1a1a]"
+                       title="Ativar/Editar Oferta Relâmpago"
+                     >
+                       <Tag size={16} />
+                     </button>
+                     <button 
+                       onClick={(e) => {
+                         e.stopPropagation();
+                         handleDeleteProduct(product.id!, product.name);
+                       }}
+                       className="text-[#adaaaa] w-full justify-center flex items-center hover:text-[#ff716c] p-1.5 bg-[#20201f] rounded-lg transition-colors border border-transparent hover:border-[#ff716c]/30 active:scale-95 group-hover:bg-[#1a1a1a]"
+                       title="Excluir Produto"
+                     >
+                       <Trash2 size={16} />
+                     </button>
+                   </div>
                  </div>
                  
                  {promoActive && <div className="absolute -inset-10 bg-gradient-to-l from-transparent via-[#53ddfc]/5 to-transparent pointer-events-none" />}
@@ -188,13 +239,87 @@ export default function ProductsPage() {
               </button>
             </div>
             
-            {/* O formulário do Zod consumindo nosso Schema isolado */}
             <div className="p-6 overflow-y-auto flex-1 flex flex-col hide-scrollbar pb-32">
               <ProductForm 
                 categories={categories} 
                 onSubmit={handleAddProduct} 
               />
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Aba de Modal Rápida -> Ofertas (Tag) */}
+      {promoProduct && (
+        <div className="fixed inset-0 z-[60] bg-[#0e0e0e]/80 flex flex-col justify-end backdrop-blur-md p-0 pb-16 animate-in slide-in-from-bottom-full duration-200">
+          <div className="bg-[#1a1a1a] w-full max-w-md mx-auto rounded-t-3xl border-t border-[#06B6D4]/30 shadow-[0_-10px_40px_rgba(6,182,212,0.1)] flex flex-col p-6 z-10 relative overflow-hidden">
+             {/* Fundo glow do modal */}
+             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[100px] bg-[#06B6D4]/20 blur-[60px] rounded-t-full pointer-events-none" />
+
+             <div className="flex justify-between items-center mb-6 relative z-10">
+               <div className="flex items-center gap-3 text-white">
+                 <div className="bg-[#20201f] p-2.5 rounded-full text-[#53ddfc] border border-[#06B6D4]/20 shadow-inner">
+                   <PercentCircle size={22} />
+                 </div>
+                 <div className="flex flex-col">
+                   <h2 className="text-lg font-black tracking-tight leading-none">Oferta Relâmpago</h2>
+                   <span className="text-[#adaaaa] text-xs font-semibold uppercase tracking-widest mt-1 line-clamp-1">{promoProduct.name}</span>
+                 </div>
+               </div>
+               <button onClick={() => setPromoProduct(null)} className="text-[#adaaaa] hover:text-[#ff716c] transition-colors p-2 rounded-full bg-[#20201f]">
+                 <X size={20} />
+               </button>
+             </div>
+
+             <div className="flex gap-4 relative z-10">
+               <div className="flex-1 flex flex-col gap-1.5">
+                 <label className="text-[10px] font-bold uppercase tracking-widest pl-1 text-[#adaaaa]">Valor Promocional</label>
+                 <div className="relative">
+                   <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-[#53ddfc] text-sm">R$</span>
+                   <input 
+                     type="number"
+                     step="0.01"
+                     value={promoPriceValue}
+                     onChange={(e) => setPromoPriceValue(e.target.value)}
+                     className="w-full bg-[#121212] rounded-xl py-3 pl-9 pr-3 outline-none text-[#53ddfc] font-black border border-[#484847]/50 focus:border-[#06B6D4] shadow-inner"
+                   />
+                 </div>
+               </div>
+               
+               <div className="flex-[1.2] flex flex-col gap-1.5">
+                 <label className="text-[10px] font-bold uppercase tracking-widest pl-1 text-[#adaaaa]">Válido Até</label>
+                 <input 
+                   type="datetime-local"
+                   value={promoDateValue}
+                   onChange={(e) => setPromoDateValue(e.target.value)}
+                   className="w-full bg-[#121212] rounded-xl py-3 px-3 outline-none text-white font-medium border border-[#484847]/50 focus:border-[#06B6D4] text-sm shadow-inner"
+                 />
+               </div>
+             </div>
+
+             <div className="flex gap-3 justify-between mt-6 relative z-10">
+               {isPromotionActive(promoProduct) ? (
+                  <button 
+                     onClick={handleRemovePromo}
+                     className="flex-1 bg-[#20201f] text-[#ff716c] font-black text-sm uppercase tracking-wider py-4 rounded-xl border border-[#484847]/50 active:scale-95 transition-all text-center"
+                   >
+                     Encerrar
+                   </button>
+               ) : (
+                  <button 
+                    onClick={() => setPromoProduct(null)}
+                    className="flex-1 bg-[#20201f] text-[#adaaaa] font-black text-sm uppercase tracking-wider py-4 rounded-xl border border-[#484847]/50 active:scale-95 transition-all text-center hover:text-white"
+                  >
+                    Cancelar
+                  </button>
+               )}
+               <button 
+                 onClick={handleSavePromo}
+                 className="flex-[1.5] bg-[#06B6D4] text-[#004b58] font-black text-sm uppercase tracking-wider py-4 rounded-xl shadow-[0_4px_24px_rgba(6,182,212,0.3)] hover:bg-[#53ddfc] active:scale-95 transition-all text-center"
+               >
+                 Ativar
+               </button>
+             </div>
           </div>
         </div>
       )}
