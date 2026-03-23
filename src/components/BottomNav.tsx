@@ -7,6 +7,9 @@ import { ShoppingCart, Tag, BarChart2, Menu } from "lucide-react";
 export function BottomNav() {
   const pathname = usePathname();
 
+  const HIDDEN_ROUTES = ["/menu", "/process"];
+  if (HIDDEN_ROUTES.includes(pathname)) return null;
+
   const navItems = [
     { href: "/", label: "Vendas", icon: ShoppingCart },
     { href: "/products", label: "Produtos", icon: Tag },

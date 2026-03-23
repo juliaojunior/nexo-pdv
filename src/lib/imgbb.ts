@@ -7,24 +7,23 @@ export async function uploadImageToImgBB(base64DataUrl: string): Promise<string>
 
   const base64Data = base64DataUrl.split("base64,")[1];
   
-  // Chave pública gratuita do ImgBB para a comunidade PWA
-  const apiKey = "c0ac832b9da85e3ac14197c36a6e1189";
-  
   const formData = new FormData();
-  formData.append("image", base64Data);
+  formData.append("source", base64Data);
+  formData.append("key", "6d207e02198a847aa98d0a2a901485a5"); // PWA Community Key from FreeImage.Host
+  formData.append("action", "upload");
 
   try {
-    const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+    const res = await fetch(`https://freeimage.host/api/1/upload`, {
       method: "POST",
       body: formData,
     });
     
     const data = await res.json();
-    if (data.success) {
-      return data.data.url; // Retorna o link curto (ex: https://i.ibb.co/xyz/img.jpg)
+    if (data.status_code === 200 && data.image && data.image.url) {
+      return data.image.url; // Retorna o link curto oficial
     }
   } catch (error) {
-    console.error("ImgBB Upload Failed:", error);
+    console.error("FreeImage Host Upload Failed:", error);
   }
   
   // Em caso de falha (ou sem internet para o upload), retorna o próprio base64 como Fallback offline.

@@ -102,9 +102,9 @@ function MenuContent() {
        <header className="bg-[#1a1a1a] p-6 sticky top-0 z-40 border-b border-[#484847]/30 shadow-md">
          <h1 className="text-[#53ddfc] font-black tracking-tighter text-2xl flex items-center gap-2">
             <ShoppingBag size={24} />
-            Cardápio Digital
+            Faça o seu pedido
          </h1>
-         <p className="text-[#adaaaa] text-xs font-semibold uppercase tracking-widest mt-1">Selecione e faça seu pedido</p>
+         <p className="text-[#adaaaa] text-xs font-semibold uppercase tracking-widest mt-1">Catálogo Online</p>
        </header>
 
        {/* CATALOGO */}
