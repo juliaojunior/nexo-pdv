@@ -7,6 +7,7 @@ import { ProductForm, type ProductFormValues } from "@/components/ProductForm";
 import { Search, Plus, X, Trash2, Tag, PercentCircle } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency, isPromotionActive, getEffectivePrice } from "@/lib/utils";
+import { uploadImageToImgBB } from "@/lib/imgbb";
 
 export default function ProductsPage() {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -46,12 +47,20 @@ export default function ProductsPage() {
 
   const handleAddProduct = async (data: any) => {
     try {
+      let finalImageUrl = data.image;
+
+      // Se existir imagem e ela for Base64 (Local), faz o upload anônimo e invisível pro ImgBB
+      if (data.image && data.image.startsWith("data:image")) {
+         toast.info("Fazendo upload da foto para nuvem...", { duration: 1500 });
+         finalImageUrl = await uploadImageToImgBB(data.image);
+      }
+
       await db.products.add({
         name: data.name,
         categoryId: data.categoryId,
         price: data.price,
         barcode: data.barcode,
-        image: data.image,
+        image: finalImageUrl,
         stock: data.stock,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

@@ -1,10 +1,42 @@
 "use client";
 
-import { Settings, Users, PackageMinus, LogOut, ChevronRight } from "lucide-react";
+import { Settings, Users, PackageMinus, LogOut, ChevronRight, Share2, Compass, QrCode } from "lucide-react";
 import Link from "next/link";
+import { useLiveQuery } from "dexie-react-hooks";
+import { db } from "@/db/db";
+import { generateCatalogLink } from "@/lib/catalogSharing";
+import { toast } from "sonner";
 
 export default function MorePage() {
-  // Configuração rápida de rotas simulando menus secundários da loja
+  const products = useLiveQuery(() => db.products.toArray());
+  const categories = useLiveQuery(() => db.categories.toArray());
+
+  const handleShareMenu = () => {
+    if (!products || !categories) return;
+    if (products.length === 0) {
+      toast.error("O catálogo está vazio! Adicione produtos primeiro.");
+      return;
+    }
+
+    const compressedLink = generateCatalogLink(products, categories);
+    
+    // Tenta Copiar
+    navigator.clipboard.writeText(compressedLink).then(() => {
+        toast.success("Link copiado com sucesso! Coloque na Bio do Insta.");
+    }).catch(() => {
+        toast.info("Compartilhando link...");
+    });
+
+    // Share Tooltip Nativo
+    if (navigator.share) {
+        navigator.share({
+          title: 'Cardápio Digital Nexo PDV',
+          text: 'Selecione seus itens e envie o pedido aqui:',
+          url: compressedLink
+        }).catch((err) => console.log('Share error:', err));
+    }
+  };
+
   const menuItems = [
     { icon: Users, label: "Clientes", description: "Gerenciar base de clientes (Em breve)", href: undefined },
     { icon: PackageMinus, label: "Ajuste de Estoque", description: "Balanços e perdas manuais", href: undefined },
@@ -19,6 +51,32 @@ export default function MorePage() {
       </header>
 
       <div className="flex flex-col gap-3">
+
+        {/* CÉLULA ESPECIAL DE COMPARTILHAMENTO DE CARDÁPIO */}
+        <button 
+          onClick={handleShareMenu}
+          className="bg-gradient-to-br from-[#06B6D4]/30 via-[#004b58] to-[#121212] p-[1.5px] rounded-2xl mb-4 group active:scale-[0.98] transition-all shadow-[0_4px_32px_rgba(6,182,212,0.15)] w-full text-left"
+        >
+          <div className="bg-[#1a1a1a] w-full h-full rounded-[14px] p-4 flex flex-col justify-between overflow-hidden relative">
+             <div className="absolute top-0 right-0 w-32 h-32 bg-[#53ddfc]/10 rounded-full blur-[40px] pointer-events-none group-hover:bg-[#53ddfc]/20 transition-all" />
+             
+             <div className="flex items-center gap-4 z-10 w-full mb-2">
+                 <div className="bg-gradient-to-tr from-[#06B6D4] to-[#53ddfc] p-3.5 rounded-xl shadow-inner group-hover:scale-110 transition-transform">
+                   <QrCode size={24} className="text-[#004b58]" />
+                 </div>
+                 <div className="flex flex-col flex-1">
+                   <h3 className="font-black text-white text-xl tracking-tight leading-none mb-1">Menu Digital</h3>
+                   <p className="text-[#adaaaa] text-xs font-semibold uppercase tracking-widest leading-tight">Link Mágico do Catálogo</p>
+                 </div>
+                 <div className="bg-[#20201f] p-2 rounded-full border border-[#53ddfc]/20 text-[#53ddfc] group-hover:animate-pulse">
+                   <Share2 size={20} />
+                 </div>
+             </div>
+             <p className="text-[#adaaaa] text-xs leading-relaxed z-10 pl-1 pb-1 mt-2">Toque para gerar um pequeno Link Profundo com todo o seu estoque vivo e enviar no WhatsApp ou Bio do Insta para seus clientes pedirem online.</p>
+          </div>
+        </button>
+
+
         {menuItems.map((item, i) => {
           const Icon = item.icon;
           const content = (
