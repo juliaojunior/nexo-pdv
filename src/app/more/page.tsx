@@ -1,13 +1,14 @@
 "use client";
 
 import { Settings, Users, PackageMinus, LogOut, ChevronRight } from "lucide-react";
+import Link from "next/link";
 
 export default function MorePage() {
   // Configuração rápida de rotas simulando menus secundários da loja
   const menuItems = [
-    { icon: Users, label: "Clientes", description: "Gerenciar base de clientes (Em breve)" },
-    { icon: PackageMinus, label: "Ajuste de Estoque", description: "Balanços e perdas manuais" },
-    { icon: Settings, label: "Configurações", description: "Preferências do sistema (Impressora, Temas)" },
+    { icon: Users, label: "Clientes", description: "Gerenciar base de clientes (Em breve)", href: undefined },
+    { icon: PackageMinus, label: "Ajuste de Estoque", description: "Balanços e perdas manuais", href: undefined },
+    { icon: Settings, label: "Configurações", description: "Categorias, Impressora e Temas", href: "/more/settings" },
   ];
 
   return (
@@ -20,8 +21,8 @@ export default function MorePage() {
       <div className="flex flex-col gap-3">
         {menuItems.map((item, i) => {
           const Icon = item.icon;
-          return (
-            <button key={i} className="bg-[#1a1a1a] p-4 rounded-2xl flex items-center justify-between border border-[#484847]/30 hover:border-[#53ddfc]/50 shadow-sm active:scale-[0.98] transition-all w-full text-left group">
+          const content = (
+            <>
               <div className="flex items-center gap-4">
                 <div className="bg-[#20201f] p-3 rounded-xl border border-[#484847]/20 group-hover:bg-[#004b58]/30 transition-colors">
                   <Icon size={24} className="text-[#53ddfc]" />
@@ -32,6 +33,22 @@ export default function MorePage() {
                 </div>
               </div>
               <ChevronRight size={20} className="text-[#adaaaa] group-hover:text-[#53ddfc] transition-colors" />
+            </>
+          );
+
+          const classNameStr = "bg-[#1a1a1a] p-4 rounded-2xl flex items-center justify-between border border-[#484847]/30 hover:border-[#53ddfc]/50 shadow-sm active:scale-[0.98] transition-all w-full text-left group";
+          
+          if (item.href) {
+            return (
+              <Link key={i} href={item.href} className={classNameStr}>
+                {content}
+              </Link>
+            )
+          }
+
+          return (
+            <button key={i} className={classNameStr}>
+              {content}
             </button>
           )
         })}
