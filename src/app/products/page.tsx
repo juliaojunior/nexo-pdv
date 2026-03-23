@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
 import { ProductForm, type ProductFormValues } from "@/components/ProductForm";
-import { Search, Plus, X } from "lucide-react";
+import { Search, Plus, X, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 
@@ -58,6 +58,17 @@ export default function ProductsPage() {
     }
   };
 
+  const handleDeleteProduct = async (id: number, name: string) => {
+    if (window.confirm(`Tem certeza que deseja excluir '${name}' do catálogo?`)) {
+      try {
+        await db.products.delete(id);
+        toast.success(`O produto ${name} foi excluído.`);
+      } catch (error) {
+        toast.error("Erro ao remover produto do banco local.");
+      }
+    }
+  };
+
   return (
     <div className="bg-[#121212] min-h-screen text-[#F3F4F6] font-['Inter'] px-4 py-8 pb-28 relative max-w-md mx-auto">
       <header className="flex justify-between items-center mb-6">
@@ -84,9 +95,9 @@ export default function ProductsPage() {
           products.map(product => {
              const catName = categories.find(c => c.id === product.categoryId)?.name || "Geral";
              return (
-               <div key={product.id} className="bg-[#1a1a1a] p-3 rounded-2xl flex justify-between items-center border border-[#484847]/30 shadow-sm transition-transform cursor-pointer hover:bg-[#20201f]">
+               <div key={product.id} className="bg-[#1a1a1a] p-3 rounded-2xl flex justify-between items-center border border-[#484847]/30 shadow-sm transition-transform cursor-pointer hover:bg-[#20201f] group">
                  
-                 <div className="flex items-center gap-3 w-full">
+                 <div className="flex items-center gap-3 w-full pr-2">
                    {/* Mini Thumbnail */}
                    <div className="w-14 h-14 rounded-xl bg-[#20201f] border border-[#484847]/30 flex items-center justify-center overflow-hidden shrink-0">
                      {product.image ? (
@@ -105,11 +116,22 @@ export default function ProductsPage() {
                    </div>
                  </div>
                  
-                 <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
-                   <div className="bg-[#20201f] text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-inner border border-[#484847]/10">
-                     <span className="font-black text-base">{product.stock}</span>
-                     <span className="text-[#adaaaa] text-[10px] font-black uppercase tracking-widest leading-none">und</span>
+                 <div className="flex flex-col items-end gap-2 shrink-0 border-l border-[#484847]/20 pl-3">
+                   <div className="bg-[#20201f] text-white px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 shadow-inner border border-[#484847]/10 w-full justify-center mt-1">
+                     <span className="font-black text-base leading-none">{product.stock}</span>
+                     <span className="text-[#adaaaa] text-[9px] font-black uppercase tracking-widest leading-none mt-0.5">und</span>
                    </div>
+                   
+                   <button 
+                     onClick={(e) => {
+                       e.stopPropagation(); // Evita cliques fantasmas no card pai de listagem
+                       handleDeleteProduct(product.id!, product.name);
+                     }}
+                     className="text-[#adaaaa] w-full justify-center flex items-center hover:text-[#ff716c] p-1.5 bg-[#20201f] rounded-lg transition-colors border border-transparent hover:border-[#ff716c]/30 active:scale-95 group-hover:bg-[#1a1a1a]"
+                     title="Excluir Produto"
+                   >
+                     <Trash2 size={16} />
+                   </button>
                  </div>
                  
                </div>
