@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Settings, Users, PackageMinus, LogOut, ChevronRight, Share2, Compass, QrCode } from "lucide-react";
 import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -10,30 +11,54 @@ import { toast } from "sonner";
 export default function MorePage() {
   const products = useLiveQuery(() => db.products.toArray());
   const categories = useLiveQuery(() => db.categories.toArray());
+  const [isSharing, setIsSharing] = useState(false);
 
-  const handleShareMenu = () => {
+  const handleShareMenu = async () => {
     if (!products || !categories) return;
     if (products.length === 0) {
       toast.error("O catálogo está vazio! Adicione produtos primeiro.");
       return;
     }
-
-    const compressedLink = generateCatalogLink(products, categories);
     
-    // Tenta Copiar
-    navigator.clipboard.writeText(compressedLink).then(() => {
-        toast.success("Link copiado com sucesso! Coloque na Bio do Insta.");
-    }).catch(() => {
-        toast.info("Compartilhando link...");
-    });
+    if (isSharing) return;
+    setIsSharing(true);
 
-    // Share Tooltip Nativo
-    if (navigator.share) {
-        navigator.share({
-          title: 'Cardápio Digital Nexo PDV',
-          text: 'Selecione seus itens e envie o pedido aqui:',
-          url: compressedLink
-        }).catch((err) => console.log('Share error:', err));
+    try {
+      const compressedLink = generateCatalogLink(products, categories);
+      let finalLink = compressedLink;
+      
+      // Encurtador de Link Inteligente
+      toast.info("Aguarde. Encurtando o link da loja...", { duration: 1500 });
+      
+      const res = await fetch("/api/shorten", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: compressedLink })
+      });
+      
+      if (res.ok) {
+         const data = await res.json();
+         if (data.shortUrl) {
+           finalLink = data.shortUrl;
+         }
+      }
+
+      // Tenta Copiar
+      await navigator.clipboard.writeText(finalLink).catch(() => {});
+      toast.success("Link encurtado copiado! Pode usar no Insta.");
+
+      // Share Tooltip Nativo
+      if (navigator.share) {
+          navigator.share({
+            title: 'Cardápio Digital Nexo PDV',
+            text: 'Selecione seus itens e envie o pedido aqui:',
+            url: finalLink
+          }).catch((err) => console.log('Share error:', err));
+      }
+    } catch (e) {
+      toast.error("Erro interno ao gerar o link.");
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -66,10 +91,10 @@ export default function MorePage() {
                  </div>
                  <div className="flex flex-col flex-1">
                    <h3 className="font-black text-white text-xl tracking-tight leading-none mb-1">Menu Digital</h3>
-                   <p className="text-[#adaaaa] text-xs font-semibold uppercase tracking-widest leading-tight">Link Mágico do Catálogo</p>
+                   <p className="text-[#adaaaa] text-xs font-semibold uppercase tracking-widest leading-tight">{isSharing ? 'Gerando Link Curto...' : 'Link Mágico do Catálogo'}</p>
                  </div>
-                 <div className="bg-[#20201f] p-2 rounded-full border border-[#53ddfc]/20 text-[#53ddfc] group-hover:animate-pulse">
-                   <Share2 size={20} />
+                 <div className={`bg-[#20201f] p-2 rounded-full border border-[#53ddfc]/20 text-[#53ddfc] transition-all ${isSharing ? 'animate-pulse' : 'group-hover:animate-pulse'}`}>
+                   {isSharing ? <Compass size={20} className="animate-spin" /> : <Share2 size={20} />}
                  </div>
              </div>
              <p className="text-[#adaaaa] text-xs leading-relaxed z-10 pl-1 pb-1 mt-2">Toque para gerar um pequeno Link Profundo com todo o seu estoque vivo e enviar no WhatsApp ou Bio do Insta para seus clientes pedirem online.</p>

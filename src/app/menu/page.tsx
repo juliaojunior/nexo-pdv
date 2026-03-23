@@ -28,7 +28,7 @@ function MenuContent() {
       <div className="min-h-screen bg-[#121212] flex items-center justify-center text-white px-6 text-center">
          <div className="flex flex-col gap-4 items-center opacity-50">
            <Compass size={64} className="animate-spin-slow" />
-           <p className="font-bold tracking-widest uppercase">Carregando Cardápio...</p>
+           <p className="font-bold tracking-widest uppercase">Carregando ofertas...</p>
          </div>
       </div>
     )
