@@ -6,13 +6,17 @@ export function generateCatalogLink(products: Product[], categories: Category[])
     // Minimiza para Arrays posicionais (em vez de Chave/Valor do Object) para altíssima compressão baseando em WhatsApp limits
     const minimalProducts = products.filter(p => p.stock > 0).map(p => {
          const price = getEffectivePrice(p);
+         // Se a imagem for uma URL externa (Como o ImgBB), enviamos no link.
+         // Se for um Base64 monstruoso (legacy local database ou offline), limamos ela para não explodir a URL.
+         const cleanImage = (p.image && p.image.startsWith("http")) ? p.image : "";
+         
          return [
-             p.id, // 0
-             p.categoryId, // 1
-             p.name, // 2
-             price, // 3
-             p.stock, // 4
-             p.image || "" // 5 - Url do ImgBB importada do DEXIE que guardou lá.
+             p.id, 
+             p.categoryId, 
+             p.name, 
+             price, 
+             p.stock, 
+             cleanImage
          ];
     });
     
