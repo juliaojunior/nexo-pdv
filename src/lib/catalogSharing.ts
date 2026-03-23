@@ -30,8 +30,13 @@ export function generateCatalogLink(products: Product[], categories: Category[])
 
 export function parseCatalogLink(compressedData: string): { products: any[], categories: any[] } | null {
    try {
-       const decompressed = LZString.decompressFromEncodedURIComponent(compressedData);
-       if (!decompressed) return null;
+       // Conserta o bug do URLSearchParams/Browser que esmaga caracteres de '+' contidos na URI por ' ' (espaços em branco) 
+       const safeData = compressedData.replace(/ /g, "+");
+       const decompressed = LZString.decompressFromEncodedURIComponent(safeData);
+       if (!decompressed) {
+          console.error("Null decompressed data. Input was:", safeData);
+          return null;
+       }
        
        const parsed = JSON.parse(decompressed);
        
