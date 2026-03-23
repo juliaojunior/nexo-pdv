@@ -6,7 +6,7 @@ import { db } from "@/db/db";
 import { ProductForm, type ProductFormValues } from "@/components/ProductForm";
 import { Search, Plus, X, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, isPromotionActive, getEffectivePrice } from "@/lib/utils";
 
 export default function ProductsPage() {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -39,12 +39,14 @@ export default function ProductsPage() {
     (p.barcode && p.barcode.includes(searchTerm))
   );
 
-  const handleAddProduct = async (data: ProductFormValues) => {
+  const handleAddProduct = async (data: any) => {
     try {
       await db.products.add({
         name: data.name,
         categoryId: data.categoryId,
         price: data.price,
+        promotionalPrice: data.promotionalPrice,
+        promotionEndDate: data.promotionEndDate,
         barcode: data.barcode,
         image: data.image,
         stock: data.stock,
@@ -94,12 +96,15 @@ export default function ProductsPage() {
         {products.length > 0 ? (
           products.map(product => {
              const catName = categories.find(c => c.id === product.categoryId)?.name || "Geral";
+             const promoActive = isPromotionActive(product);
+             const activePrice = getEffectivePrice(product);
+
              return (
-               <div key={product.id} className="bg-[#1a1a1a] p-3 rounded-2xl flex justify-between items-center border border-[#484847]/30 shadow-sm transition-transform cursor-pointer hover:bg-[#20201f] group">
+               <div key={product.id} className="bg-[#1a1a1a] p-3 rounded-2xl flex justify-between items-center border border-[#484847]/30 shadow-sm transition-transform cursor-pointer hover:bg-[#20201f] group relative overflow-hidden">
                  
-                 <div className="flex items-center gap-3 w-full pr-2">
+                 <div className="flex items-center gap-3 w-full pr-2 z-10">
                    {/* Mini Thumbnail */}
-                   <div className="w-14 h-14 rounded-xl bg-[#20201f] border border-[#484847]/30 flex items-center justify-center overflow-hidden shrink-0">
+                   <div className="w-14 h-14 rounded-xl bg-[#20201f] border border-[#484847]/30 flex items-center justify-center overflow-hidden shrink-0 relative">
                      {product.image ? (
                        <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                      ) : (
@@ -107,16 +112,25 @@ export default function ProductsPage() {
                      )}
                    </div>
                    
-                   <div className="flex flex-col gap-1 w-full justify-center">
+                   <div className="flex flex-col gap-0.5 w-full justify-center">
                      <span className="text-white font-bold leading-tight line-clamp-1 pr-2">{product.name}</span>
-                     <div className="flex items-center gap-2 mt-0.5 w-full">
+                     <div className="flex items-center gap-2 w-full mt-0.5">
                        <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest bg-[#20201f] px-2 py-0.5 rounded-md border border-[#484847]/20 shrink-0">{catName}</span>
-                       <span className="text-[#53ddfc] font-black tracking-tight text-sm px-1 truncate">{formatCurrency(product.price)}</span>
+                       <span className="text-[#53ddfc] font-black tracking-tight text-sm px-1 truncate line-clamp-1 flex flex-col items-start leading-none gap-0.5">
+                         {promoActive ? (
+                           <>
+                             <span className="text-[10px] text-[#ff716c] line-through font-normal">{formatCurrency(product.price)}</span>
+                             <span className="flex items-center gap-1.5 align-middle">{formatCurrency(activePrice)} <span className="text-[8px] bg-[#53ddfc] text-[#004b58] px-1 py-[1px] rounded font-black tracking-widest uppercase mb-0.5">Promo</span></span>
+                           </>
+                         ) : (
+                            formatCurrency(product.price)
+                         )}
+                       </span>
                      </div>
                    </div>
                  </div>
                  
-                 <div className="flex flex-col items-end gap-2 shrink-0 border-l border-[#484847]/20 pl-3">
+                 <div className="flex flex-col items-end gap-2 shrink-0 border-l border-[#484847]/20 pl-3 z-10">
                    <div className="bg-[#20201f] text-white px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 shadow-inner border border-[#484847]/10 w-full justify-center mt-1">
                      <span className="font-black text-base leading-none">{product.stock}</span>
                      <span className="text-[#adaaaa] text-[9px] font-black uppercase tracking-widest leading-none mt-0.5">und</span>
@@ -134,6 +148,7 @@ export default function ProductsPage() {
                    </button>
                  </div>
                  
+                 {promoActive && <div className="absolute -inset-10 bg-gradient-to-l from-transparent via-[#53ddfc]/5 to-transparent pointer-events-none" />}
                </div>
              )
           })

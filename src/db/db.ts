@@ -10,6 +10,8 @@ export interface Product {
   name: string;
   categoryId: number;
   price: number;
+  promotionalPrice?: number;
+  promotionEndDate?: string;
   barcode?: string;
   image?: string; // Compressed Base64 string for PWA local storage
   stock: number;

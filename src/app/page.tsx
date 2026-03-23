@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
 import { useCartStore } from "@/stores/cart.store";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, isPromotionActive, getEffectivePrice } from "@/lib/utils";
 import { CheckoutModal } from "@/components/CheckoutModal";
 import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
 import { Menu, Plus, Camera, Search } from "lucide-react";
@@ -93,11 +93,15 @@ export default function Home() {
       <main className="pt-32 pb-24 px-4 overflow-y-auto relative flex-1 max-w-md mx-auto w-full">
         {filteredProducts.length > 0 ? (
           <div className="grid grid-cols-2 gap-4 pb-10">
-            {filteredProducts.map(product => (
-              <div key={product.id} className="bg-[#1a1a1a] rounded-2xl p-2.5 flex flex-col gap-2 active:scale-[0.98] transition-transform shadow-sm border border-[#484847]/30 border-b-4 border-b-[#484847]/50">
+            {filteredProducts.map(product => {
+              const promoActive = isPromotionActive(product);
+              const activePrice = getEffectivePrice(product);
+
+              return (
+              <div key={product.id} className="bg-[#1a1a1a] rounded-2xl p-2.5 flex flex-col gap-2 active:scale-[0.98] transition-transform shadow-sm border border-[#484847]/30 border-b-4 border-b-[#484847]/50 relative overflow-hidden group">
                 
                 {/* Visual Image Render Overlay com Proteção Textual (Gradientes) */}
-                <div className="aspect-square w-full rounded-xl bg-[#20201f] overflow-hidden relative flex flex-col items-center justify-center border border-[#484847]/10 group">
+                <div className="aspect-square w-full rounded-xl bg-[#20201f] overflow-hidden relative flex flex-col items-center justify-center border border-[#484847]/10 group z-10">
                    
                    {product.image ? (
                      <>
@@ -111,9 +115,16 @@ export default function Home() {
                      </span>
                    )}
 
+                   {/* Indicador Micro-Badge Promo Dentro Card */}
+                   {promoActive && (
+                     <div className="absolute top-2 left-2 bg-[#ff716c] text-white px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest shadow z-20">
+                       Promo
+                     </div>
+                   )}
+
                    {/* Add To Cart FAB Layer */}
                    <button 
-                     onClick={() => addItem(product, 1)}
+                     onClick={() => addItem({...product, price: activePrice}, 1)}
                      className="absolute top-2 right-2 bg-[#121212]/80 backdrop-blur-md p-1.5 rounded-full active:scale-90 transition-all border border-[#484847]/50 hover:bg-[#004b58] group-hover:border-[#06B6D4] z-20 shadow-md"
                    >
                     <Plus size={18} className="text-[#53ddfc]" />
@@ -123,12 +134,24 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="px-1 pb-1">
+                <div className="px-1 pb-1 z-10">
                   <h3 className="text-sm font-bold text-white leading-tight h-10 line-clamp-2 mt-1">{product.name}</h3>
-                  <p className="text-[#06B6D4] font-black text-lg tracking-tight truncate">{formatCurrency(product.price)}</p>
+                  <div className="flex flex-col mt-0.5 font-black text-lg tracking-tight truncate">
+                    {promoActive ? (
+                      <div>
+                        <span className="text-[11px] text-[#ff716c] line-through font-medium block leading-none">{formatCurrency(product.price)}</span>
+                        <span className="text-[#53ddfc]">{formatCurrency(activePrice)}</span>
+                      </div>
+                    ) : (
+                      <span className="text-[#06B6D4]">{formatCurrency(product.price)}</span>
+                    )}
+                  </div>
                 </div>
+
+                {/* Efeito Glow Promocional Fundo */}
+                {promoActive && <div className="absolute -inset-10 bg-gradient-to-tr from-[#ff716c]/5 to-[#53ddfc]/5 pointer-events-none" />}
               </div>
-            ))}
+            )})}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-[50vh] text-[#adaaaa] text-center border-2 border-dashed border-[#484847]/30 rounded-3xl p-6 shadow-sm">
