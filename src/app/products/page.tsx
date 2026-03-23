@@ -17,6 +17,7 @@ export default function ProductsPage() {
   const [promoProduct, setPromoProduct] = useState<any>(null);
   const [promoPriceValue, setPromoPriceValue] = useState("");
   const [promoDateValue, setPromoDateValue] = useState("");
+  const [deleteCandidate, setDeleteCandidate] = useState<{id: number, name: string} | null>(null);
   
   // Seed inicial de Categorias Base (Muda nada caso já existam)
   useEffect(() => {
@@ -72,14 +73,18 @@ export default function ProductsPage() {
     }
   };
 
-  const handleDeleteProduct = async (id: number, name: string) => {
-    if (window.confirm(`Tem certeza que deseja excluir '${name}' do catálogo?`)) {
-      try {
-        await db.products.delete(id);
-        toast.success(`O produto ${name} foi excluído.`);
-      } catch (error) {
-        toast.error("Erro ao remover produto do banco local.");
-      }
+  const handleDeleteProduct = (id: number, name: string) => {
+    setDeleteCandidate({ id, name });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteCandidate) return;
+    try {
+      await db.products.delete(deleteCandidate.id);
+      toast.success(`O produto ${deleteCandidate.name} foi excluído.`);
+      setDeleteCandidate(null);
+    } catch (error) {
+      toast.error("Erro ao remover produto do banco local.");
     }
   };
 
@@ -190,7 +195,7 @@ export default function ProductsPage() {
                          setPromoPriceValue(product.promotionalPrice ? product.promotionalPrice.toString() : "");
                          setPromoDateValue(product.promotionEndDate ? new Date(product.promotionEndDate).toISOString().slice(0, 16) : "");
                        }}
-                       className="text-[#adaaaa] w-full justify-center flex items-center hover:text-[#53ddfc] p-1.5 bg-[#20201f] rounded-lg transition-colors border border-transparent hover:border-[#53ddfc]/30 active:scale-95 group-hover:bg-[#1a1a1a]"
+                       className="text-[#adaaaa] flex-1 justify-center flex items-center hover:text-[#53ddfc] p-1.5 bg-[#20201f] rounded-lg transition-colors border border-transparent hover:border-[#53ddfc]/30 active:scale-95 group-hover:bg-[#1a1a1a]"
                        title="Ativar/Editar Oferta Relâmpago"
                      >
                        <Tag size={16} />
@@ -200,7 +205,7 @@ export default function ProductsPage() {
                          e.stopPropagation();
                          handleDeleteProduct(product.id!, product.name);
                        }}
-                       className="text-[#adaaaa] w-full justify-center flex items-center hover:text-[#ff716c] p-1.5 bg-[#20201f] rounded-lg transition-colors border border-transparent hover:border-[#ff716c]/30 active:scale-95 group-hover:bg-[#1a1a1a]"
+                       className="text-[#adaaaa] flex-1 justify-center flex items-center hover:text-[#ff716c] p-1.5 bg-[#20201f] rounded-lg transition-colors border border-transparent hover:border-[#ff716c]/30 active:scale-95 group-hover:bg-[#1a1a1a]"
                        title="Excluir Produto"
                      >
                        <Trash2 size={16} />
@@ -330,6 +335,39 @@ export default function ProductsPage() {
                </button>
              </div>
           </div>
+        </div>
+      )}
+
+      {/* Modal Customizado de Exclusão (Substitui o window.confirm nativo viciado) */}
+      {deleteCandidate && (
+        <div className="fixed inset-0 z-[70] bg-[#0e0e0e]/90 flex flex-col justify-center items-center backdrop-blur-sm p-4 animate-in fade-in duration-200">
+           <div className="bg-[#1a1a1a] w-full max-w-sm rounded-3xl border border-[#ff716c]/30 shadow-[0_10px_40px_rgba(255,113,108,0.1)] flex flex-col p-6 items-center text-center relative overflow-hidden">
+             
+             <div className="bg-[#20201f] p-4 rounded-full text-[#ff716c] mb-4 shadow-inner border border-[#ff716c]/20">
+               <Trash2 size={32} />
+             </div>
+             
+             <h2 className="text-xl font-black text-white tracking-tight mb-2">Excluir Produto?</h2>
+             <p className="text-[#adaaaa] text-sm leading-relaxed mb-6">
+                Tem certeza que deseja apagar <br/>
+                <strong className="text-white text-base">"{deleteCandidate.name}"</strong> <br/>do seu catálogo? Esta ação não pode ser desfeita.
+             </p>
+
+             <div className="flex gap-3 w-full">
+                <button 
+                  onClick={() => setDeleteCandidate(null)}
+                  className="flex-1 bg-[#20201f] text-[#adaaaa] font-bold text-sm uppercase tracking-wider py-4 rounded-xl border border-[#484847]/50 active:scale-95 transition-all text-center hover:text-white"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={confirmDelete}
+                  className="flex-1 bg-[#ff716c] text-[#1a1a1a] font-black text-sm uppercase tracking-wider py-4 rounded-xl shadow-[0_4px_24px_rgba(255,113,108,0.3)] hover:bg-[#ff8682] active:scale-95 transition-all text-center"
+                >
+                  Excluir
+                </button>
+             </div>
+           </div>
         </div>
       )}
     </div>
