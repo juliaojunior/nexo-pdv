@@ -45,26 +45,21 @@ function ProcessOrderContent() {
      if (!orderItems || orderItems.length === 0) return;
 
      try {
-       // 1. Processar a Venda (Salvar em db.sales)
+       // Preparamos os Itens para o formato Omit<SaleItem, 'id' | 'saleId'>
        const saleItems = orderItems.map(item => ({
            productId: item.product.id!,
-           name: item.product.name,
+           productName: item.product.name,
            quantity: item.quantity,
-           price: getEffectivePrice(item.product)
+           unitPrice: getEffectivePrice(item.product),
+           subtotal: getEffectivePrice(item.product) * item.quantity
        }));
 
-       const saleId = await db.sales.add({
-           items: saleItems,
+       // Salva a venda rodando a transação atômica
+       const saleId = await db.finalizeSale({
            total: total,
-           paymentMethod: "Pix", // Pode ser editado no futuro ou Default para Online
-           date: new Date().toISOString() // Adicionado .toISOString() para manter consistência de string vs Date que havíamos definido. Wait, a interface Sale requer date local.
-       });
-
-       // 2. Abater Estoque
-       for (const item of orderItems) {
-           const newStock = Math.max(0, item.product.stock - item.quantity);
-           await db.products.update(item.product.id!, { stock: newStock });
-       }
+           paymentMethod: "PIX",
+           date: new Date().toISOString()
+       }, saleItems);
 
        toast.success("Pedido aprovado e estoque abatido!");
        router.push("/");
