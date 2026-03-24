@@ -8,7 +8,7 @@ export default function Page() {
           <h1 className="text-3xl font-black text-[#53ddfc] tracking-tighter mb-2">Nexo PDV</h1>
           <p className="text-[#adaaaa] text-sm">Crie sua Conta Lojista Grátis</p>
         </div>
-        <SignUp appearance={{
+        <SignUp forceRedirectUrl="/" appearance={{
           elements: {
             card: "bg-[#1a1a1a] border border-[#484847]/30 shadow-2xl rounded-2xl",
             headerTitle: "text-white font-bold",
