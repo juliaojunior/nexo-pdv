@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Settings, Users, PackageMinus, LogOut, ChevronRight, Share2, Compass, QrCode } from "lucide-react";
 import Link from "next/link";
+import { SignOutButton } from "@clerk/nextjs";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
 import { generateCatalogLink } from "@/lib/catalogSharing";
@@ -139,10 +140,12 @@ export default function MorePage() {
 
       {/* Danger Zone */}
       <div className="mt-10 pt-6 border-t border-[#484847]/30">
-        <button className="flex items-center gap-3 text-[#ff716c] hover:bg-[#ff716c]/10 bg-transparent p-4 rounded-2xl font-bold active:scale-95 transition-all w-full text-left">
-          <LogOut size={22} />
-          <span className="text-lg">Desconectar Dispositivo</span>
-        </button>
+        <SignOutButton>
+          <button className="flex items-center gap-3 text-[#ff716c] hover:bg-[#ff716c]/10 bg-transparent p-4 rounded-2xl font-bold active:scale-95 transition-all w-full text-left">
+            <LogOut size={22} />
+            <span className="text-lg">Desconectar Dispositivo</span>
+          </button>
+        </SignOutButton>
       </div>
       
       {/* App Version Branding Footer */}
