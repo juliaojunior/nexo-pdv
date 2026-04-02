@@ -160,23 +160,23 @@ export default function InventoryPage() {
 
       {/* BOTTOM SHEET MODAL (ADJUSTMENT) */}
       {selectedProduct && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center sm:justify-center overflow-hidden">
           {/* Backdrop */}
           <div 
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-in fade-in duration-300"
+            className="absolute inset-0 bg-black/70 backdrop-blur-md animate-in fade-in duration-300"
             onClick={closeModal}
           ></div>
           
           {/* Sheet */}
-          <div className="relative w-full sm:max-w-md bg-[#131313] sm:rounded-3xl rounded-t-3xl border-t sm:border border-[#484847]/50 shadow-[0_-24px_48px_rgba(0,0,0,0.8)] flex flex-col max-h-[95vh] animate-in slide-in-from-bottom-full duration-300">
+          <div className="relative w-full sm:max-w-md bg-[#131313] sm:rounded-3xl rounded-t-3xl border-t sm:border border-[#484847]/50 shadow-[0_-24px_48px_rgba(0,0,0,0.8)] flex flex-col max-h-[85vh] sm:max-h-[90vh] h-auto animate-in slide-in-from-bottom-full duration-300 z-10 mx-auto">
             
             {/* Grabber */}
-            <div className="w-full flex justify-center py-3 sm:hidden" onClick={closeModal}>
+            <div className="w-full flex justify-center py-3 sm:hidden flex-shrink-0" onClick={closeModal}>
               <div className="w-12 h-1.5 bg-[#484847] rounded-full"></div>
             </div>
 
-            <div className="px-5 pb-5 pt-2 sm:pt-6 flex flex-col items-center border-b border-[#484847]/30">
-              <div className="w-16 h-16 rounded-xl bg-gradient-to-tr flex-shrink-0 from-[#004b58] to-[#121212] border border-[#06B6D4]/30 flex items-center justify-center overflow-hidden mb-3 shadow-[0_4px_16px_rgba(6,182,212,0.2)]">
+            <div className="px-5 pb-5 pt-1 flex flex-col items-center border-b border-[#484847]/30 flex-shrink-0">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-tr flex-shrink-0 from-[#004b58] to-[#121212] border border-[#06B6D4]/30 flex items-center justify-center overflow-hidden mb-3 shadow-[0_4px_16px_rgba(6,182,212,0.2)]">
                 {selectedProduct.image ? (
                    <img src={selectedProduct.image} className="w-full h-full object-cover" alt={selectedProduct.name} />
                 ) : (
@@ -184,17 +184,18 @@ export default function InventoryPage() {
                 )}
               </div>
               
-              <h2 className="text-xl font-black text-white tracking-tight text-center truncate w-full px-4">
+              <h2 className="text-lg font-black text-white tracking-tight text-center truncate w-full px-4">
                 {selectedProduct.name}
               </h2>
               <div className="bg-[#1a1a1a] px-4 py-1.5 mt-2 rounded-full border border-[#484847] flex items-center gap-2">
-                 <span className="text-[#adaaaa] text-xs font-bold uppercase tracking-widest">Estoque Atual:</span>
-                 <span className="text-[#53ddfc] text-lg font-black">{selectedProduct.stock}</span>
+                 <span className="text-[#adaaaa] text-[11px] font-bold uppercase tracking-widest">Estoque Atual:</span>
+                 <span className="text-[#53ddfc] text-base font-black">{selectedProduct.stock}</span>
               </div>
             </div>
 
-            <form onSubmit={handleAdjust} className="flex flex-col flex-1 overflow-hidden">
-              <div className="p-5 overflow-y-auto flex-1 flex flex-col gap-6 mb-2">
+            <form onSubmit={handleAdjust} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+              <div className="px-5 py-6 overflow-y-auto flex-1 flex flex-col gap-6">
+                
                 {/* TABS (Switcher) */}
                 <div className="bg-[#1a1a1a] rounded-xl p-1.5 flex shadow-inner border border-[#484847]/30 flex-shrink-0">
                   <button 
@@ -239,7 +240,7 @@ export default function InventoryPage() {
                           value={quantityStr}
                           onChange={(e) => setQuantityStr(e.target.value)}
                           placeholder="0"
-                          className="w-24 h-20 bg-transparent border-b-2 border-[#484847] focus:border-[#53ddfc] text-center text-5xl font-black text-white tracking-tighter outline-none transition-colors"
+                          className="w-24 h-16 bg-transparent border-b-2 border-[#484847] focus:border-[#53ddfc] text-center text-4xl font-black text-white tracking-tighter outline-none transition-colors"
                         />
                      </div>
 
@@ -249,15 +250,15 @@ export default function InventoryPage() {
                    </div>
 
                    <p className="text-[#adaaaa] text-[11px] font-medium text-center px-2">
-                     {mode === 'add' && "Quantos lotes ou unidades novas chegaram e devem subir?"}
-                     {mode === 'subtract' && "Quantas unidades saíram, estragaram ou venceram?"}
-                     {mode === 'overwrite' && "Qual o número exato de mercadoria física contada?"}
+                     {mode === 'add' && "Qual a quantidade exata de entrada deste lote?"}
+                     {mode === 'subtract' && "Quantas unidades sofreram dano ou perda?"}
+                     {mode === 'overwrite' && "Qual contagem física da mercadoria real?"}
                    </p>
                 </div>
               </div>
 
-              {/* Action Buttons Pinned at the Bottom */}
-              <div className="px-5 pt-3 pb-6 border-t border-[#484847]/30 flex gap-3 bg-[#131313] mt-auto flex-shrink-0">
+              {/* Action Buttons Pinned at the Bottom (with safe-area padding for mobile) */}
+              <div className="px-5 pt-4 pb-8 sm:pb-6 border-t border-[#484847]/30 flex gap-3 bg-[#131313] mt-auto flex-shrink-0 z-20 shadow-[0_-12px_24px_rgba(0,0,0,0.4)]">
                  <button 
                   type="button" 
                   onClick={closeModal}
@@ -270,7 +271,7 @@ export default function InventoryPage() {
                   disabled={!quantityStr || parseInt(quantityStr, 10) === 0}
                   className="flex-[1.2] h-12 sm:h-14 bg-gradient-to-tr from-[#06B6D4] to-[#53ddfc] text-[#004b58] font-black text-sm sm:text-base rounded-xl flex items-center justify-center active:scale-95 transition-all disabled:opacity-50 disabled:from-[#484847] disabled:to-[#484847] disabled:text-[#adaaaa]"
                  >
-                   Confirmar Ajuste
+                   Confirmar
                  </button>
               </div>
             </form>
