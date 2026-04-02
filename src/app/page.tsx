@@ -7,6 +7,7 @@ import { db } from "@/db/db";
 import { useCartStore } from "@/stores/cart.store";
 import { formatCurrency, isPromotionActive, getEffectivePrice } from "@/lib/utils";
 import { CheckoutModal } from "@/components/CheckoutModal";
+import { ReceiptModal, ReceiptData } from "@/components/ReceiptModal";
 import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
 import { Menu, Plus, Camera, Search } from "lucide-react";
 import { toast } from "sonner";
@@ -15,6 +16,10 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState<number | null>(null);
   const [isCheckoutOpen, setCheckoutOpen] = useState(false);
   const [isScannerOpen, setScannerOpen] = useState(false);
+  
+  // Sale Flow state
+  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+  const [finishedSaleData, setFinishedSaleData] = useState<ReceiptData | null>(null);
   
   // Real time Queries
   const products = useLiveQuery(() => db.products.toArray()) || [];
@@ -210,7 +215,30 @@ export default function Home() {
       )}
 
       {/* Modal Engine Invocation */}
-      <CheckoutModal isOpen={isCheckoutOpen} onClose={() => setCheckoutOpen(false)} />
+      <CheckoutModal 
+        isOpen={isCheckoutOpen} 
+        onClose={() => setCheckoutOpen(false)} 
+        onSuccess={(data) => {
+          setCheckoutOpen(false);
+          // Play beep sound if enabled
+          if (typeof window !== "undefined" && localStorage.getItem("nexo_checkoutSounds") !== "false") {
+             const audio = new Audio("https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3?filename=success-1-6297.mp3");
+             audio.volume = 0.5;
+             audio.play().catch(()=>null);
+          }
+          // Redirect to Receipt Modal if enabled
+          if (typeof window !== "undefined" && localStorage.getItem("nexo_receiptAutoShow") !== "false") {
+            setFinishedSaleData(data);
+            setIsReceiptOpen(true);
+          }
+        }}
+      />
+
+      <ReceiptModal 
+        isOpen={isReceiptOpen} 
+        onClose={() => setIsReceiptOpen(false)} 
+        receiptData={finishedSaleData} 
+      />
     </div>
   );
 }

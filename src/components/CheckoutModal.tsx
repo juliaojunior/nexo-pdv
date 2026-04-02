@@ -10,11 +10,12 @@ import { X, Minus, Plus } from "lucide-react";
 interface CheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: (data: any) => void;
 }
 
 type PaymentMethod = 'Dinheiro' | 'PIX' | 'Crédito' | 'Débito';
 
-export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
+export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps) {
   const { items, updateQuantity, clearCart } = useCartStore();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Dinheiro');
   const [amountReceivedInput, setAmountReceivedInput] = useState<string>('');
@@ -59,7 +60,21 @@ export function CheckoutModal({ isOpen, onClose }: CheckoutModalProps) {
       // Limpa Zustand store e Notifica a UI
       clearCart();
       toast.success("Venda finalizada com sucesso!");
-      onClose();
+      
+      const completedReceiptData = {
+        items: saleItemsData,
+        total,
+        paymentMethod,
+        amountReceived: saleData.amountReceived,
+        change: saleData.change,
+        date: saleData.date
+      };
+
+      if (onSuccess) {
+        onSuccess(completedReceiptData);
+      } else {
+        onClose();
+      }
     } catch (error: any) {
       // Captura e renderiza erros de estoque via Sonner
       toast.error(error.message || "Erro inesperado ao finalizar a transação.");
