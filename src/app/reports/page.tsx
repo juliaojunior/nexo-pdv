@@ -1,25 +1,55 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
 import { formatCurrency } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 
-export default function ReportsPage() {
-  // Queries atômicas reativas do Dexie: Toda vez que o banco mudar, os relatórios renderizam na mesma hora.
-  const sales = useLiveQuery(() => db.sales.toArray()) || [];
-  const saleItems = useLiveQuery(() => db.saleItems.toArray()) || [];
+type TimeFilter = 'month' | 'year' | 'all';
 
-  // Cálculos Diretos (Reduce)
+export default function ReportsPage() {
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  // Queries atômicas reativas do Dexie recuperando dados brutos da base local
+  const allSales = useLiveQuery(() => db.sales.toArray()) || [];
+  const allSaleItems = useLiveQuery(() => db.saleItems.toArray()) || [];
+
+  // Lógica de Filtragem de Tempo Baseada na Data da Venda
+  const now = new Date();
+  
+  const sales = useMemo(() => {
+    if (timeFilter === 'all') return allSales;
+    return allSales.filter(sale => {
+      const saleDate = new Date(sale.date);
+      if (timeFilter === 'month') {
+        return saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
+      }
+      if (timeFilter === 'year') {
+        return saleDate.getFullYear() === now.getFullYear();
+      }
+      return true;
+    });
+  }, [allSales, timeFilter]);
+
+  // Filtra de forma cascata os items das vendas baseados nos IDS das vendas filtradas no período escolhido
+  const saleItems = useMemo(() => {
+    if (timeFilter === 'all') return allSaleItems;
+    const activeSaleIds = new Set(sales.map(s => s.id));
+    return allSaleItems.filter(item => activeSaleIds.has(item.saleId));
+  }, [allSaleItems, sales]);
+
+  // Cálculos Diretos (Reduce) considerando apenas os dados filtrados
   const totalVendido = sales.reduce((acc, sale) => acc + sale.total, 0);
   const numeroVendas = sales.length;
 
-  // Lógica Top 5 Produtos Mais Vendidos utilizando Hash Map via Reduce
+  // Lógica Top 5 Produtos Mais Vendidos via HashMap
   const productSalesMap = saleItems.reduce((acc, item) => {
     if (!acc[item.productId]) {
       acc[item.productId] = { 
         id: item.productId, 
-        name: item.productName, // Utilizamos o snapshot do nome para poupar 1 query com join no db.products!
+        name: item.productName,
         quantity: 0 
       };
     }
@@ -27,7 +57,7 @@ export default function ReportsPage() {
     return acc;
   }, {} as Record<number, { id: number; name: string; quantity: number }>);
 
-  // Mapeamos os valores de volta para um Array, ordenamos de forma Decrescente em quantia e limitamos a 5 itens.
+  // Mapeamos os valores de volta para um Array e ordenamos decrescente
   const top5Products = Object.values(productSalesMap)
     .sort((a, b) => b.quantity - a.quantity)
     .slice(0, 5);
@@ -40,9 +70,44 @@ export default function ReportsPage() {
       </header>
       
       {/* Resumo & Filtro Dinâmico */}
-      <div className="flex items-center gap-2 mb-6 bg-[#20201f] w-max px-4 py-2 rounded-xl border border-[#484847]/50 shadow-sm active:scale-95 transition-transform cursor-pointer">
-        <span className="font-bold text-sm">Todo o Período</span>
-        <ChevronDown size={18} className="text-[#06B6D4]" />
+      <div className="relative mb-6">
+        <div 
+          onClick={() => setIsFilterOpen(!isFilterOpen)}
+          className="flex items-center gap-2 bg-[#20201f] w-max px-4 py-2 rounded-xl border border-[#484847]/50 shadow-sm active:scale-95 transition-transform cursor-pointer"
+        >
+          <span className="font-bold text-sm">
+            {timeFilter === 'month' ? 'Este mês' : timeFilter === 'year' ? 'Este ano' : 'Sempre'}
+          </span>
+          <ChevronDown size={18} className={`text-[#06B6D4] transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
+        </div>
+        
+        {isFilterOpen && (
+          <>
+            {/* Backdrop Layer */}
+            <div className="fixed inset-0 z-40" onClick={() => setIsFilterOpen(false)}></div>
+            {/* Dropdown Card */}
+            <div className="absolute top-12 left-0 w-40 bg-[#1a1a1a] border border-[#484847]/50 rounded-xl shadow-[0_16px_32px_rgba(0,0,0,0.5)] z-50 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+              <button 
+                onClick={() => { setTimeFilter('month'); setIsFilterOpen(false); }}
+                className={`text-left px-4 py-3 text-sm font-bold transition-colors hover:bg-[#20201f] ${timeFilter === 'month' ? 'text-[#53ddfc]' : 'text-white'}`}
+              >
+                Este mês
+              </button>
+              <button 
+                onClick={() => { setTimeFilter('year'); setIsFilterOpen(false); }}
+                className={`text-left px-4 py-3 text-sm font-bold transition-colors hover:bg-[#20201f] border-t border-[#484847]/30 ${timeFilter === 'year' ? 'text-[#53ddfc]' : 'text-white'}`}
+              >
+                Este ano
+              </button>
+              <button 
+                onClick={() => { setTimeFilter('all'); setIsFilterOpen(false); }}
+                className={`text-left px-4 py-3 text-sm font-bold transition-colors hover:bg-[#20201f] border-t border-[#484847]/30 ${timeFilter === 'all' ? 'text-[#53ddfc]' : 'text-white'}`}
+              >
+                Sempre
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Cards de Métricas Estritos ao Design */}
