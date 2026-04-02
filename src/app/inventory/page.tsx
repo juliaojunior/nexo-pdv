@@ -193,80 +193,82 @@ export default function InventoryPage() {
               </div>
             </div>
 
-            <form onSubmit={handleAdjust} className="p-5 flex flex-col gap-6">
-              
-              {/* TABS (Switcher) */}
-              <div className="bg-[#1a1a1a] rounded-xl p-1.5 flex shadow-inner border border-[#484847]/30">
-                <button 
-                  type="button" 
-                  onClick={() => { setMode('add'); setQuantityStr(""); }}
-                  className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg transition-all ${mode === 'add' ? 'bg-[#20201f] border border-[#484847] text-white shadow-sm' : 'text-[#adaaaa] hover:text-white'}`}
-                >
-                   <Plus size={20} className={mode === 'add' ? 'text-[#06B6D4]' : ''} />
-                   <span className="font-bold text-[10px] uppercase tracking-widest mt-1">Soma</span>
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => { setMode('subtract'); setQuantityStr(""); }}
-                  className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg transition-all ${mode === 'subtract' ? 'bg-[#20201f] border border-[#484847] text-white shadow-sm' : 'text-[#adaaaa] hover:text-white'}`}
-                >
-                   <Minus size={20} className={mode === 'subtract' ? 'text-[#ff716c]' : ''} />
-                   <span className="font-bold text-[10px] uppercase tracking-widest mt-1">Perda</span>
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => { setMode('overwrite'); setQuantityStr(""); }}
-                  className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg transition-all ${mode === 'overwrite' ? 'bg-[#20201f] border border-[#484847] text-white shadow-sm' : 'text-[#adaaaa] hover:text-white'}`}
-                >
-                   <Edit2 size={18} className={mode === 'overwrite' ? 'text-white' : ''} />
-                   <span className="font-bold text-[10px] uppercase tracking-widest mt-1">Exato</span>
-                </button>
-              </div>
+            <form onSubmit={handleAdjust} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-5 overflow-y-auto flex-1 flex flex-col gap-6 mb-2">
+                {/* TABS (Switcher) */}
+                <div className="bg-[#1a1a1a] rounded-xl p-1.5 flex shadow-inner border border-[#484847]/30 flex-shrink-0">
+                  <button 
+                    type="button" 
+                    onClick={() => { setMode('add'); setQuantityStr(""); }}
+                    className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg transition-all ${mode === 'add' ? 'bg-[#20201f] border border-[#484847] text-white shadow-sm' : 'text-[#adaaaa] hover:text-white'}`}
+                  >
+                     <Plus size={20} className={mode === 'add' ? 'text-[#06B6D4]' : ''} />
+                     <span className="font-bold text-[10px] uppercase tracking-widest mt-1">Soma</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => { setMode('subtract'); setQuantityStr(""); }}
+                    className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg transition-all ${mode === 'subtract' ? 'bg-[#20201f] border border-[#484847] text-white shadow-sm' : 'text-[#adaaaa] hover:text-white'}`}
+                  >
+                     <Minus size={20} className={mode === 'subtract' ? 'text-[#ff716c]' : ''} />
+                     <span className="font-bold text-[10px] uppercase tracking-widest mt-1">Perda</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => { setMode('overwrite'); setQuantityStr(""); }}
+                    className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg transition-all ${mode === 'overwrite' ? 'bg-[#20201f] border border-[#484847] text-white shadow-sm' : 'text-[#adaaaa] hover:text-white'}`}
+                  >
+                     <Edit2 size={18} className={mode === 'overwrite' ? 'text-white' : ''} />
+                     <span className="font-bold text-[10px] uppercase tracking-widest mt-1">Exato</span>
+                  </button>
+                </div>
 
-              {/* INPUT COUNTER */}
-              <div className="flex flex-col items-center space-y-4">
-                 
-                 <div className="flex items-center gap-6">
-                   <button type="button" onClick={() => handleQuickAddQty(-1)} className="w-14 h-14 bg-[#1a1a1a] border border-[#484847]/50 rounded-2xl flex items-center justify-center text-white active:scale-95 shadow-sm hover:border-[#53ddfc] transition-colors">
-                      <Minus size={24} strokeWidth={3} />
-                   </button>
+                {/* INPUT COUNTER */}
+                <div className="flex flex-col items-center space-y-4">
                    
-                   <div className="relative">
-                      <input 
-                        type="number"
-                        min="0"
-                        step="1"
-                        value={quantityStr}
-                        onChange={(e) => setQuantityStr(e.target.value)}
-                        placeholder="0"
-                        className="w-24 h-20 bg-transparent border-b-2 border-[#484847] focus:border-[#53ddfc] text-center text-5xl font-black text-white tracking-tighter outline-none transition-colors"
-                      />
+                   <div className="flex items-center gap-6">
+                     <button type="button" onClick={() => handleQuickAddQty(-1)} className="w-14 h-14 bg-[#1a1a1a] border border-[#484847]/50 rounded-2xl flex items-center justify-center text-white active:scale-95 shadow-sm hover:border-[#53ddfc] transition-colors">
+                        <Minus size={24} strokeWidth={3} />
+                     </button>
+                     
+                     <div className="relative">
+                        <input 
+                          type="number"
+                          min="0"
+                          step="1"
+                          value={quantityStr}
+                          onChange={(e) => setQuantityStr(e.target.value)}
+                          placeholder="0"
+                          className="w-24 h-20 bg-transparent border-b-2 border-[#484847] focus:border-[#53ddfc] text-center text-5xl font-black text-white tracking-tighter outline-none transition-colors"
+                        />
+                     </div>
+
+                     <button type="button" onClick={() => handleQuickAddQty(1)} className="w-14 h-14 bg-[#1a1a1a] border border-[#484847]/50 rounded-2xl flex items-center justify-center text-white active:scale-95 shadow-sm hover:border-[#53ddfc] transition-colors">
+                        <Plus size={24} strokeWidth={3} />
+                     </button>
                    </div>
 
-                   <button type="button" onClick={() => handleQuickAddQty(1)} className="w-14 h-14 bg-[#1a1a1a] border border-[#484847]/50 rounded-2xl flex items-center justify-center text-white active:scale-95 shadow-sm hover:border-[#53ddfc] transition-colors">
-                      <Plus size={24} strokeWidth={3} />
-                   </button>
-                 </div>
-
-                 <p className="text-[#adaaaa] text-xs font-medium text-center px-4">
-                   {mode === 'add' && "Quantos lotes ou unidades novas chegaram e devem subir ao painel?"}
-                   {mode === 'subtract' && "Quantas unidades saíram, estragaram ou venceram?"}
-                   {mode === 'overwrite' && "Qual o número exato de mercadoria que você contou na validagem?"}
-                 </p>
+                   <p className="text-[#adaaaa] text-[11px] font-medium text-center px-2">
+                     {mode === 'add' && "Quantos lotes ou unidades novas chegaram e devem subir?"}
+                     {mode === 'subtract' && "Quantas unidades saíram, estragaram ou venceram?"}
+                     {mode === 'overwrite' && "Qual o número exato de mercadoria física contada?"}
+                   </p>
+                </div>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-[#484847]/30 flex gap-3">
+              {/* Action Buttons Pinned at the Bottom */}
+              <div className="px-5 pt-3 pb-6 border-t border-[#484847]/30 flex gap-3 bg-[#131313] mt-auto flex-shrink-0">
                  <button 
                   type="button" 
                   onClick={closeModal}
-                  className="flex-[0.8] h-14 bg-[#1a1a1a] border border-[#484847]/50 hover:bg-[#20201f] text-white font-bold text-base rounded-xl flex items-center justify-center active:scale-95 transition-all outline-none"
+                  className="flex-[0.8] h-12 sm:h-14 bg-[#1a1a1a] border border-[#484847]/50 hover:bg-[#20201f] text-white font-bold text-sm sm:text-base rounded-xl flex items-center justify-center active:scale-95 transition-all outline-none"
                  >
                    Cancelar
                  </button>
                  <button 
                   type="submit"
                   disabled={!quantityStr || parseInt(quantityStr, 10) === 0}
-                  className="flex-[1.2] h-14 bg-gradient-to-tr from-[#06B6D4] to-[#53ddfc] text-[#004b58] font-black text-base lg:text-lg rounded-xl flex items-center justify-center active:scale-95 transition-all disabled:opacity-50 disabled:from-[#484847] disabled:to-[#484847] disabled:text-[#adaaaa]"
+                  className="flex-[1.2] h-12 sm:h-14 bg-gradient-to-tr from-[#06B6D4] to-[#53ddfc] text-[#004b58] font-black text-sm sm:text-base rounded-xl flex items-center justify-center active:scale-95 transition-all disabled:opacity-50 disabled:from-[#484847] disabled:to-[#484847] disabled:text-[#adaaaa]"
                  >
                    Confirmar Ajuste
                  </button>
