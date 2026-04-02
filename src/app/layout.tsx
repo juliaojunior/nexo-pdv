@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import { BottomNav } from "@/components/BottomNav";
 import { ClerkProvider } from '@clerk/nextjs';
+import { ptBR } from "@clerk/localizations";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -35,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider localization={ptBR}>
       <html lang="pt-BR" className={`${inter.className} dark`}>
         <head>
           <link 

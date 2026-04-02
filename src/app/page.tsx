@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { UserButton } from "@clerk/nextjs";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
 import { useCartStore } from "@/stores/cart.store";
@@ -66,8 +67,20 @@ export default function Home() {
             >
               <Camera size={18} strokeWidth={2.5} />
             </button>
-            <div className="w-8 h-8 rounded-full bg-[#20201f] border border-[#484847] flex items-center justify-center overflow-hidden shadow-sm">
-              <span className="font-bold text-[10px] tracking-widest text-[#53ddfc]">NX</span>
+            <div className="w-8 h-8 rounded-full border border-[#484847]/50 flex items-center justify-center overflow-hidden shadow-sm transition-transform active:scale-95">
+              <UserButton 
+                appearance={{
+                  elements: {
+                    userButtonAvatarBox: "w-8 h-8",
+                    userButtonPopoverCard: "bg-[#1a1a1a] border border-[#484847]/50 py-2",
+                    userPreviewMainIdentifier: "text-white font-bold",
+                    userPreviewSecondaryIdentifier: "text-[#adaaaa]",
+                    userButtonPopoverActionButton: "hover:bg-[#20201f] text-white",
+                    userButtonPopoverActionButtonText: "text-white",
+                    userButtonPopoverFooter: "hidden"
+                  }
+                }} 
+              />
             </div>
           </div>
         </div>

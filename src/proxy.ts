@@ -6,6 +6,9 @@ const isPublicRoute = createRouteMatcher([
   '/process(.*)',// Payment / deep link processing might need to be public or handled internally, keeping public for now.
   '/api/shorten(.*)', // Shortener proxy API
   '/api/webhook(.*)', // Clerk webhooks if we add them later
+  '/sign-in(.*)', // Public login page
+  '/sign-up(.*)', // Public signup page
+  '/sso-callback(.*)', // SSOCallback para OAuth do Clerk
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
