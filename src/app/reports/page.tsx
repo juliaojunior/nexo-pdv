@@ -62,6 +62,31 @@ export default function ReportsPage() {
     .sort((a, b) => b.quantity - a.quantity)
     .slice(0, 5);
 
+  // Lógica Real do Gráfico de Volume (Agregação por Dia da Semana: Seg a Dom)
+  const chartData = useMemo(() => {
+    // Índices do JS (0 = Dom, 1 = Seg ... 6 = Sáb)
+    const rawTotals = [0, 0, 0, 0, 0, 0, 0];
+    
+    sales.forEach(sale => {
+      const day = new Date(sale.date).getDay();
+      rawTotals[day] += sale.total;
+    });
+
+    // Reordenamos para o padrão Visual: Seg, Ter, Qua, Qui, Sex, Sáb, Dom
+    const orderedTotals = [
+      rawTotals[1], rawTotals[2], rawTotals[3], rawTotals[4], 
+      rawTotals[5], rawTotals[6], rawTotals[0]
+    ];
+
+    const maxVal = Math.max(...orderedTotals, 0); // Evita Inifinity
+    
+    return orderedTotals.map(val => ({
+      value: val,
+      // Se nenhma venda registrada, 0%. Se registrada, escala em %, mas garante 5% visual mínimo.
+      percent: maxVal === 0 ? 0 : val === 0 ? 0 : Math.max(5, Math.round((val / maxVal) * 100))
+    }));
+  }, [sales]);
+
   return (
     <div className="bg-[#121212] min-h-screen text-[#F3F4F6] font-['Inter'] px-4 py-8 pb-32">
       {/* Header */}
@@ -122,19 +147,23 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      {/* Mocking da Estrutura do Gráfico de Volume (Estilo Neon Atelier) */}
+      {/* Gráfico de Volume Dinâmico */}
       <div className="bg-[#1a1a1a] rounded-2xl p-5 border border-[#484847]/30 shadow-sm mb-8">
-        <h2 className="text-[#adaaaa] text-xs font-bold uppercase tracking-widest mb-5">Volume (Exemplo)</h2>
+        <h2 className="text-[#adaaaa] text-xs font-bold uppercase tracking-widest mb-5">Volume de Vendas</h2>
         <div className="flex items-end justify-between h-32 gap-3 px-1">
-          {/* Distribuição baseada em porcentagem referencial */}
-          {[30, 50, 20, 80, 40, 60, 100].map((height, i) => (
-            <div key={i} className="flex flex-col items-center gap-2 flex-1 h-full justify-end">
-              <div 
-                className={`w-full rounded-t-sm transition-all shadow-[0_4px_16px_rgba(83,221,252,0.1)] ${height === 100 ? 'bg-[#06B6D4]' : 'bg-[#484847]'}`} 
-                style={{ height: `${height}%` }}
-              />
-            </div>
-          ))}
+          {chartData.map((data, i) => {
+            const isHighest = data.percent === 100 && data.value > 0;
+            return (
+              <div key={i} className="flex flex-col items-center gap-2 flex-1 h-full justify-end relative group">
+                <div 
+                  className={`w-full rounded-t-sm transition-all duration-500 ease-out 
+                    ${isHighest ? 'bg-[#06B6D4] shadow-[0_4px_16px_rgba(6,182,212,0.3)]' : 'bg-[#484847] hover:bg-[#adaaaa]'}`} 
+                  style={{ height: `${data.percent}%`, minHeight: data.value > 0 ? '4%' : '0%' }}
+                  title={formatCurrency(data.value)}
+                />
+              </div>
+            );
+          })}
         </div>
         <div className="flex items-center justify-between mt-3 text-[10px] text-[#adaaaa] font-bold px-1">
           <span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span>
