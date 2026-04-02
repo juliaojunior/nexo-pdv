@@ -64,7 +64,7 @@ export default function MorePage() {
   };
 
   const menuItems = [
-    { icon: Users, label: "Clientes", description: "Gerenciar base de clientes (Em breve)", href: undefined },
+    { icon: Users, label: "Clientes", description: "Gerenciar base de clientes", href: "/customers" },
     { icon: PackageMinus, label: "Ajuste de Estoque", description: "Balanços e perdas manuais", href: undefined },
     { icon: Settings, label: "Configurações", description: "Categorias, Impressora e Temas", href: "/more/settings" },
   ];
