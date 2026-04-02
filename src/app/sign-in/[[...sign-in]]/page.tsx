@@ -28,20 +28,20 @@ export default function Page() {
         </div>
         
         <section className="z-10 w-full max-w-md">
-          <div className="bg-[#131313] rounded-xl p-10 flex flex-col items-center space-y-10 shadow-[0_32px_32px_rgba(83,221,252,0.08)]">
+          <div className="bg-[#131313] rounded-xl p-6 sm:p-10 flex flex-col items-center space-y-8 sm:space-y-10 shadow-[0_32px_32px_rgba(83,221,252,0.08)]">
             
             {/* Brand Anchor */}
             <div className="flex flex-col items-center space-y-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-[#53ddfc] to-[#21bedc] rounded-xl flex items-center justify-center shadow-lg shadow-[#53ddfc]/20">
-                <span className="material-symbols-outlined text-[#004b58] text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>terminal</span>
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#53ddfc] to-[#21bedc] rounded-xl flex items-center justify-center shadow-lg shadow-[#53ddfc]/20">
+                <span className="material-symbols-outlined text-[#004b58] text-3xl sm:text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>terminal</span>
               </div>
-              <h1 className="text-3xl font-extrabold tracking-tighter text-[#53ddfc]">Nexo PDV</h1>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tighter text-[#53ddfc]">Nexo PDV</h1>
             </div>
 
             {/* Welcome Text */}
             <div className="text-center space-y-2">
-              <h2 className="text-xl font-semibold text-white">Simplifique sua gestão.</h2>
-              <p className="text-[#adaaaa] text-sm tracking-wide">Faça login para continuar.</p>
+              <h2 className="text-lg sm:text-xl font-semibold text-white leading-tight">Simplifique sua gestão.</h2>
+              <p className="text-[#adaaaa] text-xs sm:text-sm tracking-wide">Faça login para continuar.</p>
             </div>
 
             {/* DIRECT GOOGLE OAUTH BUTTON (No Clerk Default UI) */}
@@ -49,18 +49,18 @@ export default function Page() {
               <ClerkLoading>
                  <button 
                   disabled
-                  className="w-full h-14 bg-white/20 text-[#adaaaa] flex items-center justify-center gap-4 rounded-lg font-bold text-base cursor-not-allowed opacity-50"
+                  className="w-full h-12 sm:h-14 bg-white/20 text-[#adaaaa] flex items-center justify-center gap-3 sm:gap-4 rounded-lg font-bold text-sm sm:text-base cursor-not-allowed opacity-50 px-2"
                  >
-                   <svg className="w-6 h-6 animate-spin text-[#adaaaa]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                   <svg className="w-5 h-5 sm:w-6 sm:h-6 animate-spin text-[#adaaaa]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                    </svg>
-                   Carregando Motor...
+                   <span className="whitespace-nowrap">Carregando...</span>
                  </button>
               </ClerkLoading>
               <ClerkLoaded>
                 <button 
                   onClick={handleGoogleSignIn}
-                  className="w-full h-14 bg-white text-[#121212] flex items-center justify-center gap-4 rounded-lg font-bold text-base transition-[all_0.2s_ease-out] active:scale-95 hover:bg-gray-200 shadow-md transform-gpu"
+                  className="w-full h-12 sm:h-14 bg-white text-[#121212] flex items-center justify-center gap-3 sm:gap-4 rounded-lg font-bold text-[13px] sm:text-base transition-[all_0.2s_ease-out] active:scale-95 hover:bg-gray-200 shadow-md transform-gpu px-2"
                 >
                   <svg className="w-6 h-6" viewBox="0 0 24 24">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
