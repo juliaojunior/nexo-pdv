@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { formatCurrency } from "@/lib/utils";
-import html2canvas from "html2canvas";
+import { toBlob } from "html-to-image";
 import { Share2, X, Download, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -39,39 +39,51 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
   const handleShare = async () => {
     if (!receiptRef.current) return;
     setIsGenerating(true);
-    toast.info("Processando pixels do recibo...", { duration: 1500 });
+    toast.info("Processando arquivo para o Zap...", { duration: 1500 });
 
     try {
-      // html2canvas takes a snapshot of the hidden or visible div
-      const canvas = await html2canvas(receiptRef.current, { 
-         scale: 3, 
-         backgroundColor: "#1e1e1c", // slightly warm dark gray to match neon atelier
-         logging: false 
+      // Usando html-to-image que é muito mais robusto em Mobile DOM e SVGs
+      const blob = await toBlob(receiptRef.current, { 
+         backgroundColor: "#1e1e1c",
+         pixelRatio: 3, 
       });
       
-      const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
-      if (!blob) throw new Error("Falha ao gerar blob de imagem");
+      if (!blob) throw new Error("A biblioteca falhou ao renderizar a imagem.");
 
-      const file = new File([blob], `Recibo_Venda_${new Date().getTime()}.png`, { type: 'image/png' });
+      const file = new File([blob], `Nexo_Recibo_${new Date().getTime()}.png`, { type: 'image/png' });
 
-      // Check if native Web Share API supports file sharing (Mobile Devices / Safari / Chrome Mobile)
+      let sharedSuccessfully = false;
+
+      // Tenta compartilhar primeiro se a API nativa estiver viva
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: `Recibo - ${storeName}`,
-          text: `Agradecemos a compra! Aqui está seu recibo digital emitido em ${new Date(receiptData.date).toLocaleString()}.`,
-        });
-        toast.success("Recibo redirecionado ao WhatsApp!");
-      } else {
-         // Fallback to auto-download on Desktop or unsupported browsers
+        try {
+          await navigator.share({
+            files: [file],
+            title: `Recibo - ${storeName}`,
+            text: `Aqui está seu recibo digital de compra. Muito Obrigado!`,
+          });
+          toast.success("Recibo acoplado ao WhatsApp!");
+          sharedSuccessfully = true;
+        } catch (shareErr: any) {
+          // AbortError = usuário só fechou a aba de compartilhamento.
+          if (shareErr.name === 'AbortError') {
+             sharedSuccessfully = true; 
+          } else {
+             console.error("Share cancelado/falhou:", shareErr);
+          }
+        }
+      }
+
+      // Se falhou compartilhar nativamente ou não suporta array de Files (PC/Desktop/WebViews velhos)
+      if (!sharedSuccessfully) {
          const link = document.createElement('a');
          link.download = file.name;
          link.href = URL.createObjectURL(blob);
          link.click();
-         toast.success("Recibo digital salvo na galeria!");
+         toast.success("Recibo digital salvo na galeria como imagem!");
       }
-    } catch (e) {
-      toast.error("Erro ao desenhar o cupom digital.");
+    } catch (e: any) {
+      toast.error(e?.message || "Erro fatal ao desenhar o cupom digital.");
       console.error(e);
     } finally {
       setIsGenerating(false);
