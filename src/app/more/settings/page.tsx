@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, Category } from "@/db/db";
-import { ChevronLeft, Store, Tags, Smartphone, Volume2, Trash2, Edit3, Plus, ArrowLeft } from "lucide-react";
+import { ChevronLeft, Store, Tags, Smartphone, Volume2, Trash2, Edit3, Plus, ArrowLeft, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -84,6 +84,13 @@ export default function SettingsPage() {
       } catch (err) {
         toast.error("Erro interno ao deletar.");
       }
+    }
+  };
+
+  const openCatEditor = (cat: Category) => {
+    if (cat.id) {
+      setEditingCatId(cat.id);
+      setNewCatName(cat.name);
     }
   };
 
