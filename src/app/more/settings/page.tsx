@@ -24,25 +24,32 @@ export default function SettingsPage() {
   const [lastSyncText, setLastSyncText] = useState("Status: Não Sincronizado");
 
   const handleForceSync = async () => {
-    // Busca todo o array cru offline usando função limpa em vez do estado da UI (que pode não ter montado tudo)
-    const rawProducts = await db.products.toArray();
-    if (rawProducts.length === 0) return toast.error("Seu catálogo está vazio.");
+    const p = await db.products.toArray();
+    const c = await db.categories.toArray();
+    const cus = await db.customers.toArray();
+    const s = await db.sales.toArray();
+    const si = await db.saleItems.toArray();
+    
+    if (p.length === 0 && c.length === 0 && cus.length === 0 && s.length === 0) {
+       return toast.error("Seu sistema está completamente vazio.");
+    }
     
     setIsSyncing(true);
-    const toastId = toast.loading("Comprimindo catálogo e enviando carga grossa para a Nuvem...");
+    const toastId = toast.loading("Comprimindo Carga Master e enviando para a Nuvem...");
     
     try {
-      const res = await fetch('/api/cloud/sync/products', {
+      const payload = { products: p, categories: c, customers: cus, sales: s, saleItems: si };
+      const res = await fetch('/api/cloud/sync/all', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ products: rawProducts })
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
       
-      if (!res.ok) throw new Error(data.error || "A Conexão com o Cofre da Vercel falhou. Verifique internet.");
+      if (!res.ok) throw new Error(data.error || "Conexão com Cofre Vercel falhou.");
       
-      toast.success(`Arquitetura Cimentada! ${data.count} produtos sincronizados.`, { id: toastId });
-      setLastSyncText(`Última sincronia rápida: Hoje às ${new Date().toLocaleTimeString('pt-BR')}`);
+      toast.success(`Carga cimentada! (P:${data.count.products} | C:${data.count.categories} | Cli:${data.count.customers} | V:${data.count.sales})`, { id: toastId });
+      setLastSyncText(`Última subida: Hoje às ${new Date().toLocaleTimeString('pt-BR')}`);
     } catch (e: any) {
       toast.error(`Falha: ${e.message}`, { id: toastId });
     } finally {
@@ -52,31 +59,42 @@ export default function SettingsPage() {
 
   const handlePullFromCloud = async () => {
     setIsSyncing(true);
-    const toastId = toast.loading("Buscando Catálogo no Servidor Vercel...");
+    const toastId = toast.loading("Buscando Sistema Completo no Servidor Vercel...");
     
     try {
-      const res = await fetch('/api/cloud/sync/products', { method: 'GET' });
+      const res = await fetch('/api/cloud/sync/all', { method: 'GET' });
       const data = await res.json();
       
-      if (!res.ok) throw new Error(data.error || "A Conexão com o Cofre da Vercel falhou.");
-      if (!data.data || data.data.length === 0) return toast.error("Nenhum produto encontrado na nuvem.", { id: toastId });
+      if (!res.ok) throw new Error(data.error || "Conexão com a Nuvem falhou.");
+      if (!data.data || (data.data.products.length === 0 && data.data.categories.length === 0 && data.data.customers.length === 0 && data.data.sales.length === 0)) {
+         return toast.error("Nuvem Vazia. Nada para baixar.", { id: toastId });
+      }
 
-      // Derruba tudo e injeta fresco (Estratégia de Sobrescrita Master)
-      await db.products.clear();
+      // Estratégia de Sobrescrita Master
+      await Promise.all([
+        db.products.clear(),
+        db.categories.clear(),
+        db.customers.clear(),
+        db.sales.clear(),
+        db.saleItems.clear()
+      ]);
       
-      const payloadProducts = data.data.map((c: any) => ({
-        id: c.local_id, // Força IDs locais pra não bagunçar
-        name: c.name,
-        price: Number(c.price),
-        stock: c.stock,
-        categoryId: c.categoryid || undefined,
-        barcode: c.barcode || undefined,
-        imageUrl: c.imageurl || undefined
+      const pProd = data.data.products.map((x: any) => ({
+        id: x.local_id, name: x.name, price: Number(x.price), stock: x.stock, 
+        categoryId: x.categoryid || undefined, barcode: x.barcode || undefined, imageUrl: x.imageurl || undefined
       }));
+      const pCat = data.data.categories.map((x: any) => ({ id: x.local_id, name: x.name }));
+      const pCus = data.data.customers.map((x: any) => ({ id: x.local_id, name: x.name, phone: x.phone || undefined, email: x.email || undefined, document: x.document || undefined, createdAt: x.createdat || undefined }));
+      const pSal = data.data.sales.map((x: any) => ({ id: x.local_id, total: Number(x.total), paymentMethod: x.paymentmethod, amountReceived: x.amountreceived ? Number(x.amountreceived) : undefined, change: x.change ? Number(x.change) : undefined, customerId: x.customerid || undefined, date: x.date }));
+      const pSI = data.data.saleItems.map((x: any) => ({ id: x.local_id, saleId: x.saleid, productId: x.productid, productName: x.productname, quantity: x.quantity, unitPrice: Number(x.unitprice), subtotal: Number(x.subtotal) }));
       
-      await db.products.bulkAdd(payloadProducts);
+      await db.products.bulkAdd(pProd);
+      await db.categories.bulkAdd(pCat);
+      await db.customers.bulkAdd(pCus);
+      await db.sales.bulkAdd(pSal);
+      await db.saleItems.bulkAdd(pSI);
       
-      toast.success(`Arquitetura Sincronizada! ${payloadProducts.length} produtos injetados no computador.`, { id: toastId });
+      toast.success(`Restauração Completa! ${pProd.length} Produtos, ${pCus.length} Clientes.`, { id: toastId });
       setLastSyncText(`Última restauração: Hoje às ${new Date().toLocaleTimeString('pt-BR')}`);
     } catch (e: any) {
       toast.error(`Falha na Restauração: ${e.message}`, { id: toastId });
