@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, Category } from "@/db/db";
-import { ChevronLeft, Store, Tags, Smartphone, Volume2, Trash2, Edit3, Plus, ArrowLeft, X, Cloud, CloudLightning } from "lucide-react";
+import { ChevronLeft, Store, Tags, Smartphone, Volume2, Trash2, Edit3, Plus, ArrowLeft, X, Cloud, CloudLightning, DownloadCloud } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -45,6 +45,41 @@ export default function SettingsPage() {
       setLastSyncText(`Última sincronia rápida: Hoje às ${new Date().toLocaleTimeString('pt-BR')}`);
     } catch (e: any) {
       toast.error(`Falha: ${e.message}`, { id: toastId });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handlePullFromCloud = async () => {
+    setIsSyncing(true);
+    const toastId = toast.loading("Buscando Catálogo no Servidor Vercel...");
+    
+    try {
+      const res = await fetch('/api/cloud/sync/products', { method: 'GET' });
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.error || "A Conexão com o Cofre da Vercel falhou.");
+      if (!data.data || data.data.length === 0) return toast.error("Nenhum produto encontrado na nuvem.", { id: toastId });
+
+      // Derruba tudo e injeta fresco (Estratégia de Sobrescrita Master)
+      await db.products.clear();
+      
+      const payloadProducts = data.data.map((c: any) => ({
+        id: c.local_id, // Força IDs locais pra não bagunçar
+        name: c.name,
+        price: Number(c.price),
+        stock: c.stock,
+        categoryId: c.categoryid || undefined,
+        barcode: c.barcode || undefined,
+        imageUrl: c.imageurl || undefined
+      }));
+      
+      await db.products.bulkAdd(payloadProducts);
+      
+      toast.success(`Arquitetura Sincronizada! ${payloadProducts.length} produtos injetados no computador.`, { id: toastId });
+      setLastSyncText(`Última restauração: Hoje às ${new Date().toLocaleTimeString('pt-BR')}`);
+    } catch (e: any) {
+      toast.error(`Falha na Restauração: ${e.message}`, { id: toastId });
     } finally {
       setIsSyncing(false);
     }
@@ -267,15 +302,26 @@ export default function SettingsPage() {
                 )}
             </div>
 
-            <div className="flex items-center justify-between border-t border-[#484847]/30 pt-4 mt-1">
+            <div className="flex flex-col border-t border-[#484847]/30 pt-4 mt-1 gap-3">
               <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest">{lastSyncText}</span>
-              <button 
-                onClick={handleForceSync}
-                disabled={isSyncing}
-                className="bg-[#06B6D4] text-[#004b58] font-black text-xs uppercase px-4 py-3 rounded-lg active:scale-95 transition-transform shadow-[0_2px_10px_rgba(6,182,212,0.3)] disabled:opacity-50"
-              >
-                 {isSyncing ? 'Enviando Carga...' : 'Subir pra Nuvem!'}
-              </button>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={handlePullFromCloud}
+                  disabled={isSyncing}
+                  className="flex-1 bg-[#20201f] border border-[#484847]/50 text-white font-black text-[11px] sm:text-xs uppercase px-2 py-3 rounded-lg active:scale-95 transition-transform disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                   <DownloadCloud size={16} className="text-[#53ddfc]" />
+                   Puxar Nuvem
+                </button>
+                <button 
+                  onClick={handleForceSync}
+                  disabled={isSyncing}
+                  className="flex-1 bg-[#06B6D4] text-[#004b58] font-black text-[11px] sm:text-xs uppercase px-2 py-3 rounded-lg active:scale-95 transition-transform shadow-[0_2px_10px_rgba(6,182,212,0.3)] disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                   <CloudLightning size={16} />
+                   Forçar Subida
+                </button>
+              </div>
             </div>
           </div>
         </section>

@@ -65,3 +65,26 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function GET() {
+  try {
+    const client = await cloudDb.connect();
+    
+    // Tenta ler caso exista, previne erro caso usuário puxe antes de ter criado
+    const { rows } = await client.sql`
+      SELECT cloud_id, local_id, name, price, stock, barcode, categoryId, imageUrl, last_synced 
+      FROM cloud_products 
+      ORDER BY name ASC;
+    `;
+    
+    client.release();
+    return NextResponse.json({ success: true, data: rows });
+  } catch (error: any) {
+     // Retorna array vazio pacificamente se a tabela nao existe porque a pessoa logou e nunca fez 1 backup
+     if (error.message.includes('does not exist')) {
+        return NextResponse.json({ success: true, data: [] });
+     }
+     console.error("Cloud Fetch Error:", error);
+     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
