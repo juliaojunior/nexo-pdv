@@ -31,7 +31,7 @@ export interface Customer {
 export interface Sale {
   id?: number;
   total: number;
-  paymentMethod: 'Dinheiro' | 'PIX' | 'Crédito' | 'Débito';
+  paymentMethod: 'Dinheiro' | 'PIX' | 'Crédito' | 'Débito' | 'Fiado';
   amountReceived?: number;
   change?: number;
   customerId?: number;
