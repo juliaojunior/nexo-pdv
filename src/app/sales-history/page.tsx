@@ -13,6 +13,10 @@ export default function SalesHistoryPage() {
 
   const sales = useLiveQuery(() => db.sales.orderBy('date').reverse().toArray()) || [];
   const saleItems = useLiveQuery(() => db.saleItems.toArray()) || [];
+  const customers = useLiveQuery(() => db.customers.toArray()) || [];
+  
+  const [filterMode, setFilterMode] = useState<"all" | "fiado">("all");
+  const filteredSales = sales.filter(s => filterMode === 'all' || s.paymentMethod === 'Fiado');
   
   const [revertCandidate, setRevertCandidate] = useState<number | null>(null);
 
@@ -37,7 +41,7 @@ export default function SalesHistoryPage() {
           <button onClick={() => router.back()} className="p-2 -ml-2 rounded-full active:scale-90 transition-transform bg-[#20201f] text-[#adaaaa] hover:text-[#53ddfc]">
             <ChevronLeft size={24} />
           </button>
-          <h1 className="text-[#53ddfc] font-black tracking-tighter text-2xl">Histórico Físico</h1>
+          <h1 className="text-[#53ddfc] font-black tracking-tighter text-2xl">Histórico de Caixa</h1>
         </div>
       </header>
 
@@ -45,23 +49,34 @@ export default function SalesHistoryPage() {
          
          <div className="flex items-center justify-between mb-2">
             <span className="text-[#adaaaa] text-sm font-bold uppercase tracking-widest flex items-center gap-2">
-              <Clock size={16} /> Últimas Vendas
+              <Clock size={16} /> Extrato
             </span>
-            <span className="bg-[#1a1a1a] text-[#53ddfc] px-2 py-0.5 rounded-md text-xs font-black border border-[#484847]/30 shadow-inner">
-               {sales.length} Regs.
-            </span>
+            <div className="flex bg-[#1a1a1a] rounded-lg border border-[#484847]/30 overflow-hidden">
+               <button 
+                  onClick={() => setFilterMode('all')}
+                  className={`px-3 py-1.5 text-[10px] sm:text-xs font-black uppercase tracking-widest transition-colors ${filterMode === 'all' ? 'bg-[#06B6D4] text-[#004b58]' : 'text-[#adaaaa] hover:text-white'}`}
+               >
+                  Tudo
+               </button>
+               <button 
+                  onClick={() => setFilterMode('fiado')}
+                  className={`px-3 py-1.5 text-[10px] sm:text-xs font-black uppercase tracking-widest transition-colors border-l border-[#484847]/30 ${filterMode === 'fiado' ? 'bg-[#ffcc00] text-[#1a1a1a]' : 'text-[#adaaaa] hover:text-white'}`}
+               >
+                  Fiados
+               </button>
+            </div>
          </div>
 
-         {sales.length === 0 ? (
+         {filteredSales.length === 0 ? (
            <div className="flex flex-col items-center justify-center h-[40vh] text-[#adaaaa] text-center border-2 border-dashed border-[#484847]/30 rounded-3xl p-6 shadow-sm bg-[#1a1a1a]">
               <div className="bg-[#20201f] p-4 rounded-full mb-4 shadow-inner">
                  <Receipt size={28} className="text-[#484847]" />
               </div>
               <p className="font-bold text-white mb-2 text-lg tracking-tight">Vazio</p>
-              <p className="text-xs leading-relaxed max-w-[200px]">Nenhum faturamento registrado no caixa local até o momento.</p>
+              <p className="text-xs leading-relaxed max-w-[200px]">Nenhum faturamento encontrado neste filtro até o momento.</p>
            </div>
          ) : (
-           sales.map(sale => {
+           filteredSales.map(sale => {
               const relatedItems = saleItems.filter(item => item.saleId === sale.id);
               const itemsCount = relatedItems.reduce((acc, curr) => acc + curr.quantity, 0);
 
@@ -76,13 +91,16 @@ export default function SalesHistoryPage() {
                        </div>
                        <div className="flex flex-col">
                          <span className="text-white font-black text-lg leading-tight tracking-tight">{formatCurrency(sale.total)}</span>
-                         <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest">{new Date(sale.date).toLocaleString('pt-BR')}</span>
+                         <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest">
+                           {sale.customerId ? customers.find(c => c.id === sale.customerId)?.name || 'Cliente Oculto' : new Date(sale.date).toLocaleString('pt-BR')}
+                         </span>
                        </div>
                     </div>
                     <div className="flex flex-col items-end">
                       <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md mb-1 ${
                         sale.paymentMethod === 'PIX' ? 'bg-[#06B6D4]/10 text-[#06B6D4] border border-[#06B6D4]/30' :
-                        sale.paymentMethod === 'Dinheiro' ? 'bg-[#ffcc00]/10 text-[#ffcc00] border border-[#ffcc00]/30' :
+                        sale.paymentMethod === 'Dinheiro' ? 'bg-[#22c55e]/10 text-[#22c55e] border border-[#22c55e]/30' :
+                        sale.paymentMethod === 'Fiado' ? 'bg-[#ffcc00]/10 text-[#ffcc00] border border-[#ffcc00]/30' :
                         'bg-[#adaaaa]/10 text-[#adaaaa] border border-[#adaaaa]/30'
                       }`}>
                         {sale.paymentMethod}
