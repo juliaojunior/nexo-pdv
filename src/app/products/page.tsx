@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
 import { ProductForm, type ProductFormValues } from "@/components/ProductForm";
-import { Search, Plus, X, Trash2, Tag, PercentCircle } from "lucide-react";
+import { Search, Plus, X, Trash2, Tag, PercentCircle, Edit3 } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency, isPromotionActive, getEffectivePrice } from "@/lib/utils";
 import { uploadImageToImgBB } from "@/lib/imgbb";
@@ -13,7 +13,8 @@ export default function ProductsPage() {
   const [isModalOpen, setModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   
-  // Estados do Modal Rápido de Oferta
+  // Estados do Modal
+  const [editingProduct, setEditingProduct] = useState<any>(null); // Trata form em modo Edição
   const [promoProduct, setPromoProduct] = useState<any>(null);
   const [promoPriceValue, setPromoPriceValue] = useState("");
   const [promoDateValue, setPromoDateValue] = useState("");
@@ -46,31 +47,57 @@ export default function ProductsPage() {
     (p.barcode && p.barcode.includes(searchTerm))
   );
 
-  const handleAddProduct = async (data: any) => {
+  const handleSaveProduct = async (data: any) => {
     try {
-      let finalImageUrl = data.image;
+      let finalImageUrl = editingProduct ? editingProduct.image : data.image;
 
-      // Se existir imagem e ela for Base64 (Local), faz o upload anônimo e invisível pro ImgBB
-      if (data.image && data.image.startsWith("data:image")) {
+      // Se existir nova imagem local, envia para a nuvem
+      if (data.image && data.image !== editingProduct?.image && data.image.startsWith("data:image")) {
          toast.info("Fazendo upload da foto para nuvem...", { duration: 1500 });
          finalImageUrl = await uploadImageToImgBB(data.image);
       }
 
-      await db.products.add({
-        name: data.name,
-        categoryId: data.categoryId,
-        price: data.price,
-        barcode: data.barcode,
-        image: finalImageUrl,
-        stock: data.stock,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
-      toast.success("Produto cadastrado com sucesso!");
-      setModalOpen(false); // Fecha o form após salvar offline
+      if (editingProduct) {
+        await db.products.update(editingProduct.id, {
+          name: data.name,
+          categoryId: data.categoryId,
+          price: data.price,
+          barcode: data.barcode,
+          image: finalImageUrl,
+          stock: data.stock,
+          updatedAt: new Date().toISOString(),
+        });
+        toast.success("Produto editado e atualizado perfeitamente!");
+      } else {
+        await db.products.add({
+          name: data.name,
+          categoryId: data.categoryId,
+          price: data.price,
+          barcode: data.barcode,
+          image: finalImageUrl,
+          stock: data.stock,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+        toast.success("Novo produto catalogado com sucesso!");
+      }
+
+      setModalOpen(false); // Fecha o form
+      setEditingProduct(null); // Reseta estado de edição
     } catch (error) {
-      toast.error("Erro ao salvar produto no banco offline Dexie.");
+      toast.error("Erro interno ao transacionar com o banco offline Dexie.");
     }
+  };
+
+  const openEditModal = (product: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingProduct(product);
+    setModalOpen(true);
+  };
+
+  const handleCreateNew = () => {
+    setEditingProduct(null);
+    setModalOpen(true);
   };
 
   const handleDeleteProduct = (id: number, name: string) => {
@@ -81,10 +108,10 @@ export default function ProductsPage() {
     if (!deleteCandidate) return;
     try {
       await db.products.delete(deleteCandidate.id);
-      toast.success(`O produto ${deleteCandidate.name} foi excluído.`);
+      toast.success(`Estoque do(a) ${deleteCandidate.name} foi expurgado.`);
       setDeleteCandidate(null);
     } catch (error) {
-      toast.error("Erro ao remover produto do banco local.");
+      toast.error("Erro ao tentar romper produto do catálogo.");
     }
   };
 
@@ -100,32 +127,31 @@ export default function ProductsPage() {
         promotionalPrice: parseFloat(promoPriceValue),
         promotionEndDate: new Date(promoDateValue).toISOString()
       });
-      toast.success("Oferta ativada com sucesso!");
+      toast.success("Oferta ativada com sucesso no balcão!");
       setPromoProduct(null);
     } catch (e) {
-      toast.error("Erro ao disparar promoção no banco.");
+      toast.error("Falha ao registrar oferta.");
     }
   };
 
   const handleRemovePromo = async () => {
     if (!promoProduct) return;
     try {
-      // Revertendo a promoção no dexie
       await db.products.update(promoProduct.id!, {
         promotionalPrice: undefined,
         promotionEndDate: undefined
       });
-      toast.success("A promoção foi encerrada!");
+      toast.success("Promoção recolhida. Preço originado foi restaurado.");
       setPromoProduct(null);
     } catch (e) {
-      toast.error("Erro ao encerrar promoção.");
+      toast.error("Erro ao tentar remover oferta.");
     }
   };
 
   return (
     <div className="bg-[#121212] min-h-screen text-[#F3F4F6] font-['Inter'] px-4 py-8 pb-28 relative max-w-md mx-auto">
       <header className="flex justify-between items-center mb-6">
-        <h1 className="text-[#53ddfc] font-black tracking-tighter text-2xl">Gestão P.</h1>
+        <h1 className="text-[#53ddfc] font-black tracking-tighter text-2xl">Catálogo</h1>
       </header>
 
       {/* Buscar de Produtos */}
@@ -151,7 +177,7 @@ export default function ProductsPage() {
              const activePrice = getEffectivePrice(product);
 
              return (
-               <div key={product.id} className="bg-[#1a1a1a] p-3 rounded-2xl flex justify-between items-center border border-[#484847]/30 shadow-sm transition-transform cursor-pointer hover:bg-[#20201f] group relative overflow-hidden">
+               <div key={product.id} className="bg-[#1a1a1a] p-3 rounded-2xl flex justify-between items-center border border-[#484847]/30 shadow-sm transition-transform hover:bg-[#20201f] group relative overflow-hidden">
                  
                  <div className="flex items-center gap-3 w-full pr-2 z-10">
                    {/* Mini Thumbnail */}
@@ -181,13 +207,13 @@ export default function ProductsPage() {
                    </div>
                  </div>
                  
-                 <div className="flex flex-col items-end gap-1.5 shrink-0 border-l border-[#484847]/20 pl-3 z-10">
-                   <div className="bg-[#20201f] text-white px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 shadow-inner border border-[#484847]/10 w-full justify-center mb-0.5">
-                     <span className="font-black text-base leading-none">{product.stock}</span>
-                     <span className="text-[#adaaaa] text-[9px] font-black uppercase tracking-widest leading-none mt-0.5">und</span>
+                 <div className="flex flex-col items-end gap-1.5 shrink-0 border-l border-[#484847]/20 pl-3 z-10 w-[100px]">
+                   <div className="bg-[#20201f] text-white px-2 py-1.5 rounded-lg flex items-center justify-center gap-1 shadow-inner border border-[#484847]/10 w-full mb-0.5 shrink-0">
+                     <span className="font-black text-sm leading-none">{product.stock}</span>
+                     <span className="text-[#adaaaa] text-[9px] font-black uppercase tracking-widest leading-none mt-0.5 truncate">est.</span>
                    </div>
                    
-                   <div className="flex items-center gap-1.5 w-full">
+                   <div className="flex items-center justify-between w-full">
                      <button 
                        onClick={(e) => {
                          e.stopPropagation();
@@ -195,20 +221,27 @@ export default function ProductsPage() {
                          setPromoPriceValue(product.promotionalPrice ? product.promotionalPrice.toString() : "");
                          setPromoDateValue(product.promotionEndDate ? new Date(product.promotionEndDate).toISOString().slice(0, 16) : "");
                        }}
-                       className="text-[#adaaaa] flex-1 justify-center flex items-center hover:text-[#53ddfc] p-1.5 bg-[#20201f] rounded-lg transition-colors border border-transparent hover:border-[#53ddfc]/30 active:scale-95 group-hover:bg-[#1a1a1a]"
-                       title="Ativar/Editar Oferta Relâmpago"
+                       className="text-[#adaaaa] p-1 hover:text-[#53ddfc] bg-[#20201f] rounded-lg transition-colors border border-transparent hover:border-[#53ddfc]/30 active:scale-95"
+                       title="Promoções"
                      >
-                       <Tag size={16} />
+                       <Tag size={14} />
+                     </button>
+                     <button 
+                       onClick={(e) => openEditModal(product, e)}
+                       className="text-[#adaaaa] p-1 hover:text-[#06B6D4] bg-[#20201f] rounded-lg transition-colors border border-transparent hover:border-[#06B6D4]/30 active:scale-95"
+                       title="Editar Dados e Categoria"
+                     >
+                       <Edit3 size={14} />
                      </button>
                      <button 
                        onClick={(e) => {
                          e.stopPropagation();
                          handleDeleteProduct(product.id!, product.name);
                        }}
-                       className="text-[#adaaaa] flex-1 justify-center flex items-center hover:text-[#ff716c] p-1.5 bg-[#20201f] rounded-lg transition-colors border border-transparent hover:border-[#ff716c]/30 active:scale-95 group-hover:bg-[#1a1a1a]"
+                       className="text-[#adaaaa] p-1 hover:text-[#ff716c] bg-[#20201f] rounded-lg transition-colors border border-transparent hover:border-[#ff716c]/30 active:scale-95"
                        title="Excluir Produto"
                      >
-                       <Trash2 size={16} />
+                       <Trash2 size={14} />
                      </button>
                    </div>
                  </div>
@@ -236,27 +269,32 @@ export default function ProductsPage() {
 
       {/* Componente FAB - Anchor Inferior */}
       <button 
-        onClick={() => setModalOpen(true)}
+        onClick={handleCreateNew}
         className="fixed bottom-[96px] right-2/4 translate-x-[9rem] bg-[#06B6D4] text-[#004b58] p-4 rounded-full shadow-[0_8px_32px_rgba(6,182,212,0.4)] active:scale-90 hover:scale-105 transition-all z-30 flex items-center justify-center"
       >
         <Plus size={28} strokeWidth={3} />
       </button>
 
-      {/* Aba de Modal Sobreposta -> Criação de Novo Produto */}
+      {/* Aba de Modal Sobreposta -> Criação / Edição Produto */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-[#0e0e0e]/95 flex flex-col justify-end sm:items-center sm:justify-center backdrop-blur-xl p-0 sm:p-4 animate-in slide-in-from-bottom-full duration-300">
+        <div className="fixed inset-0 z-[150] bg-[#0e0e0e]/95 flex flex-col justify-end sm:items-center sm:justify-center backdrop-blur-xl p-0 sm:p-4 animate-in slide-in-from-bottom-full duration-300">
           <div className="bg-[#121212] w-full max-w-md sm:rounded-2xl border-t sm:border border-[#484847]/50 shadow-2xl flex flex-col h-[95vh] sm:h-auto sm:max-h-[95vh]">
             <div className="flex justify-between items-center p-6 border-b border-[#484847]/20 shrink-0">
-              <h2 className="text-xl font-black text-white tracking-tight">Novo Produto</h2>
-              <button onClick={() => setModalOpen(false)} className="text-[#adaaaa] hover:text-[#ff716c] transition-colors p-2 rounded-full bg-[#20201f]">
+              <h2 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
+                 {editingProduct ? <><Edit3 size={20} className="text-[#53ddfc]" /> Reparar Produto</> : <><Tag size={20} className="text-[#53ddfc]" /> Novo Produto</>}
+              </h2>
+              <button onClick={() => { setModalOpen(false); setEditingProduct(null); }} className="text-[#adaaaa] hover:text-[#ff716c] transition-colors p-2 rounded-full bg-[#20201f]">
                 <X size={20} />
               </button>
             </div>
             
             <div className="p-6 overflow-y-auto flex-1 flex flex-col hide-scrollbar pb-32">
+              {/* Reset key forces react-hook-form schema to reinitialize safely inside when switching editingProducts */}
               <ProductForm 
+                key={editingProduct ? editingProduct.id : 'new'} 
+                initialData={editingProduct || undefined}
                 categories={categories} 
-                onSubmit={handleAddProduct} 
+                onSubmit={handleSaveProduct} 
               />
             </div>
           </div>
