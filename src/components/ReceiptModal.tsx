@@ -13,6 +13,7 @@ export interface ReceiptData {
   amountReceived?: number;
   change?: number;
   date: string;
+  customerName?: string;
 }
 
 interface ReceiptModalProps {
@@ -91,97 +92,107 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
   };
 
   return (
-    <div className="fixed inset-0 z-[200] bg-black/95 flex flex-col justify-center items-center p-4 sm:p-8 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-300">
+    <div className="fixed inset-0 z-[200] bg-black/95 flex flex-col items-center p-4 sm:p-8 overflow-y-auto backdrop-blur-xl animate-in fade-in zoom-in-95 duration-300">
       
-      <div className="flex flex-col items-center mb-6 animate-pulse">
-        <CheckCircle size={48} className="text-[#06B6D4] mb-2 shadow-2xl" />
-        <h2 className="text-white font-black text-2xl tracking-tight">Venda Sucesso!</h2>
-        <p className="text-[#adaaaa] text-sm mt-1">Pronto para despachar ao cliente.</p>
-      </div>
+      <div className="w-full flex flex-col items-center justify-center min-h-max py-8">
+        
+        <div className="flex flex-col items-center mb-6 animate-pulse shrink-0">
+          <CheckCircle size={48} className="text-[#06B6D4] mb-2 shadow-2xl" />
+          <h2 className="text-white font-black text-2xl tracking-tight">Venda Sucesso!</h2>
+          <p className="text-[#adaaaa] text-sm mt-1">Pronto para despachar ao cliente.</p>
+        </div>
 
-      {/* THE ACTUAL RECEIPT TO BE CAPTURED (Canvas Target) */}
-      <div 
-        ref={receiptRef} 
-        className="bg-[#1e1e1c] w-full max-w-[340px] rounded-t-lg border-t-8 border-[#06B6D4] shadow-[0_20px_60px_rgba(0,0,0,0.8)] flex flex-col items-center text-center pb-8 pt-8 px-6 relative overflow-hidden"
-        style={{ fontFamily: "'Inter', sans-serif" }} // Force font for canvas
-      >
-         {/* Subtle watermark or pattern could go here */}
-         
-         <div className="flex flex-col items-center mb-6 w-full border-b border-dashed border-[#484847]/70 pb-6">
-            <h1 className="text-white font-black text-2xl uppercase tracking-tighter leading-tight mb-1">{storeName}</h1>
-            {storeDoc && <p className="text-[#adaaaa] text-[10px] uppercase tracking-widest font-bold">Doc: {storeDoc}</p>}
-            <p className="text-[#484847] text-[10px] mt-2 font-bold">{new Date(receiptData.date).toLocaleString('pt-BR')}</p>
-         </div>
+        {/* THE ACTUAL RECEIPT TO BE CAPTURED (Canvas Target) */}
+        <div 
+          ref={receiptRef} 
+          className="bg-[#1e1e1c] w-full max-w-[340px] rounded-t-lg border-t-8 border-[#06B6D4] shadow-[0_20px_60px_rgba(0,0,0,0.8)] flex flex-col items-center text-center pb-8 pt-8 px-6 relative overflow-hidden shrink-0"
+          style={{ fontFamily: "'Inter', sans-serif" }} // Force font for canvas
+        >
+           {/* Subtle watermark or pattern could go here */}
+           
+           <div className="flex flex-col items-center mb-6 w-full border-b border-dashed border-[#484847]/70 pb-6">
+              <h1 className="text-white font-black text-2xl uppercase tracking-tighter leading-tight mb-1 break-words max-w-full px-2">{storeName}</h1>
+              {storeDoc && <p className="text-[#adaaaa] text-[10px] uppercase tracking-widest font-bold">Doc: {storeDoc}</p>}
+              <p className="text-[#484847] text-[10px] mt-2 font-bold">{new Date(receiptData.date).toLocaleString('pt-BR')}</p>
+              {receiptData.customerName && (
+                <p className="text-[#06B6D4] bg-[#06B6D4]/10 border border-[#06B6D4]/30 px-2 py-0.5 rounded text-[10px] uppercase mt-2 font-black tracking-widest">
+                  Cli: {receiptData.customerName}
+                </p>
+              )}
+           </div>
 
-         <div className="w-full flex flex-col gap-3 mb-6">
-            <div className="flex justify-between text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest mb-1 border-b border-[#484847]/30 pb-2">
-               <span>Item</span>
-               <span>Total</span>
-            </div>
-            
-            {receiptData.items.map((item, idx) => (
-               <div key={idx} className="flex justify-between items-center text-sm font-semibold">
-                  <span className="text-gray-300 truncate max-w-[180px] text-left">
-                     {item.quantity}x {item.productName}
-                  </span>
-                  <span className="text-white">{formatCurrency(item.subtotal)}</span>
-               </div>
-            ))}
-         </div>
-
-         <div className="w-full flex flex-col gap-2 rounded-xl bg-[#131313]/50 p-4 border border-[#484847]/30">
-            <div className="flex justify-between items-center">
-               <span className="text-[#adaaaa] text-xs font-bold uppercase tracking-widest">Total Pgto</span>
-               <span className="text-[#53ddfc] font-black text-xl">{formatCurrency(receiptData.total)}</span>
-            </div>
-            <div className="flex justify-between items-center mt-2">
-               <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest">Meio</span>
-               <span className="text-white text-xs font-bold bg-[#1a1a1a] px-2 py-1 rounded">{receiptData.paymentMethod}</span>
-            </div>
-
-            {receiptData.paymentMethod === 'Dinheiro' && receiptData.amountReceived && (
-               <>
-                 <div className="flex justify-between items-center mt-1">
-                   <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest">Recebido</span>
-                   <span className="text-white text-xs font-bold">{formatCurrency(receiptData.amountReceived)}</span>
+           <div className="w-full flex flex-col gap-3 mb-6">
+              <div className="flex justify-between text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest mb-1 border-b border-[#484847]/30 pb-2">
+                 <span>Item</span>
+                 <span>Total</span>
+              </div>
+              
+              {receiptData.items.map((item, idx) => (
+                 <div key={idx} className="flex justify-between items-start text-sm font-semibold w-full gap-2">
+                    <span className="text-gray-300 break-words text-left leading-tight">
+                       {item.quantity}x {item.productName}
+                    </span>
+                    <span className="text-white shrink-0 pt-0.5">{formatCurrency(item.subtotal)}</span>
                  </div>
-                 <div className="flex justify-between items-center mt-1">
-                   <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest">Troco</span>
-                   <span className="text-[#ff716c] text-xs font-bold">{formatCurrency(receiptData.change || 0)}</span>
-                 </div>
-               </>
-            )}
-         </div>
+              ))}
+           </div>
 
-         <div className="mt-8 pt-4 border-t border-dashed border-[#484847]/50 w-full flex flex-col items-center">
-            <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest text-center">Nexo PDV Digital</span>
-            <span className="text-[#484847] text-[8px] mt-1">Obrigado pela preferência!</span>
-         </div>
-         
-         {/* Zigzag bottom styling */}
-         <div className="absolute bottom-0 left-0 w-full h-3" style={{ backgroundImage: 'linear-gradient(135deg, transparent 50%, #1e1e1c 50%), linear-gradient(225deg, transparent 50%, #1e1e1c 50%)', backgroundSize: '10px 10px' }}></div>
+           <div className="w-full flex flex-col gap-2 rounded-xl bg-[#131313]/50 p-4 border border-[#484847]/30">
+              <div className="flex justify-between items-center">
+                 <span className="text-[#adaaaa] text-xs font-bold uppercase tracking-widest">Total Pgto</span>
+                 <span className="text-[#53ddfc] font-black text-xl">{formatCurrency(receiptData.total)}</span>
+              </div>
+              <div className="flex justify-between items-center mt-2">
+                 <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest">Meio</span>
+                 <span className={`${receiptData.paymentMethod === 'Fiado' ? 'text-[#1a1a1a] bg-[#ff716c]' : 'text-white bg-[#1a1a1a]'} text-[10px] font-black px-2 py-0.5 uppercase tracking-widest rounded`}>
+                   {receiptData.paymentMethod}
+                 </span>
+              </div>
+
+              {receiptData.paymentMethod === 'Dinheiro' && receiptData.amountReceived && (
+                 <>
+                   <div className="flex justify-between items-center mt-1">
+                     <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest">Recebido</span>
+                     <span className="text-white text-[11px] font-bold">{formatCurrency(receiptData.amountReceived)}</span>
+                   </div>
+                   <div className="flex justify-between items-center mt-1">
+                     <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest">Troco</span>
+                     <span className="text-[#ff716c] text-[11px] font-bold">{formatCurrency(receiptData.change || 0)}</span>
+                   </div>
+                 </>
+              )}
+           </div>
+
+           <div className="mt-8 pt-4 border-t border-dashed border-[#484847]/50 w-full flex flex-col items-center">
+              <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest text-center">Nexo PDV Digital</span>
+              <span className="text-[#484847] text-[8px] mt-1">Obrigado pela preferência!</span>
+           </div>
+           
+           {/* Zigzag bottom styling */}
+           <div className="absolute bottom-0 left-0 w-full h-3" style={{ backgroundImage: 'linear-gradient(135deg, transparent 50%, #1e1e1c 50%), linear-gradient(225deg, transparent 50%, #1e1e1c 50%)', backgroundSize: '10px 10px' }}></div>
+        </div>
+
+        {/* ONSCREEN BUTTONS (Not captured by html2canvas because they are outside ref) */}
+        <div className="flex flex-col gap-3 w-full max-w-[340px] mt-6 shrink-0 pb-12">
+           <button 
+             onClick={handleShare}
+             disabled={isGenerating}
+             className="w-full h-14 bg-gradient-to-tr from-[#06B6D4] to-[#53ddfc] text-[#004b58] font-black text-lg rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-[0_4px_24px_rgba(6,182,212,0.4)] disabled:opacity-50 disabled:scale-100"
+           >
+             {isGenerating ? <Download className="animate-bounce" /> : <Share2 />}
+             {isGenerating ? 'Preparando...' : 'Enviar Recibo'}
+           </button>
+           
+           <button 
+             onClick={onClose}
+             disabled={isGenerating}
+             className="w-full h-12 bg-transparent border border-[#484847] hover:bg-[#1a1a1a] text-white font-bold rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
+           >
+             <X size={18} /> Dispensar
+           </button>
+        </div>
+
       </div>
-
-      {/* ONSCREEN BUTTONS (Not captured by html2canvas because they are outside ref) */}
-      <div className="flex flex-col gap-3 w-full max-w-[340px] mt-6">
-         <button 
-           onClick={handleShare}
-           disabled={isGenerating}
-           className="w-full h-14 bg-gradient-to-tr from-[#06B6D4] to-[#53ddfc] text-[#004b58] font-black text-lg rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all shadow-[0_4px_24px_rgba(6,182,212,0.4)] disabled:opacity-50"
-         >
-           {isGenerating ? <Download className="animate-bounce" /> : <Share2 />}
-           {isGenerating ? 'Prearando...' : 'Enviar Recibo'}
-         </button>
-         
-         <button 
-           onClick={onClose}
-           disabled={isGenerating}
-           className="w-full h-14 bg-transparent border border-[#484847] hover:bg-[#1a1a1a] text-white font-bold rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all"
-         >
-           <X size={18} /> Dispensar
-         </button>
-      </div>
-
     </div>
   );
 }
