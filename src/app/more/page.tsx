@@ -25,24 +25,8 @@ export default function MorePage() {
     setIsSharing(true);
 
     try {
-      const compressedLink = generateCatalogLink(products, categories);
-      let finalLink = compressedLink;
-      
-      // Encurtador de Link Inteligente
-      toast.info("Aguarde. Encurtando o link da loja...", { duration: 1500 });
-      
-      const res = await fetch("/api/shorten", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: compressedLink })
-      });
-      
-      if (res.ok) {
-         const data = await res.json();
-         if (data.shortUrl) {
-           finalLink = data.shortUrl;
-         }
-      }
+      // O novo catálogo Nuvem em tempo real!
+      const finalLink = `${window.location.origin}/c`;
 
       // Tenta Copiar
       await navigator.clipboard.writeText(finalLink).catch(() => {});
