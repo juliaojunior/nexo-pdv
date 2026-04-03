@@ -215,13 +215,25 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
             </div>
           )}
 
-           {/* Lista Menor do Carrinho */}
-           <div className="flex flex-col gap-2 mt-4 opacity-50 relative z-0">
-             <span className="text-[#adaaaa] text-xs font-bold uppercase tracking-widest mb-1">Resumo Rápido</span>
+           {/* Lista Menor do Carrinho Editável */}
+           <div className="flex flex-col gap-2 mt-4 relative z-0">
+             <span className="text-[#adaaaa] text-xs font-bold uppercase tracking-widest mb-1">Itens do Pedido</span>
             {items.map((item) => (
-              <div key={item.id} className="flex justify-between items-center px-1">
-                <span className="text-white font-medium text-sm line-clamp-1">{item.quantity}x {item.name}</span>
-                <span className="text-[#adaaaa] text-sm">{formatCurrency(item.price * item.quantity)}</span>
+              <div key={item.id} className="flex justify-between items-center bg-[#1a1a1a] p-2 rounded-xl border border-[#484847]/20 shadow-sm">
+                <span className="text-white font-medium text-sm line-clamp-1 flex-1 px-2">{item.name}</span>
+                
+                <div className="flex items-center gap-2">
+                   <div className="flex items-center bg-[#20201f] rounded-lg border border-[#484847]/40 shadow-inner overflow-hidden">
+                     <button type="button" onClick={() => updateQuantity(item.id!, item.quantity - 1)} className="px-2.5 py-1.5 text-[#ff716c] hover:bg-[#ff716c]/10 active:opacity-50 transition-colors">
+                       <Minus size={14} strokeWidth={3} />
+                     </button>
+                     <span className="text-white font-black w-6 text-center text-sm">{item.quantity}</span>
+                     <button type="button" onClick={() => updateQuantity(item.id!, item.quantity + 1)} className="px-2.5 py-1.5 text-[#53ddfc] hover:bg-[#53ddfc]/10 active:opacity-50 transition-colors border-l border-[#484847]/40">
+                       <Plus size={14} strokeWidth={3} />
+                     </button>
+                   </div>
+                   <span className="text-[#adaaaa] text-xs font-bold w-[60px] text-right">{formatCurrency(item.price * item.quantity)}</span>
+                </div>
               </div>
             ))}
           </div>
