@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UserButton } from "@clerk/nextjs";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
@@ -9,13 +9,23 @@ import { formatCurrency, isPromotionActive, getEffectivePrice } from "@/lib/util
 import { CheckoutModal } from "@/components/CheckoutModal";
 import { ReceiptModal, ReceiptData } from "@/components/ReceiptModal";
 import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
-import { Menu, Plus, Camera, Search } from "lucide-react";
+import { Plus, Camera, Search } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState<number | null>(null);
   const [isCheckoutOpen, setCheckoutOpen] = useState(false);
   const [isScannerOpen, setScannerOpen] = useState(false);
+  
+  // Custom Store Name
+  const [storeName, setStoreName] = useState("Nexo PDV");
+
+  useEffect(() => {
+    const savedName = localStorage.getItem("nexo_storeName");
+    if (savedName && savedName.trim() !== "") {
+      setStoreName(savedName);
+    }
+  }, []);
   
   // Sale Flow state
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
@@ -62,7 +72,7 @@ export default function Home() {
       <header className="fixed top-0 w-full z-30 bg-[#121212]/80 backdrop-blur-xl shadow-[0_8px_32px_rgba(83,221,252,0.08)]">
         <div className="flex justify-between items-center px-4 h-16 w-full max-w-md mx-auto">
           <div className="flex items-center gap-3">
-            <h1 className="text-[#53ddfc] font-black tracking-tighter text-xl">Nexo PDV</h1>
+            <h1 className="text-[#53ddfc] font-black tracking-tighter text-xl truncate max-w-[180px]">{storeName}</h1>
           </div>
           <div className="flex items-center gap-3">
             <button 
