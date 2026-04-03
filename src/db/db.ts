@@ -105,6 +105,29 @@ export class NexoPDVDexie extends Dexie {
       return saleId;
     });
   }
+
+  // Estorno Seguro de Venda (Reestabelece estoque e apaga histórico)
+  async revertSale(saleId: number) {
+    return await this.transaction('rw', this.sales, this.saleItems, this.products, async () => {
+      // Puxa todos os items associados daquela venda especifica
+      const items = await this.saleItems.where('saleId').equals(saleId).toArray();
+
+      // Devolve a quantidade de cada item de volta pro estoque físico da Vitrine
+      for (const item of items) {
+        const product = await this.products.get(item.productId);
+        if (product) {
+          await this.products.update(item.productId, {
+             stock: product.stock + item.quantity,
+             updatedAt: new Date().toISOString()
+          });
+        }
+      }
+
+      // Expulsa os items e a venda inteira da base de dados local
+      await this.saleItems.where('saleId').equals(saleId).delete();
+      await this.sales.delete(saleId);
+    });
+  }
 }
 
 // Export a robust singleton instance of the database
