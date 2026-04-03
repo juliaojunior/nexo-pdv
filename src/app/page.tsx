@@ -62,7 +62,6 @@ export default function Home() {
       <header className="fixed top-0 w-full z-30 bg-[#121212]/80 backdrop-blur-xl shadow-[0_8px_32px_rgba(83,221,252,0.08)]">
         <div className="flex justify-between items-center px-4 h-16 w-full max-w-md mx-auto">
           <div className="flex items-center gap-3">
-            <Menu className="text-[#53ddfc]" />
             <h1 className="text-[#53ddfc] font-black tracking-tighter text-xl">Nexo PDV</h1>
           </div>
           <div className="flex items-center gap-3">
