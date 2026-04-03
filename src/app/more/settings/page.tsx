@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, Category } from "@/db/db";
-import { ChevronLeft, Store, Tags, Smartphone, Volume2, Trash2, Edit3, Plus, ArrowLeft, X } from "lucide-react";
+import { ChevronLeft, Store, Tags, Smartphone, Volume2, Trash2, Edit3, Plus, ArrowLeft, X, Cloud, CloudLightning } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -18,6 +18,37 @@ export default function SettingsPage() {
   // ======= BLOCO 3: PREFERENCIAS =======
   const [receiptAutoShow, setReceiptAutoShow] = useState(true);
   const [checkoutSounds, setCheckoutSounds] = useState(true);
+
+  // ======= BLOCO 4: NUVEM E SINCRONIZACAO =======
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSyncText, setLastSyncText] = useState("Status: Não Sincronizado");
+
+  const handleForceSync = async () => {
+    // Busca todo o array cru offline usando função limpa em vez do estado da UI (que pode não ter montado tudo)
+    const rawProducts = await db.products.toArray();
+    if (rawProducts.length === 0) return toast.error("Seu catálogo está vazio.");
+    
+    setIsSyncing(true);
+    const toastId = toast.loading("Comprimindo catálogo e enviando carga grossa para a Nuvem...");
+    
+    try {
+      const res = await fetch('/api/cloud/sync/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ products: rawProducts })
+      });
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.error || "A Conexão com o Cofre da Vercel falhou. Verifique internet.");
+      
+      toast.success(`Arquitetura Cimentada! ${data.count} produtos sincronizados.`, { id: toastId });
+      setLastSyncText(`Última sincronia rápida: Hoje às ${new Date().toLocaleTimeString('pt-BR')}`);
+    } catch (e: any) {
+      toast.error(`Falha: ${e.message}`, { id: toastId });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   // Initialization
   useEffect(() => {
@@ -211,6 +242,41 @@ export default function SettingsPage() {
               </label>
             </div>
 
+          </div>
+        </section>
+
+        {/* BLOCO 4: SINCRONIZAÇÃO NUVEM */}
+        <section className="flex flex-col gap-4">
+          <div className="flex items-center gap-3 mb-1">
+            <Cloud size={20} className="text-[#06B6D4]" />
+            <h2 className="text-white font-bold text-lg tracking-tight">Nuvem e Backup</h2>
+          </div>
+          
+          <div className="bg-[#1a1a1a] border border-[#484847]/30 rounded-2xl flex flex-col shadow-sm overflow-hidden p-4 group hover:border-[#53ddfc]/30 transition-all">
+            <div className="flex justify-between items-start mb-4">
+                <div className="flex flex-col">
+                  <span className="font-bold text-white text-[15px] mb-1">Backup de Catálogo</span>
+                  <span className="text-[#adaaaa] text-[11px] leading-tight font-medium max-w-[200px]">Armazene seus produtos fisicamente na nuvem para não dependender da memória rotátil do celular. Indispensável para criar um Catálogo Web no futuro.</span>
+                </div>
+                {isSyncing ? (
+                  <div className="w-10 h-10 rounded-full border border-[#53ddfc]/50 border-t-[#53ddfc] animate-spin shrink-0"></div>
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-[#004b58]/40 border border-[#484847] flex items-center justify-center transition-colors shadow-inner shrink-0">
+                    <CloudLightning size={18} className="text-[#53ddfc]" />
+                  </div>
+                )}
+            </div>
+
+            <div className="flex items-center justify-between border-t border-[#484847]/30 pt-4 mt-1">
+              <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest">{lastSyncText}</span>
+              <button 
+                onClick={handleForceSync}
+                disabled={isSyncing}
+                className="bg-[#06B6D4] text-[#004b58] font-black text-xs uppercase px-4 py-3 rounded-lg active:scale-95 transition-transform shadow-[0_2px_10px_rgba(6,182,212,0.3)] disabled:opacity-50"
+              >
+                 {isSyncing ? 'Enviando Carga...' : 'Subir pra Nuvem!'}
+              </button>
+            </div>
           </div>
         </section>
 
