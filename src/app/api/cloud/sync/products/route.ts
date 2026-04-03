@@ -11,6 +11,22 @@ export async function POST(req: Request) {
 
     // Abre os canos de conexão com o painel Vercel
     const client = await cloudDb.connect();
+    
+    // Força a criação da tabela "On the Fly" para evitar o "relation cloud_products does not exist" no primeiro sync
+    await client.sql`
+      CREATE TABLE IF NOT EXISTS cloud_products (
+        cloud_id SERIAL PRIMARY KEY,
+        local_id INTEGER UNIQUE NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        price NUMERIC(10, 2) NOT NULL,
+        stock INTEGER NOT NULL,
+        barcode VARCHAR(100),
+        categoryId INTEGER,
+        imageUrl TEXT,
+        last_synced TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+
     let syncedCount = 0;
 
     // Loop de Upsert: Para cada produto local, empurra para a nuvem. 
