@@ -38,7 +38,16 @@ export default function SettingsPage() {
     const toastId = toast.loading("Comprimindo Carga Master e enviando para a Nuvem...");
     
     try {
-      const payload = { products: p, categories: c, customers: cus, sales: s, saleItems: si };
+      const payload = { 
+        products: p, categories: c, customers: cus, sales: s, saleItems: si,
+        settings: {
+           nexo_storeName: storeName,
+           nexo_storeDocument: storeDocument,
+           nexo_storePhone: storePhone,
+           nexo_receiptAutoShow: String(receiptAutoShow),
+           nexo_checkoutSounds: String(checkoutSounds)
+        }
+      };
       const res = await fetch('/api/cloud/sync/all', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -81,7 +90,7 @@ export default function SettingsPage() {
       
       const pProd = data.data.products.map((x: any) => ({
         id: x.local_id, name: x.name, price: Number(x.price), stock: x.stock, 
-        categoryId: x.categoryid || undefined, barcode: x.barcode || undefined, imageUrl: x.imageurl || undefined
+        categoryId: x.categoryid || undefined, barcode: x.barcode || undefined, image: x.imageurl || undefined
       }));
       const pCat = data.data.categories.map((x: any) => ({ id: x.local_id, name: x.name }));
       const pCus = data.data.customers.map((x: any) => ({ id: x.local_id, name: x.name, phone: x.phone || undefined, email: x.email || undefined, document: x.document || undefined, createdAt: x.createdat || undefined }));
@@ -93,6 +102,13 @@ export default function SettingsPage() {
       await db.customers.bulkAdd(pCus);
       await db.sales.bulkAdd(pSal);
       await db.saleItems.bulkAdd(pSI);
+      
+      const st = data.data.settings || {};
+      if (st.nexo_storeName !== undefined) { setStoreName(st.nexo_storeName); localStorage.setItem('nexo_storeName', st.nexo_storeName); }
+      if (st.nexo_storeDocument !== undefined) { setStoreDocument(st.nexo_storeDocument); localStorage.setItem('nexo_storeDocument', st.nexo_storeDocument); }
+      if (st.nexo_storePhone !== undefined) { setStorePhone(st.nexo_storePhone); localStorage.setItem('nexo_storePhone', st.nexo_storePhone); }
+      if (st.nexo_receiptAutoShow !== undefined) { setReceiptAutoShow(st.nexo_receiptAutoShow === 'true'); localStorage.setItem('nexo_receiptAutoShow', st.nexo_receiptAutoShow); }
+      if (st.nexo_checkoutSounds !== undefined) { setCheckoutSounds(st.nexo_checkoutSounds === 'true'); localStorage.setItem('nexo_checkoutSounds', st.nexo_checkoutSounds); }
       
       toast.success(`Restauração Completa! ${pProd.length} Produtos, ${pCus.length} Clientes.`, { id: toastId });
       setLastSyncText(`Última restauração: Hoje às ${new Date().toLocaleTimeString('pt-BR')}`);

@@ -14,8 +14,17 @@ export async function POST(req: Request) {
     await client.sql`CREATE TABLE IF NOT EXISTS cloud_customers ( cloud_id SERIAL PRIMARY KEY, local_id INTEGER UNIQUE NOT NULL, name VARCHAR(255) NOT NULL, phone VARCHAR(50), email VARCHAR(100), document VARCHAR(50), createdAt VARCHAR(50), last_synced TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`;
     await client.sql`CREATE TABLE IF NOT EXISTS cloud_sales ( cloud_id SERIAL PRIMARY KEY, local_id INTEGER UNIQUE NOT NULL, total NUMERIC(10, 2) NOT NULL, paymentMethod VARCHAR(50) NOT NULL, amountReceived NUMERIC(10, 2), change NUMERIC(10, 2), customerId INTEGER, date VARCHAR(50), last_synced TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`;
     await client.sql`CREATE TABLE IF NOT EXISTS cloud_sale_items ( cloud_id SERIAL PRIMARY KEY, local_id INTEGER UNIQUE NOT NULL, saleId INTEGER NOT NULL, productId INTEGER NOT NULL, productName VARCHAR(255) NOT NULL, quantity INTEGER NOT NULL, unitPrice NUMERIC(10, 2) NOT NULL, subtotal NUMERIC(10, 2) NOT NULL);`;
+    await client.sql`CREATE TABLE IF NOT EXISTS cloud_settings ( local_id VARCHAR(50) PRIMARY KEY, value TEXT, last_synced TIMESTAMP DEFAULT CURRENT_TIMESTAMP );`;
 
-    let sProd = 0, sCat = 0, sCus = 0, sSal = 0;
+    let sProd = 0, sCat = 0, sCus = 0, sSal = 0, sSet = 0;
+
+    // Configurações (localStorage)
+    if (payload.settings) {
+      for (const [key, val] of Object.entries(payload.settings)) {
+        await client.sql`INSERT INTO cloud_settings (local_id, value) VALUES (${key}, ${String(val)}) ON CONFLICT (local_id) DO UPDATE SET value = EXCLUDED.value, last_synced = CURRENT_TIMESTAMP;`;
+        sSet++;
+      }
+    }
 
     // Categorias
     if (Array.isArray(payload.categories)) {
@@ -25,13 +34,15 @@ export async function POST(req: Request) {
       }
     }
 
-    // Produtos
+    // Produtos - AQUI A CORREÇÂO DA IMAGEM (Dexie usa p.image e a nuvem imageUrl)
     if (Array.isArray(payload.products)) {
       for (const p of payload.products) {
-        await client.sql`INSERT INTO cloud_products (local_id, name, price, stock, barcode, categoryId, imageUrl) VALUES (${p.id}, ${p.name}, ${p.price}, ${p.stock}, ${p.barcode || null}, ${p.categoryId || null}, ${p.imageUrl || null}) ON CONFLICT (local_id) DO UPDATE SET name = EXCLUDED.name, price = EXCLUDED.price, stock = EXCLUDED.stock, barcode = EXCLUDED.barcode, categoryId = EXCLUDED.categoryId, imageUrl = EXCLUDED.imageUrl, last_synced = CURRENT_TIMESTAMP;`;
+        const productImg = p.image || p.imageUrl || null;
+        await client.sql`INSERT INTO cloud_products (local_id, name, price, stock, barcode, categoryId, imageUrl) VALUES (${p.id}, ${p.name}, ${p.price}, ${p.stock}, ${p.barcode || null}, ${p.categoryId || null}, ${productImg}) ON CONFLICT (local_id) DO UPDATE SET name = EXCLUDED.name, price = EXCLUDED.price, stock = EXCLUDED.stock, barcode = EXCLUDED.barcode, categoryId = EXCLUDED.categoryId, imageUrl = EXCLUDED.imageUrl, last_synced = CURRENT_TIMESTAMP;`;
         sProd++;
       }
     }
+
 
     // Clientes
     if (Array.isArray(payload.customers)) {
@@ -68,15 +79,22 @@ export async function GET() {
     const client = await cloudDb.connect();
     
     // Dispara leituras simultâneas para não gargalar o DB (catch no caso da tabela nao existir)
-    const [p, c, cus, s, si] = await Promise.all([
+    const [p, c, cus, s, si, set] = await Promise.all([
       client.sql`SELECT * FROM cloud_products ORDER BY name ASC;`.catch(() => ({ rows: [] })),
       client.sql`SELECT * FROM cloud_categories ORDER BY name ASC;`.catch(() => ({ rows: [] })),
       client.sql`SELECT * FROM cloud_customers ORDER BY name ASC;`.catch(() => ({ rows: [] })),
       client.sql`SELECT * FROM cloud_sales ORDER BY cloud_id ASC;`.catch(() => ({ rows: [] })),
-      client.sql`SELECT * FROM cloud_sale_items;`.catch(() => ({ rows: [] }))
+      client.sql`SELECT * FROM cloud_sale_items;`.catch(() => ({ rows: [] })),
+      client.sql`SELECT * FROM cloud_settings;`.catch(() => ({ rows: [] }))
     ]);
     
     client.release();
+    
+    // Transforma o array de settings num dicionario { key: value }
+    const settingsObj: Record<string, string> = {};
+    for (const r of set.rows) {
+      settingsObj[r.local_id] = r.value;
+    }
     
     return NextResponse.json({ 
        success: true, 
@@ -85,7 +103,8 @@ export async function GET() {
           categories: c.rows,
           customers: cus.rows,
           sales: s.rows,
-          saleItems: si.rows
+          saleItems: si.rows,
+          settings: settingsObj
        }
     });
   } catch (error: any) {
