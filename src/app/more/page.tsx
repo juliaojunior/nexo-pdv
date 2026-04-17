@@ -6,7 +6,6 @@ import Link from "next/link";
 import { SignOutButton } from "@clerk/nextjs";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
-import { generateCatalogLink } from "@/lib/catalogSharing";
 import { toast } from "sonner";
 
 export default function MorePage() {
