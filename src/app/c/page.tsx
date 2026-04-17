@@ -1,31 +1,14 @@
-import { cloudDb } from '@/lib/cloudDb';
-import CatalogClient from '@/components/CatalogClient';
+import { redirect } from "next/navigation";
 
-export const revalidate = 0; // Garante que a Vitrine não sofra cache e exija dados em tempo real (Estoque real)
-
-export default async function CatalogPage() {
-  const client = await cloudDb.connect();
-
-  // Extração Simultânea da Nuvem (Buscando das novas tabelas nexo_)
-  const [pResult, cResult, sResult] = await Promise.all([
-    client.sql`SELECT id as local_id, name, price, stock, category_id as categoryid, image_url as imageurl FROM nexo_products ORDER BY name ASC`.catch(() => ({ rows: [] })),
-    client.sql`SELECT id as local_id, name FROM nexo_categories ORDER BY name ASC`.catch(() => ({ rows: [] })),
-    client.sql`SELECT key, value FROM nexo_settings`.catch(() => ({ rows: [] }))
-  ]);
-  client.release();
-
-  // Mapeamento dinâmico das configurações da loja (nome, zap)
-  const settings: Record<string, string> = {};
-  sResult.rows.forEach(row => {
-    settings[row.key] = row.value;
-  });
-
+export default function CatalogRootPage() {
   return (
-    <CatalogClient
-      products={(pResult.rows as any[]) || []}
-      categories={(cResult.rows as any[]) || []}
-      settings={settings}
-    />
+    <div className="min-h-screen bg-[#121212] flex items-center justify-center font-[Inter] text-white p-4 text-center">
+      <div className="bg-[#1a1a1a] border border-[#484847]/30 p-8 rounded-3xl w-full max-w-sm flex flex-col gap-4 shadow-2xl">
+         <h1 className="text-3xl font-black text-[#53ddfc] mb-2 tracking-tighter">Erro de Acesso</h1>
+         <p className="text-[#adaaaa] text-sm font-medium leading-relaxed">
+            Esta é a base do servidor de Catálogos da Nexo. <br/>Para visualizar os produtos e realizar pedidos, você precisa do link completo fornecido pela loja (exemplo: <span className="text-white font-bold bg-[#333] px-1 rounded">nexo.vercel.app/c/ID_DA_LOJA</span>).
+         </p>
+      </div>
+    </div>
   );
 }
-

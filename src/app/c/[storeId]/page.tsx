@@ -1,0 +1,53 @@
+import { cloudDb } from '@/lib/cloudDb';
+import CatalogClient from '@/components/CatalogClient';
+import { notFound } from 'next/navigation';
+
+export const revalidate = 0; // Garante que a Vitrine não sofra cache e exija dados em tempo real (Estoque real)
+
+export default async function StoreCatalogPage({ params }: { params: { storeId: string } }) {
+  const storeId = params.storeId;
+  
+  if (!storeId) return notFound();
+
+  const client = await cloudDb.connect();
+
+  try {
+    // Extração Restrita! Apenas da Loja (storeId correspondente)
+    const [pResult, cResult, sResult] = await Promise.all([
+      client.sql`SELECT id as local_id, name, price, stock, category_id as categoryid, image_url as imageurl FROM nexo_products WHERE user_id = ${storeId} ORDER BY name ASC`,
+      client.sql`SELECT id as local_id, name FROM nexo_categories WHERE user_id = ${storeId} ORDER BY name ASC`,
+      client.sql`SELECT key, value FROM nexo_settings WHERE user_id = ${storeId}`
+    ]);
+
+    // Oculta a vitrine se o usuário não tem tabela gerada / não existe
+    if (sResult.rowCount === 0 && pResult.rowCount === 0) {
+       return (
+         <div className="min-h-screen bg-[#121212] flex items-center justify-center font-[Inter] text-white p-4 text-center">
+            <div className="bg-[#1a1a1a] border border-[#484847]/30 p-8 rounded-3xl w-full max-w-sm flex flex-col gap-4">
+              <h1 className="text-2xl font-black text-[#ff716c]">Loja Fechada</h1>
+              <p className="text-[#adaaaa] text-sm font-medium">Não encontramos nenhum catálogo associado a este Link. Verifique a ortografia do link com o seu vendedor.</p>
+            </div>
+         </div>
+       );
+    }
+
+    // Mapeamento dinâmico das configurações da loja (nome, zap)
+    const settings: Record<string, string> = {};
+    sResult.rows.forEach(row => {
+      settings[row.key] = row.value;
+    });
+
+    return (
+      <CatalogClient
+        products={pResult.rows as any[]}
+        categories={cResult.rows as any[]}
+        settings={settings}
+      />
+    );
+  } catch (err) {
+    console.error(err);
+    return notFound();
+  } finally {
+    client.release();
+  }
+}

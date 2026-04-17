@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import useSWR from "swr";
-import { ChevronLeft, Store, Tags, Smartphone, Volume2, Trash2, Edit3, Plus, ArrowLeft, X } from "lucide-react";
+import { useAuth } from "@clerk/nextjs";
+import { ChevronLeft, Store, Tags, Smartphone, Volume2, Trash2, Edit3, Plus, ArrowLeft, X, Link as LinkIcon, Copy } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -15,35 +16,63 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { userId } = useAuth();
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
 
-  // ======= BLOCO 1: DADOS DA LOJA =======
   const [storeName, setStoreName] = useState("");
   const [storeDocument, setStoreDocument] = useState("");
   const [storePhone, setStorePhone] = useState("");
 
-  // ======= BLOCO 3: PREFERENCIAS =======
   const [receiptAutoShow, setReceiptAutoShow] = useState(true);
   const [checkoutSounds, setCheckoutSounds] = useState(true);
 
-  // Initialization
+  // Cloud SWR Initialization
+  const { data: cloudSettings, mutate: mutateSettings } = useSWR("/api/settings", fetcher, { revalidateOnFocus: false });
+
   useEffect(() => {
-    setStoreName(localStorage.getItem("nexo_storeName") || "");
-    setStoreDocument(localStorage.getItem("nexo_storeDocument") || "");
-    setStorePhone(localStorage.getItem("nexo_storePhone") || "");
-    
-    setReceiptAutoShow(localStorage.getItem("nexo_receiptAutoShow") !== "false");
-    setCheckoutSounds(localStorage.getItem("nexo_checkoutSounds") !== "false");
-  }, []);
+    if (cloudSettings) {
+      if (cloudSettings.nexo_storeName) setStoreName(cloudSettings.nexo_storeName);
+      if (cloudSettings.nexo_storeDocument) setStoreDocument(cloudSettings.nexo_storeDocument);
+      if (cloudSettings.nexo_storePhone) setStorePhone(cloudSettings.nexo_storePhone);
+      if (cloudSettings.nexo_receiptAutoShow) setReceiptAutoShow(cloudSettings.nexo_receiptAutoShow !== "false");
+      if (cloudSettings.nexo_checkoutSounds) setCheckoutSounds(cloudSettings.nexo_checkoutSounds !== "false");
+    }
+  }, [cloudSettings]);
+
+  const saveToCloud = (payload: any) => {
+    fetch('/api/settings', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }).catch(e => toast.error("Falha ao salvar configuração na nuvem."));
+  };
+
+  const syncAllStoreSettingsToCloud = () => {
+    saveToCloud([
+      { key: 'nexo_storeName', value: storeName },
+      { key: 'nexo_storeDocument', value: storeDocument },
+      { key: 'nexo_storePhone', value: storePhone }
+    ]);
+    toast.success("Dados salvos e sincronizados na Vercel.");
+  };
 
   const handleStoreUpdate = (field: 'name' | 'doc' | 'phone', val: string) => {
-    if (field === 'name') { setStoreName(val); localStorage.setItem("nexo_storeName", val); }
-    if (field === 'doc') { setStoreDocument(val); localStorage.setItem("nexo_storeDocument", val); }
-    if (field === 'phone') { setStorePhone(val); localStorage.setItem("nexo_storePhone", val); }
+    if (field === 'name') setStoreName(val);
+    if (field === 'doc') setStoreDocument(val);
+    if (field === 'phone') setStorePhone(val);
+    // Removemos os LocalStorage e passaremos a disparar o sync usando onBlur lá no HTML!
   };
 
   const handlePrefUpdate = (field: 'receipt' | 'sound', val: boolean) => {
-    if (field === 'receipt') { setReceiptAutoShow(val); localStorage.setItem("nexo_receiptAutoShow", String(val)); }
-    if (field === 'sound') { setCheckoutSounds(val); localStorage.setItem("nexo_checkoutSounds", String(val)); }
+    if (field === 'receipt') { 
+       setReceiptAutoShow(val); 
+       localStorage.setItem("nexo_receiptAutoShow", String(val)); 
+       saveToCloud({ key: 'nexo_receiptAutoShow', value: String(val) });
+    }
+    if (field === 'sound') { 
+       setCheckoutSounds(val); 
+       localStorage.setItem("nexo_checkoutSounds", String(val)); 
+       saveToCloud({ key: 'nexo_checkoutSounds', value: String(val) });
+    }
   };
 
 
@@ -128,6 +157,7 @@ export default function SettingsPage() {
                 type="text" 
                 value={storeName}
                 onChange={e => handleStoreUpdate('name', e.target.value)}
+                onBlur={syncAllStoreSettingsToCloud}
                 className="w-full bg-[#131313] border border-[#484847]/60 focus:border-[#53ddfc] rounded-xl h-12 px-4 text-white text-sm font-semibold outline-none transition-all placeholder:text-[#484847] shadow-inner"
                 placeholder="Ex Ateliê da Maria"
               />
@@ -139,6 +169,7 @@ export default function SettingsPage() {
                 type="text" 
                 value={storeDocument}
                 onChange={e => handleStoreUpdate('doc', e.target.value)}
+                onBlur={syncAllStoreSettingsToCloud}
                 className="w-full bg-[#131313] border border-[#484847]/60 focus:border-[#53ddfc] rounded-xl h-12 px-4 text-white text-sm font-semibold outline-none transition-all placeholder:text-[#484847] shadow-inner"
                 placeholder="00.000.000/0001-00"
               />
@@ -150,13 +181,36 @@ export default function SettingsPage() {
                 type="tel" 
                 value={storePhone}
                 onChange={e => handleStoreUpdate('phone', e.target.value)}
+                onBlur={syncAllStoreSettingsToCloud}
                 className="w-full bg-[#131313] border border-[#484847]/60 focus:border-[#53ddfc] rounded-xl h-12 px-4 text-white text-sm font-semibold outline-none transition-all placeholder:text-[#484847] shadow-inner"
                 placeholder="(00) 90000-0000"
               />
             </div>
             <p className="text-[10px] text-[#adaaaa] leading-relaxed mt-1 px-1">
-              * Estes dados serão exibidos nos Recibos e na Vitrine.
+              * Estes dados de Contato e Nuvem ficarão vinculados visivelmente em sua Vitrine Pública.
             </p>
+
+            {/* GERADOR DE LINK EXCLUSIVO DA LOJA */}
+            <div className="mt-2 pt-4 border-t border-[#484847]/30">
+              <label className="text-[11px] font-bold text-[#adaaaa] uppercase tracking-widest pl-1 mb-2 block">Seu Link Público Exclusivo</label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 bg-[#131313] border border-[#ff716c]/30 rounded-xl h-12 px-3 text-white text-xs font-medium flex items-center shadow-inner overflow-hidden relative group">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#131313] w-full h-full pointer-events-none" />
+                  <span className="truncate w-[85%]">{userId ? `${origin}/c/${userId}` : "Carregando Link Seguro..."}</span>
+                </div>
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${origin}/c/${userId}`);
+                    toast.success("Link Exclusivo Copiado!");
+                  }}
+                  disabled={!userId}
+                  className="w-12 h-12 shrink-0 bg-[#ff716c] text-[#121212] rounded-xl flex items-center justify-center hover:bg-[#ff8a86] active:scale-95 transition-all shadow-[0_4px_16px_rgba(255,113,108,0.3)] disabled:opacity-50"
+                  title="Copiar Link"
+                >
+                  <Copy size={20} strokeWidth={2.5}/>
+                </button>
+              </div>
+            </div>
           </div>
         </section>
 
