@@ -2,13 +2,15 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 // Public routes that don't require authentication
 const isPublicRoute = createRouteMatcher([
+  '/c(.*)',      // Rota Principal Universal
   '/menu(.*)',   // Public catalog logic for customers
-  '/process(.*)',// Payment / deep link processing might need to be public or handled internally, keeping public for now.
-  '/api/shorten(.*)', // Shortener proxy API
-  '/api/webhook(.*)', // Clerk webhooks if we add them later
+  '/process(.*)',// Payment / deep link processing
+  '/api/settings(.*)',
+  '/api/catalog(.*)', 
+  '/api/webhook(.*)', 
   '/sign-in(.*)', // Public login page
   '/sign-up(.*)', // Public signup page
-  '/sso-callback(.*)', // SSOCallback para OAuth do Clerk
+  '/sso-callback(.*)', // SSOCallback para OAuth
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
