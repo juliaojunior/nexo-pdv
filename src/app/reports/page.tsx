@@ -176,7 +176,7 @@ export default function ReportsPage() {
         <h2 className="text-[#adaaaa] text-xs font-bold uppercase tracking-widest mb-2 px-1">Top 5 Produtos Mais Vendidos</h2>
         <div className="flex flex-col bg-[#1a1a1a] rounded-2xl overflow-hidden border border-[#484847]/30">
           {top5Products.length > 0 ? (
-            top5Products.map((product, index) => (
+            top5Products.map((product: any, index: number) => (
               <div key={product.id} className="flex items-center justify-between p-4 border-b border-[#484847]/20 last:border-0 hover:bg-[#20201f] transition-colors">
                 <div className="flex items-center gap-4">
                   <span className={`font-black text-xl w-4 text-center ${index === 0 ? 'text-[#06B6D4]' : index === 1 ? 'text-[#53ddfc]' : index === 2 ? 'text-white' : 'text-[#adaaaa]'}`}>{index + 1}</span>
