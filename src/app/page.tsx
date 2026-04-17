@@ -1,16 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import useSWR from "swr";
 import { UserButton } from "@clerk/nextjs";
-import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "@/db/db";
 import { useCartStore } from "@/stores/cart.store";
 import { formatCurrency, isPromotionActive, getEffectivePrice } from "@/lib/utils";
 import { CheckoutModal } from "@/components/CheckoutModal";
 import { ReceiptModal, ReceiptData } from "@/components/ReceiptModal";
 import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
-import { Plus, Camera, Search } from "lucide-react";
+import { Plus, Camera, Search, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState<number | null>(null);
@@ -31,9 +32,24 @@ export default function Home() {
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
   const [finishedSaleData, setFinishedSaleData] = useState<ReceiptData | null>(null);
   
-  // Real time Queries
-  const products = useLiveQuery(() => db.products.toArray()) || [];
-  const categories = useLiveQuery(() => db.categories.toArray()) || [];
+  // ==== NUVEM: SWR SUBSTITUINDO DEXIE ====
+  const { data: rawCategories } = useSWR("/api/categories", fetcher);
+  const { data: rawDbProducts, isLoading } = useSWR("/api/products", fetcher, { revalidateOnFocus: true });
+
+  const categories = rawCategories || [];
+  
+  // Mapeamento idêntico ao do catálogo
+  const products = (rawDbProducts || []).map((p: any) => ({
+    id: p.id,
+    name: p.name,
+    price: Number(p.price),
+    stock: p.stock,
+    barcode: p.barcode,
+    categoryId: p.category_id,
+    image: p.image_url,
+    promotionalPrice: p.promotional_price ? Number(p.promotional_price) : undefined,
+    promotionEndDate: p.promotion_end_date
+  }));
   
   // Stores
   const { items: cartItems, addItem } = useCartStore();
@@ -43,15 +59,15 @@ export default function Home() {
   const cartTotalValue = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   
   const filteredProducts = activeCategory 
-    ? products.filter(p => p.categoryId === activeCategory)
+    ? products.filter((p: any) => p.categoryId === activeCategory)
     : products;
 
   // Scanner Fast Checkout Logic
   const handleScanBarcode = (rawCode: string) => {
     setScannerOpen(false); // Fecha o modal da câmera da Home temporariamente
     const code = rawCode.trim();
-    // Garante que o comparador limpe espaços e suporte tipos mistos que possam estar no indexedDB
-    const foundProduct = products.find(p => p.barcode && String(p.barcode).trim() === code);
+    // Garante que o comparador limpe espaços
+    const foundProduct = products.find((p: any) => p.barcode && String(p.barcode).trim() === code);
     
     if (foundProduct) {
       if (foundProduct.stock > 0) {
@@ -107,7 +123,7 @@ export default function Home() {
             <span className={`font-bold text-sm py-2 transition-colors ${activeCategory === null ? 'text-[#53ddfc]' : 'text-[#adaaaa] hover:text-[#53ddfc]'}`}>Todos</span>
             <div className={`h-0.5 w-full rounded-full transition-colors ${activeCategory === null ? 'bg-[#53ddfc]' : 'bg-transparent'}`}></div>
           </div>
-          {categories.map((cat) => (
+          {categories.map((cat: any) => (
             <div key={cat.id!} className="flex flex-col items-center cursor-pointer" onClick={() => setActiveCategory(cat.id!)}>
               <span className={`font-bold text-sm py-2 transition-colors ${activeCategory === cat.id ? 'text-[#53ddfc]' : 'text-[#adaaaa] hover:text-[#53ddfc]'}`}>{cat.name}</span>
               <div className={`h-0.5 w-full rounded-full transition-colors ${activeCategory === cat.id ? 'bg-[#53ddfc]' : 'bg-transparent'}`}></div>
@@ -118,9 +134,14 @@ export default function Home() {
 
       {/* Main Content: Dynamic Product Grid */}
       <main className="pt-32 pb-24 px-4 overflow-y-auto relative flex-1 max-w-md mx-auto w-full">
-        {filteredProducts.length > 0 ? (
+        {isLoading ? (
+           <div className="flex flex-col items-center justify-center p-8 text-center mt-10 opacity-50">
+               <div className="w-10 h-10 border-4 border-[#484847] border-t-[#06B6D4] animate-spin rounded-full mb-4"></div>
+               <p className="font-bold text-white uppercase tracking-widest text-xs">Conectando Vitrine Nuvem...</p>
+           </div>
+        ) : filteredProducts.length > 0 ? (
           <div className="grid grid-cols-2 gap-4 pb-10">
-            {filteredProducts.map(product => {
+            {filteredProducts.map((product: any) => {
               const promoActive = isPromotionActive(product);
               const activePrice = getEffectivePrice(product);
 
@@ -138,7 +159,7 @@ export default function Home() {
                      </>
                    ) : (
                      <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest text-center px-2 z-10 opacity-70">
-                       {categories.find(c => c.id === product.categoryId)?.name || "Produto"}
+                       {categories.find((c: any) => c.id === product.categoryId)?.name || "Produto"}
                      </span>
                    )}
 
@@ -186,7 +207,7 @@ export default function Home() {
                 <Search size={28} className="text-[#53ddfc]" />
              </div>
              <p className="font-bold text-white mb-2 text-lg">Catálogo em branco</p>
-             <p className="text-sm">Abra a aba <strong>Produtos</strong> ali embaixo para adicionar mercadorias e começar a vender.</p>
+             <p className="text-sm">Abra a aba <strong>Mais - Configurações - Departamentos</strong> para validar se está na nuvem e o Catálogo ali embaixo.</p>
           </div>
         )}
       </main>
