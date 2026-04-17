@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ShoppingCart, Tag, BarChart2, Menu } from "lucide-react";
+import { ShoppingCart, Tag, BarChart2, Menu, BellRing } from "lucide-react";
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -13,6 +13,7 @@ export function BottomNav() {
   const navItems = [
     { href: "/", label: "Vendas", icon: ShoppingCart },
     { href: "/products", label: "Produtos", icon: Tag },
+    { href: "/orders", label: "Pedidos", icon: BellRing },
     { href: "/reports", label: "Relatórios", icon: BarChart2 },
     { href: "/more", label: "Mais", icon: Menu },
   ];

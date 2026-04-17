@@ -80,6 +80,56 @@ export default function CatalogClient({
      return `https://wa.me/55${wppPhone}?text=${encodeURIComponent(text)}`;
   };
 
+  const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [customerWpp, setCustomerWpp] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("PIX");
+  const [sendingOrder, setSendingOrder] = useState(false);
+  const [orderDoneId, setOrderDoneId] = useState<string | null>(null);
+
+  const handleFinishOrder = async () => {
+     if(!customerName || !customerWpp) {
+        toast.error("Preencha seu Nome e WhatsApp para prosseguirmos.");
+        return;
+     }
+
+     setSendingOrder(true);
+     try {
+       // O SUPER MODO CLOUD!
+       const storeId = window.location.pathname.split("/c/")[1];
+
+       const payload = {
+         storeId,
+         customerName,
+         customerPhone: customerWpp,
+         paymentMethod,
+         cartItems: cart.map(i => ({ productId: i.local_id, name: i.name, price: Number(i.price), quantity: i.quantity })),
+         total: cartTotal
+       };
+
+       const res = await fetch('/api/orders', {
+         method: 'POST',
+         headers: {'Content-Type': 'application/json'},
+         body: JSON.stringify(payload)
+       });
+
+       if (!res.ok) throw new Error("Falha no servidor.");
+       const data = await res.json();
+
+       setOrderDoneId(data.orderId);
+       setCart([]); // Esvazia o carrinho local do cliente
+     } catch(e) {
+       toast.error("Falha ao enviar pedido. Tente novamente.");
+     } finally {
+       setSendingOrder(false);
+     }
+  };
+
+  const getPoszapLink = () => {
+    const text = `🛍️ *Pedido #${orderDoneId || '000'} - Pagamento: ${paymentMethod}*\nOi, ${storeName}! Acabei de registrar meu pedido de R$ ${cartTotal.toFixed(2)} pelo aplicativo. Me avisa quando aprovar!`;
+    return `https://wa.me/55${wppPhone}?text=${encodeURIComponent(text)}`;
+  };
+
   return (
     <div className="bg-[#121212] min-h-screen text-[#F3F4F6] font-[Inter] relative pb-28">
       
@@ -192,7 +242,7 @@ export default function CatalogClient({
       </main>
 
       {/* FLOAT CART BAR */}
-      {cartItemsCount > 0 && !cartOpen && (
+      {cartItemsCount > 0 && !cartOpen && !checkoutModalOpen && (
         <div className="fixed bottom-6 left-0 right-0 px-4 z-40 max-w-3xl mx-auto pointer-events-none">
            <div className="pointer-events-auto bg-gradient-to-r from-[#06B6D4] to-[#53ddfc] p-1 rounded-2xl shadow-[0_10px_30px_rgba(6,182,212,0.3)]">
               <button 
@@ -218,7 +268,7 @@ export default function CatalogClient({
       )}
 
       {/* CART OVERLAY SLIDE UP */}
-      {cartOpen && (
+      {cartOpen && !checkoutModalOpen && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
            <div className="bg-[#121212] rounded-t-3xl h-[85vh] flex flex-col border-t border-[#484847]/30 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom-full duration-300 max-w-3xl mx-auto w-full relative">
               <div className="p-5 flex justify-between items-center border-b border-[#484847]/30">
@@ -255,17 +305,89 @@ export default function CatalogClient({
 
               <div className="p-6 bg-[#1a1a1a] border-t border-[#484847]/50 flex flex-col gap-4 pb-8 rounded-t-3xl">
                  <div className="flex justify-between items-center px-2">
-                    <span className="text-[#adaaaa] font-bold uppercase tracking-widest text-sm">Resumo ({cartItemsCount})</span>
+                    <span className="text-[#adaaaa] font-bold uppercase tracking-widest text-sm">Total do Pedido</span>
                     <span className="text-white font-black text-2xl">R$ {cartTotal.toFixed(2).replace('.', ',')}</span>
                  </div>
-                 <a 
-                   href={wppPhone ? buildWhatsappLink() : '#'}
-                   target="_blank"
-                   className={`w-full py-4 rounded-xl flex items-center justify-center font-black text-lg uppercase tracking-wide shadow-[0_5px_20px_rgba(6,182,212,0.3)] transition-transform active:scale-[0.98] ${wppPhone ? 'bg-[#06B6D4] text-[#121212]' : 'bg-[#484847] text-[#adaaaa] pointer-events-none'}`}
+                 <button 
+                   onClick={() => setCheckoutModalOpen(true)}
+                   className="w-full py-4 rounded-xl flex items-center justify-center font-black text-lg uppercase tracking-wide shadow-[0_5px_20px_rgba(6,182,212,0.3)] transition-transform active:scale-[0.98] bg-[#06B6D4] text-[#121212]"
                  >
-                   {wppPhone ? 'Enviar Pedido ao Vendedor' : 'Loja sem WhatsApp Cadastrado.'}
-                 </a>
+                   Prosseguir
+                 </button>
               </div>
+           </div>
+        </div>
+      )}
+
+      {/* FINAL CHECKOUT MODAL NOVO */}
+      {checkoutModalOpen && !orderDoneId && (
+         <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+           <div className="bg-[#121212] rounded-t-3xl p-6 flex flex-col border-t border-[#484847]/30 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom max-w-3xl mx-auto w-full relative">
+              
+              <div className="flex justify-between items-center mb-6">
+                 <div>
+                   <h2 className="text-white font-black text-2xl tracking-tight leading-none">Dados Finais</h2>
+                   <span className="text-[#06B6D4] uppercase tracking-widest text-xs font-bold mt-1">Passo Final</span>
+                 </div>
+                 <button onClick={() => setCheckoutModalOpen(false)} className="w-10 h-10 rounded-full bg-[#20201f] text-[#adaaaa] hover:text-white"><X size={20} className="mx-auto" /></button>
+              </div>
+
+              <div className="flex flex-col gap-4 mb-6">
+                 <div className="flex flex-col gap-1.5">
+                   <label className="text-[#adaaaa] font-bold text-xs uppercase tracking-widest pl-1">Seu Nome</label>
+                   <input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="João Silva" className="bg-[#1a1a1a] border border-[#484847]/50 rounded-xl px-4 py-3.5 text-white" />
+                 </div>
+                 <div className="flex flex-col gap-1.5">
+                   <label className="text-[#adaaaa] font-bold text-xs uppercase tracking-widest pl-1">Seu WhatsApp</label>
+                   <input type="tel" value={customerWpp} onChange={e => setCustomerWpp(e.target.value)} placeholder="(11) 99999-9999" className="bg-[#1a1a1a] border border-[#484847]/50 rounded-xl px-4 py-3.5 text-white" />
+                 </div>
+                 
+                 <div className="flex flex-col gap-1.5 mt-2">
+                   <label className="text-[#adaaaa] font-bold text-xs uppercase tracking-widest pl-1">Forma de Pagamento</label>
+                   <div className="grid grid-cols-2 gap-3">
+                      <button onClick={() => setPaymentMethod('PIX')} className={`py-4 rounded-xl border-2 font-black transition-all ${paymentMethod === 'PIX' ? 'border-[#06B6D4] bg-[#06B6D4]/10 text-[#06B6D4]' : 'border-[#484847]/30 text-[#adaaaa]'}`}>PIX Rápido</button>
+                      <button onClick={() => setPaymentMethod('MAQUININHA/DINHEIRO')} className={`py-4 rounded-xl border-2 font-black transition-all ${paymentMethod === 'MAQUININHA/DINHEIRO' ? 'border-[#06B6D4] bg-[#06B6D4]/10 text-[#06B6D4]' : 'border-[#484847]/30 text-[#adaaaa]'}`}>Na Entrega</button>
+                   </div>
+                 </div>
+              </div>
+
+              <button 
+                onClick={handleFinishOrder}
+                disabled={sendingOrder}
+                className="w-full py-4 rounded-xl bg-[#06B6D4] text-[#121212] font-black text-lg uppercase tracking-wide disabled:opacity-50 mt-auto"
+              >
+                {sendingOrder ? 'Fechando Conta...' : 'Efetuar Pedido (R$ ' + cartTotal.toFixed(2).replace('.',',') + ')'}
+              </button>
+           </div>
+         </div>
+      )}
+
+      {/* CONGRATULATIONS SCREEN */}
+      {orderDoneId && (
+        <div className="fixed inset-0 z-50 bg-[#121212] flex flex-col items-center justify-center p-6 animate-in zoom-in-95">
+           <div className="w-24 h-24 bg-[#06B6D4]/20 rounded-full flex items-center justify-center mb-6 animate-pulse">
+             <div className="w-16 h-16 bg-[#06B6D4] rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(6,182,212,0.6)]">
+                <ShoppingBag size={32} className="text-[#121212]" />
+             </div>
+           </div>
+           
+           <h2 className="text-3xl font-black text-white text-center mb-2 tracking-tighter">Pedido Nº {orderDoneId} Recebido!</h2>
+           <p className="text-[#adaaaa] text-center mb-8">Sua ordem foi disparada com sucesso para os painéis da loja <strong className="text-white">{storeName}</strong>.</p>
+
+           <div className="flex flex-col gap-3 w-full max-w-sm">
+             <a 
+               href={getPoszapLink()}
+               target="_blank"
+               className="w-full bg-[#25D366] text-white py-4 rounded-xl flex items-center justify-center font-black uppercase tracking-wide gap-2 shadow-[0_5px_20px_rgba(37,211,102,0.2)]"
+             >
+               Avisar Vendedor no WhatsApp
+             </a>
+             <button 
+               onClick={() => { setOrderDoneId(null); setCheckoutModalOpen(false); setCartOpen(false); }}
+               className="w-full bg-[#1a1a1a] text-white border border-[#484847]/50 py-4 rounded-xl font-bold uppercase tracking-widest text-xs"
+             >
+               Continuar Navegando
+             </button>
            </div>
         </div>
       )}
