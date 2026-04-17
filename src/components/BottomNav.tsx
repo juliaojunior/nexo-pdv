@@ -8,7 +8,7 @@ export function BottomNav() {
   const pathname = usePathname();
 
   const HIDDEN_ROUTES = ["/menu", "/process"];
-  if (HIDDEN_ROUTES.includes(pathname)) return null;
+  if (HIDDEN_ROUTES.includes(pathname) || pathname.startsWith('/c')) return null;
 
   const navItems = [
     { href: "/", label: "Vendas", icon: ShoppingCart },
