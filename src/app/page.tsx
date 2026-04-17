@@ -34,7 +34,7 @@ export default function Home() {
   
   // ==== NUVEM: SWR SUBSTITUINDO DEXIE ====
   const { data: rawCategories } = useSWR("/api/categories", fetcher);
-  const { data: rawDbProducts, isLoading } = useSWR("/api/products", fetcher, { revalidateOnFocus: true });
+  const { data: rawDbProducts, isLoading, mutate: mutateProducts } = useSWR("/api/products", fetcher, { revalidateOnFocus: true });
 
   const categories = rawCategories || [];
   
@@ -250,6 +250,7 @@ export default function Home() {
         onClose={() => setCheckoutOpen(false)} 
         onSuccess={(data) => {
           setCheckoutOpen(false);
+          mutateProducts();
           // Play beep sound if enabled
           if (typeof window !== "undefined" && localStorage.getItem("nexo_checkoutSounds") !== "false") {
              const audio = new Audio("https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3?filename=success-1-6297.mp3");

@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "@/db/db";
+import useSWR from "swr";
 import { formatCurrency } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 
@@ -12,16 +11,18 @@ export default function ReportsPage() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // Queries atômicas reativas do Dexie recuperando dados brutos da base local
-  const allSales = useLiveQuery(() => db.sales.toArray()) || [];
-  const allSaleItems = useLiveQuery(() => db.saleItems.toArray()) || [];
+  // Queries na Nuvem usando SWR recuperando dados consolidados via Vercel
+  const { data: rawSales, isLoading } = useSWR("/api/sales", (url: string) => fetch(url).then(r => r.json()));
+  
+  const allSales = rawSales || [];
+  const allSaleItems = allSales.flatMap((s: any) => s.items.map((i: any) => ({ ...i, saleId: s.id })));
 
   // Lógica de Filtragem de Tempo Baseada na Data da Venda
   const now = new Date();
   
   const sales = useMemo(() => {
     if (timeFilter === 'all') return allSales;
-    return allSales.filter(sale => {
+    return allSales.filter((sale: any) => {
       const saleDate = new Date(sale.date);
       if (timeFilter === 'month') {
         return saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
@@ -36,12 +37,12 @@ export default function ReportsPage() {
   // Filtra de forma cascata os items das vendas baseados nos IDS das vendas filtradas no período escolhido
   const saleItems = useMemo(() => {
     if (timeFilter === 'all') return allSaleItems;
-    const activeSaleIds = new Set(sales.map(s => s.id));
-    return allSaleItems.filter(item => activeSaleIds.has(item.saleId));
+    const activeSaleIds = new Set(sales.map((s: any) => s.id));
+    return allSaleItems.filter((item: any) => activeSaleIds.has(item.saleId));
   }, [allSaleItems, sales]);
 
   // Cálculos Diretos (Reduce) considerando apenas os dados filtrados
-  const totalVendido = sales.reduce((acc, sale) => acc + sale.total, 0);
+  const totalVendido = sales.reduce((acc: number, sale: any) => acc + Number(sale.total || 0), 0);
   const numeroVendas = sales.length;
 
   // Lógica Top 5 Produtos Mais Vendidos via HashMap
@@ -67,9 +68,9 @@ export default function ReportsPage() {
     // Índices do JS (0 = Dom, 1 = Seg ... 6 = Sáb)
     const rawTotals = [0, 0, 0, 0, 0, 0, 0];
     
-    sales.forEach(sale => {
+    sales.forEach((sale: any) => {
       const day = new Date(sale.date).getDay();
-      rawTotals[day] += sale.total;
+      rawTotals[day] += Number(sale.total || 0);
     });
 
     // Reordenamos para o padrão Visual: Seg, Ter, Qua, Qui, Sex, Sáb, Dom

@@ -2,33 +2,46 @@
 
 import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
+import useSWR from "swr";
 import { db } from "@/db/db";
 import { ChevronLeft, Receipt, Trash2, ArrowDownRight, Clock, AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 
+const fetcher = (url: string) => fetch(url).then(r => r.json());
+
 export default function SalesHistoryPage() {
   const router = useRouter();
 
-  const sales = useLiveQuery(() => db.sales.orderBy('date').reverse().toArray()) || [];
-  const saleItems = useLiveQuery(() => db.saleItems.toArray()) || [];
+  // NUVEM: Histórico e Extrato de Vendas
+  const { data: rawSales, mutate, isLoading } = useSWR("/api/sales", fetcher, { revalidateOnFocus: true });
+  const sales = rawSales || [];
+
+  // Manteve-se o customer local pois o cadastro de clientes ainda não foi portado para a Nuvem
   const customers = useLiveQuery(() => db.customers.toArray()) || [];
   
   const [filterMode, setFilterMode] = useState<"all" | "fiado">("all");
-  const filteredSales = sales.filter(s => filterMode === 'all' || s.paymentMethod === 'Fiado');
+  const filteredSales = sales.filter((s: any) => filterMode === 'all' || s.paymentMethod === 'Fiado');
   
   const [revertCandidate, setRevertCandidate] = useState<number | null>(null);
 
   const handleRevertSale = async () => {
     if (!revertCandidate) return;
+    const tsId = toast.loading("Autorizando estorno na Vercel e destravando estoque...");
+
     try {
-      await db.revertSale(revertCandidate);
-      toast.success("Venda estornada! Os itens retornaram ao estoque com sucesso.");
+      mutate(sales.filter((s: any) => s.id !== revertCandidate), false);
+
+      const res = await fetch(`/api/sales?id=${revertCandidate}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+
+      toast.success("Venda estornada da Rede! Os itens retornaram ao estoque com sucesso.", { id: tsId });
       setRevertCandidate(null);
+      mutate();
     } catch (e: any) {
-      toast.error("Houve uma falha ao tentar estornar esta venda.");
-      console.error(e);
+      toast.error("Houve uma falha ao tentar estornar esta venda na nuvem.", { id: tsId });
+      mutate();
     }
   };
 
@@ -41,7 +54,10 @@ export default function SalesHistoryPage() {
           <button onClick={() => router.back()} className="p-2 -ml-2 rounded-full active:scale-90 transition-transform bg-[#20201f] text-[#adaaaa] hover:text-[#53ddfc]">
             <ChevronLeft size={24} />
           </button>
-          <h1 className="text-[#53ddfc] font-black tracking-tighter text-2xl">Histórico de Caixa</h1>
+          <div className="flex flex-col">
+            <h1 className="text-[#53ddfc] font-black tracking-tighter text-2xl">Histórico de Caixa</h1>
+            <span className="text-[10px] text-[#adaaaa] uppercase tracking-widest font-bold flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-[#06B6D4] rounded-full animate-pulse"/> Sincronizado à Vercel</span>
+          </div>
         </div>
       </header>
 
@@ -67,18 +83,22 @@ export default function SalesHistoryPage() {
             </div>
          </div>
 
-         {filteredSales.length === 0 ? (
+         {isLoading ? (
+            <div className="flex flex-col items-center justify-center p-8 text-center mt-10 opacity-50">
+                <div className="w-10 h-10 border-4 border-[#484847] border-t-[#06B6D4] animate-spin rounded-full mb-4"></div>
+                <p className="font-bold text-white uppercase tracking-widest text-xs">Baixando Transações...</p>
+            </div>
+         ) : filteredSales.length === 0 ? (
            <div className="flex flex-col items-center justify-center h-[40vh] text-[#adaaaa] text-center border-2 border-dashed border-[#484847]/30 rounded-3xl p-6 shadow-sm bg-[#1a1a1a]">
               <div className="bg-[#20201f] p-4 rounded-full mb-4 shadow-inner">
                  <Receipt size={28} className="text-[#484847]" />
               </div>
-              <p className="font-bold text-white mb-2 text-lg tracking-tight">Vazio</p>
-              <p className="text-xs leading-relaxed max-w-[200px]">Nenhum faturamento encontrado neste filtro até o momento.</p>
+              <p className="font-bold text-white mb-2 text-lg tracking-tight">O Cofre está vázio</p>
+              <p className="text-xs leading-relaxed max-w-[200px]">Nenhum faturamento registrado na Nuvem até o momento.</p>
            </div>
          ) : (
-           filteredSales.map(sale => {
-              const relatedItems = saleItems.filter(item => item.saleId === sale.id);
-              const itemsCount = relatedItems.reduce((acc, curr) => acc + curr.quantity, 0);
+           filteredSales.map((sale: any) => {
+              const itemsCount = sale.items.reduce((acc: number, curr: any) => acc + curr.quantity, 0);
 
               return (
                 <div key={sale.id} className="bg-[#1a1a1a] border border-[#484847]/30 rounded-2xl flex flex-col shadow-sm overflow-hidden active:scale-[0.98] transition-transform">
@@ -90,7 +110,7 @@ export default function SalesHistoryPage() {
                          <Receipt size={18} />
                        </div>
                        <div className="flex flex-col">
-                         <span className="text-white font-black text-lg leading-tight tracking-tight">{formatCurrency(sale.total)}</span>
+                         <span className="text-white font-black text-lg leading-tight tracking-tight">{formatCurrency(Number(sale.total))}</span>
                          <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest">
                            {sale.customerId ? customers.find(c => c.id === sale.customerId)?.name || 'Cliente Oculto' : new Date(sale.date).toLocaleString('pt-BR')}
                          </span>
@@ -111,12 +131,12 @@ export default function SalesHistoryPage() {
 
                   {/* Detalhes dos Itens vendidos */}
                   <div className="p-4 flex flex-col gap-2 bg-[#121212]/50">
-                    {relatedItems.map(item => (
+                    {sale.items.map((item: any) => (
                        <div key={item.id} className="flex justify-between items-center">
                           <span className="text-[#adaaaa] text-xs font-semibold max-w-[200px] truncate">
                             {item.quantity}x {item.productName}
                           </span>
-                          <span className="text-[#F3F4F6] text-xs font-medium">{formatCurrency(item.subtotal)}</span>
+                          <span className="text-[#F3F4F6] text-xs font-medium">{formatCurrency(Number(item.subtotal))}</span>
                        </div>
                     ))}
                     <div className="w-full flex justify-end mt-2 pt-3 border-t border-dashed border-[#484847]/50">
@@ -147,8 +167,8 @@ export default function SalesHistoryPage() {
              
              <h2 className="text-xl font-black text-white tracking-tight mb-2">Atenção Risco Alto</h2>
              <p className="text-[#adaaaa] text-sm leading-relaxed mb-6">
-                Você está ordenando o sistema a revogar e <strong className="text-white">destruir esta venda</strong>.<br/><br/>
-                Os valores sairão dos seus relatórios de lucro, e os produtos retornarão imediatamente para a "Aba Estoque".
+                Você está ordenando a Vercel a revogar e <strong className="text-white">destruir esta venda</strong>.<br/><br/>
+                Os valores sairão dos seus relatórios de lucro da Nuvem, e os produtos retornarão imediatamente para a Vitrine (Aba Estoque).
              </p>
 
              <div className="flex gap-3 w-full">
@@ -156,13 +176,13 @@ export default function SalesHistoryPage() {
                   onClick={() => setRevertCandidate(null)}
                   className="flex-1 bg-[#20201f] text-[#adaaaa] font-bold text-sm uppercase tracking-wider py-4 rounded-xl border border-[#484847]/50 active:scale-95 transition-all text-center hover:text-white"
                 >
-                  Manter Venda
+                  Cancelar
                 </button>
                 <button 
                   onClick={handleRevertSale}
                   className="flex-1 bg-[#ff716c] text-[#1a1a1a] font-black text-sm uppercase tracking-wider py-4 rounded-xl shadow-[0_4px_24px_rgba(255,113,108,0.3)] hover:bg-[#ff8682] active:scale-95 transition-all text-center"
                 >
-                  Estornar
+                  Estornar da Nuvem
                 </button>
              </div>
            </div>

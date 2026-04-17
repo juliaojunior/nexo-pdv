@@ -20,6 +20,7 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
   const { items, updateQuantity, clearCart } = useCartStore();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('Dinheiro');
   const [amountReceivedInput, setAmountReceivedInput] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Estados do Cliente / Fiado
   const [customerSearch, setCustomerSearch] = useState('');
@@ -35,6 +36,7 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
   const change = amountReceived > total ? amountReceived - total : 0;
 
   // Filtragem inteligente do AutoComplete de clientes
+
   const filteredCustomers = customerSearch.trim() === '' 
     ? [] 
     : customers.filter(c => c.name.toLowerCase().includes(customerSearch.toLowerCase()) || (c.phone && c.phone.includes(customerSearch))).slice(0, 4);
@@ -55,6 +57,9 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
       return;
     }
 
+    setIsSubmitting(true);
+    const tsId = toast.loading("Registrando venda no cofre da Nuvem...");
+
     try {
       const saleData = {
         total,
@@ -63,25 +68,28 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
         change: paymentMethod === 'Dinheiro' ? change : undefined,
         customerId: selectedCustomer?.id,
         date: new Date().toISOString(),
+        items: items.map(item => ({
+          productId: item.id!,
+          productName: item.name,
+          quantity: item.quantity,
+          unitPrice: item.price,
+          subtotal: item.price * item.quantity,
+        }))
       };
 
-      const saleItemsData = items.map(item => ({
-        productId: item.id!,
-        productName: item.name,
-        quantity: item.quantity,
-        unitPrice: item.price,
-        subtotal: item.price * item.quantity,
-      }));
-
-      // Inicia e aguarda a transação atômica do Dexie.js
-      await db.finalizeSale(saleData, saleItemsData);
+      const res = await fetch('/api/sales', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(saleData)
+      });
+      const resJson = await res.json();
+      if (!res.ok) throw new Error(resJson.error || "Falha na transação da nuvem.");
       
-      // Limpa Zustand store e Notifica a UI
       clearCart();
-      toast.success(paymentMethod === 'Fiado' ? "Dívida adicionada à conta do Cliente!" : "Venda finalizada com sucesso!");
+      toast.success(paymentMethod === 'Fiado' ? "Dívida adicionada à conta do Cliente!" : "Venda finalizada com sucesso na Vercel!", { id: tsId });
       
       const completedReceiptData = {
-        items: saleItemsData,
+        items: saleData.items,
         total,
         paymentMethod,
         amountReceived: saleData.amountReceived,
@@ -96,7 +104,9 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
         onClose();
       }
     } catch (error: any) {
-      toast.error(error.message || "Erro inesperado ao finalizar a transação.");
+      toast.error(error.message || "Erro inesperado ao finalizar a transação.", { id: tsId });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

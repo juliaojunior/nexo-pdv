@@ -18,46 +18,49 @@ export const useCartStore = create<CartState>((set) => ({
 
   addItem: (product: Product, quantity: number = 1) => {
     set((state) => {
-      // Find if item already exists in cart
       const existingItemIndex = state.items.findIndex((item) => item.id === product.id);
 
       if (existingItemIndex > -1) {
-        // Immutability: Create a new array and clone the object before mutating
         const updatedItems = [...state.items];
         const existingItem = updatedItems[existingItemIndex];
         
+        // Bloqueia exceder limite de estoque
+        const newQuantity = Math.min(existingItem.quantity + quantity, product.stock);
+        
         updatedItems[existingItemIndex] = {
           ...existingItem,
-          quantity: existingItem.quantity + quantity,
+          quantity: newQuantity,
         };
 
         return { items: updatedItems };
       }
 
-      // Item does not exist, append to array immutably
-      return { items: [...state.items, { ...product, quantity }] };
+      // Se novo item
+      const initialQuantity = Math.min(quantity, product.stock);
+      return { items: [...state.items, { ...product, quantity: initialQuantity }] };
     });
   },
 
   removeItem: (productId: number) => {
     set((state) => ({
-      // Immutability: Filter returns a new array
       items: state.items.filter((item) => item.id !== productId),
     }));
   },
 
   updateQuantity: (productId: number, quantity: number) => {
     set((state) => {
-      // Remove item if quantity falls to 0 or below
       if (quantity <= 0) {
         return { items: state.items.filter((item) => item.id !== productId) };
       }
 
-      // Immutability: Map returns a new array, returning cloned objects with overwritten quantity
       return {
-        items: state.items.map((item) =>
-          item.id === productId ? { ...item, quantity } : item
-        ),
+        items: state.items.map((item) => {
+           if (item.id === productId) {
+              const safeQuantity = Math.min(quantity, item.stock);
+              return { ...item, quantity: safeQuantity };
+           }
+           return item;
+        }),
       };
     });
   },
