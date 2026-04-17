@@ -46,7 +46,7 @@ export default function ReportsPage() {
   const numeroVendas = sales.length;
 
   // Lógica Top 5 Produtos Mais Vendidos via HashMap
-  const productSalesMap = saleItems.reduce((acc, item) => {
+  const productSalesMap = saleItems.reduce((acc: Record<number, { id: number; name: string; quantity: number }>, item: any) => {
     if (!acc[item.productId]) {
       acc[item.productId] = { 
         id: item.productId, 
