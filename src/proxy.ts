@@ -5,6 +5,7 @@ const isPublicRoute = createRouteMatcher([
   '/c(.*)',      // Rota Principal Universal
   '/menu(.*)',   // Public catalog logic for customers
   '/process(.*)',// Payment / deep link processing
+  '/api/orders(.*)',    // Permite Clientes Injetarem Pedidos
   '/api/settings(.*)',
   '/api/catalog(.*)', 
   '/api/webhook(.*)', 
