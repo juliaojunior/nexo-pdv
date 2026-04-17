@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation';
 
 export const revalidate = 0; // Garante que a Vitrine não sofra cache e exija dados em tempo real (Estoque real)
 
-export default async function StoreCatalogPage({ params }: { params: { storeId: string } }) {
+export default async function StoreCatalogPage(props: { params: Promise<{ storeId: string }> }) {
+  const params = await props.params;
   const storeId = params.storeId;
   
   if (!storeId) return notFound();
