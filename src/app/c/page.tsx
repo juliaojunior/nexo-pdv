@@ -22,8 +22,8 @@ export default async function CatalogPage() {
 
   return (
     <CatalogClient 
-      products={pResult.rows || []} 
-      categories={cResult.rows || []} 
+      products={(pResult.rows as any[]) || []} 
+      categories={(cResult.rows as any[]) || []} 
       settings={settings} 
     />
   );
