@@ -1,11 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useLiveQuery } from "dexie-react-hooks";
-import { db, Category } from "@/db/db";
-import { ChevronLeft, Store, Tags, Smartphone, Volume2, Trash2, Edit3, Plus, ArrowLeft, X, Cloud, CloudLightning, DownloadCloud } from "lucide-react";
+import useSWR from "swr";
+import { ChevronLeft, Store, Tags, Smartphone, Volume2, Trash2, Edit3, Plus, ArrowLeft, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+
+interface Category {
+  id: number;
+  name: string;
+}
+
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -19,106 +25,6 @@ export default function SettingsPage() {
   const [receiptAutoShow, setReceiptAutoShow] = useState(true);
   const [checkoutSounds, setCheckoutSounds] = useState(true);
 
-  // ======= BLOCO 4: NUVEM E SINCRONIZACAO =======
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [lastSyncText, setLastSyncText] = useState("Status: Não Sincronizado");
-
-  const handleForceSync = async () => {
-    const p = await db.products.toArray();
-    const c = await db.categories.toArray();
-    const cus = await db.customers.toArray();
-    const s = await db.sales.toArray();
-    const si = await db.saleItems.toArray();
-    
-    if (p.length === 0 && c.length === 0 && cus.length === 0 && s.length === 0) {
-       return toast.error("Seu sistema está completamente vazio.");
-    }
-    
-    setIsSyncing(true);
-    const toastId = toast.loading("Comprimindo Carga Master e enviando para a Nuvem...");
-    
-    try {
-      const payload = { 
-        products: p, categories: c, customers: cus, sales: s, saleItems: si,
-        settings: {
-           nexo_storeName: storeName,
-           nexo_storeDocument: storeDocument,
-           nexo_storePhone: storePhone,
-           nexo_receiptAutoShow: String(receiptAutoShow),
-           nexo_checkoutSounds: String(checkoutSounds)
-        }
-      };
-      const res = await fetch('/api/cloud/sync/all', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      
-      if (!res.ok) throw new Error(data.error || "Conexão com Cofre Vercel falhou.");
-      
-      toast.success(`Carga cimentada! (P:${data.count.products} | C:${data.count.categories} | Cli:${data.count.customers} | V:${data.count.sales})`, { id: toastId });
-      setLastSyncText(`Última subida: Hoje às ${new Date().toLocaleTimeString('pt-BR')}`);
-    } catch (e: any) {
-      toast.error(`Falha: ${e.message}`, { id: toastId });
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
-  const handlePullFromCloud = async () => {
-    setIsSyncing(true);
-    const toastId = toast.loading("Buscando Sistema Completo no Servidor Vercel...");
-    
-    try {
-      const res = await fetch('/api/cloud/sync/all', { method: 'GET' });
-      const data = await res.json();
-      
-      if (!res.ok) throw new Error(data.error || "Conexão com a Nuvem falhou.");
-      if (!data.data || (data.data.products.length === 0 && data.data.categories.length === 0 && data.data.customers.length === 0 && data.data.sales.length === 0)) {
-         return toast.error("Nuvem Vazia. Nada para baixar.", { id: toastId });
-      }
-
-      // Estratégia de Sobrescrita Master
-      await Promise.all([
-        db.products.clear(),
-        db.categories.clear(),
-        db.customers.clear(),
-        db.sales.clear(),
-        db.saleItems.clear()
-      ]);
-      
-      const pProd = data.data.products.map((x: any) => ({
-        id: x.local_id, name: x.name, price: Number(x.price), stock: x.stock, 
-        categoryId: x.categoryid || undefined, barcode: x.barcode || undefined, image: x.imageurl || undefined
-      }));
-      const pCat = data.data.categories.map((x: any) => ({ id: x.local_id, name: x.name }));
-      const pCus = data.data.customers.map((x: any) => ({ id: x.local_id, name: x.name, phone: x.phone || undefined, email: x.email || undefined, document: x.document || undefined, createdAt: x.createdat || undefined }));
-      const pSal = data.data.sales.map((x: any) => ({ id: x.local_id, total: Number(x.total), paymentMethod: x.paymentmethod, amountReceived: x.amountreceived ? Number(x.amountreceived) : undefined, change: x.change ? Number(x.change) : undefined, customerId: x.customerid || undefined, date: x.date }));
-      const pSI = data.data.saleItems.map((x: any) => ({ id: x.local_id, saleId: x.saleid, productId: x.productid, productName: x.productname, quantity: x.quantity, unitPrice: Number(x.unitprice), subtotal: Number(x.subtotal) }));
-      
-      await db.products.bulkAdd(pProd);
-      await db.categories.bulkAdd(pCat);
-      await db.customers.bulkAdd(pCus);
-      await db.sales.bulkAdd(pSal);
-      await db.saleItems.bulkAdd(pSI);
-      
-      const st = data.data.settings || {};
-      if (st.nexo_storeName !== undefined) { setStoreName(st.nexo_storeName); localStorage.setItem('nexo_storeName', st.nexo_storeName); }
-      if (st.nexo_storeDocument !== undefined) { setStoreDocument(st.nexo_storeDocument); localStorage.setItem('nexo_storeDocument', st.nexo_storeDocument); }
-      if (st.nexo_storePhone !== undefined) { setStorePhone(st.nexo_storePhone); localStorage.setItem('nexo_storePhone', st.nexo_storePhone); }
-      if (st.nexo_receiptAutoShow !== undefined) { setReceiptAutoShow(st.nexo_receiptAutoShow === 'true'); localStorage.setItem('nexo_receiptAutoShow', st.nexo_receiptAutoShow); }
-      if (st.nexo_checkoutSounds !== undefined) { setCheckoutSounds(st.nexo_checkoutSounds === 'true'); localStorage.setItem('nexo_checkoutSounds', st.nexo_checkoutSounds); }
-      
-      toast.success(`Restauração Completa! ${pProd.length} Produtos, ${pCus.length} Clientes.`, { id: toastId });
-      setLastSyncText(`Última restauração: Hoje às ${new Date().toLocaleTimeString('pt-BR')}`);
-    } catch (e: any) {
-      toast.error(`Falha na Restauração: ${e.message}`, { id: toastId });
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
   // Initialization
   useEffect(() => {
     setStoreName(localStorage.getItem("nexo_storeName") || "");
@@ -129,7 +35,6 @@ export default function SettingsPage() {
     setCheckoutSounds(localStorage.getItem("nexo_checkoutSounds") !== "false");
   }, []);
 
-  // Sync Logic
   const handleStoreUpdate = (field: 'name' | 'doc' | 'phone', val: string) => {
     if (field === 'name') { setStoreName(val); localStorage.setItem("nexo_storeName", val); }
     if (field === 'doc') { setStoreDocument(val); localStorage.setItem("nexo_storeDocument", val); }
@@ -142,55 +47,52 @@ export default function SettingsPage() {
   };
 
 
-  // ======= BLOCO 2: CATEGORIAS =======
-  const allCategories = useLiveQuery(() => db.categories.toArray()) || [];
-  const allProducts = useLiveQuery(() => db.products.toArray()) || [];
+  // ======= BLOCO 2: CATEGORIAS (Via Nuvem SWR) =======
+  const { data: allCategoriesRaw, mutate } = useSWR<Category[]>("/api/categories", fetcher);
+  const allCategories = allCategoriesRaw || [];
   
   const [isCatModalOpen, setIsCatModalOpen] = useState(false);
   const [newCatName, setNewCatName] = useState("");
-  const [editingCatId, setEditingCatId] = useState<number | null>(null);
 
   const handleSaveCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCatName.trim()) return toast.error("O nome da categoria é obrigatório.");
 
     try {
-      if (editingCatId) {
-        await db.categories.update(editingCatId, { name: newCatName.trim() });
-        toast.success("Categoria renomeada!");
-      } else {
-        await db.categories.add({ name: newCatName.trim() });
-        toast.success("Nova categoria gerada!");
-      }
+      mutate([...allCategories, { id: Date.now(), name: newCatName.trim() }], false); // Optimistic Update
+
+      const res = await fetch('/api/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newCatName.trim() })
+      });
+      if (!res.ok) throw new Error();
+
+      toast.success("Nova categoria gerada na Nuvem!");
       setNewCatName("");
-      setEditingCatId(null);
+      mutate();
     } catch (err) {
-      toast.error("Erro. É provável que esta categoria já exista.");
+      toast.error("Erro interno ao criar categoria.");
+      mutate();
     }
   };
 
   const handleDeleteCategory = async (id?: number) => {
     if (!id) return;
-    
-    const productsInCat = allProducts.filter(p => p.categoryId === id);
-    if (productsInCat.length > 0) {
-      return toast.error(`Proteção Ativa: Essa categoria possui ${productsInCat.length} produto(s) vinculado(s). Altere-os antes de excluí-la.`);
-    }
 
-    if (confirm("Tem certeza que deseja apagar essa categoria?")) {
+    if (confirm("Tem certeza que deseja apagar essa categoria definitivamente?")) {
       try {
-        await db.categories.delete(id);
-        toast.success("Categoria removida.");
+        mutate(allCategories.filter(c => c.id !== id), false); // Optimistic Remove
+        
+        const res = await fetch(`/api/categories?id=${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error();
+        
+        toast.success("Categoria extinta da Nuvem.");
+        mutate();
       } catch (err) {
         toast.error("Erro interno ao deletar.");
+        mutate();
       }
-    }
-  };
-
-  const openCatEditor = (cat: Category) => {
-    if (cat.id) {
-      setEditingCatId(cat.id);
-      setNewCatName(cat.name);
     }
   };
 
@@ -203,7 +105,10 @@ export default function SettingsPage() {
           <button onClick={() => router.back()} className="p-2 -ml-2 rounded-full active:scale-90 transition-transform bg-[#20201f] text-[#adaaaa] hover:text-[#53ddfc]">
             <ChevronLeft size={24} />
           </button>
-          <h1 className="text-[#53ddfc] font-black tracking-tighter text-2xl">Configurações</h1>
+          <div className="flex flex-col">
+            <h1 className="text-[#53ddfc] font-black tracking-tighter text-2xl">Configurações</h1>
+            <span className="text-[10px] text-[#adaaaa] uppercase tracking-widest font-bold flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-[#06B6D4] rounded-full animate-pulse"/> Totalmente na Nuvem</span>
+          </div>
         </div>
       </header>
 
@@ -250,11 +155,10 @@ export default function SettingsPage() {
               />
             </div>
             <p className="text-[10px] text-[#adaaaa] leading-relaxed mt-1 px-1">
-              * Estes dados serão imbuídos no cabeçalho dos envios dos seus Recibos Digitais e no seu Catálogo Web.
+              * Estes dados serão exibidos nos Recibos e na Vitrine.
             </p>
           </div>
         </section>
-
 
         {/* BLOCO 2: CATEGORIAS */}
         <section className="flex flex-col gap-4">
@@ -269,7 +173,7 @@ export default function SettingsPage() {
           >
             <div className="flex flex-col text-left">
               <span className="font-bold text-white text-base tracking-tight mb-0.5">Gerenciar Departamentos</span>
-              <span className="text-[#adaaaa] text-xs font-medium">Você possui {allCategories.length} categorias cadastradas</span>
+              <span className="text-[#adaaaa] text-xs font-medium">Você possui {allCategories.length} categorias na nuvem</span>
             </div>
             <div className="w-10 h-10 rounded-full bg-[#2a2a29] group-hover:bg-[#004b58]/40 border border-[#484847] flex items-center justify-center transition-colors">
               <Edit3 size={18} className="text-[#53ddfc]" />
@@ -314,51 +218,7 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* BLOCO 4: SINCRONIZAÇÃO NUVEM */}
-        <section className="flex flex-col gap-4">
-          <div className="flex items-center gap-3 mb-1">
-            <Cloud size={20} className="text-[#06B6D4]" />
-            <h2 className="text-white font-bold text-lg tracking-tight">Nuvem e Backup</h2>
-          </div>
-          
-          <div className="bg-[#1a1a1a] border border-[#484847]/30 rounded-2xl flex flex-col shadow-sm overflow-hidden p-4 group hover:border-[#53ddfc]/30 transition-all">
-            <div className="flex justify-between items-start mb-4">
-                <div className="flex flex-col">
-                  <span className="font-bold text-white text-[15px] mb-1">Backup de Catálogo</span>
-                  <span className="text-[#adaaaa] text-[11px] leading-tight font-medium max-w-[200px]">Armazene seus produtos fisicamente na nuvem para não dependender da memória rotátil do celular. Indispensável para criar um Catálogo Web no futuro.</span>
-                </div>
-                {isSyncing ? (
-                  <div className="w-10 h-10 rounded-full border border-[#53ddfc]/50 border-t-[#53ddfc] animate-spin shrink-0"></div>
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-[#004b58]/40 border border-[#484847] flex items-center justify-center transition-colors shadow-inner shrink-0">
-                    <CloudLightning size={18} className="text-[#53ddfc]" />
-                  </div>
-                )}
-            </div>
-
-            <div className="flex flex-col border-t border-[#484847]/30 pt-4 mt-1 gap-3">
-              <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest">{lastSyncText}</span>
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={handlePullFromCloud}
-                  disabled={isSyncing}
-                  className="flex-1 bg-[#20201f] border border-[#484847]/50 text-white font-black text-[11px] sm:text-xs uppercase px-2 py-3 rounded-lg active:scale-95 transition-transform disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                   <DownloadCloud size={16} className="text-[#53ddfc]" />
-                   Puxar Nuvem
-                </button>
-                <button 
-                  onClick={handleForceSync}
-                  disabled={isSyncing}
-                  className="flex-1 bg-[#06B6D4] text-[#004b58] font-black text-[11px] sm:text-xs uppercase px-2 py-3 rounded-lg active:scale-95 transition-transform shadow-[0_2px_10px_rgba(6,182,212,0.3)] disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                   <CloudLightning size={16} />
-                   Forçar Subida
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* NOTA: BLOCO DE SINCRONIZAÇÃO FOI REMOVIDO POIS A ARQUITETURA AGORA É CLOUD-FIRST 100% ONLINE! */}
 
       </main>
 
@@ -388,16 +248,13 @@ export default function SettingsPage() {
               {allCategories.length === 0 ? (
                  <div className="flex flex-col items-center justify-center h-40 opacity-40 text-center">
                     <Tags size={32} className="text-[#adaaaa] mb-2" />
-                    <p className="font-bold text-white">Nenhum setor criado</p>
+                    <p className="font-bold text-white">Nenhum setor criado na Nuvem</p>
                  </div>
               ) : (
                 allCategories.map(cat => (
                   <div key={cat.id} className="bg-[#1a1a1a] border border-[#484847]/30 p-3 rounded-2xl flex items-center justify-between group hover:border-[#53ddfc]/30 transition-colors">
                     <span className="font-bold text-white truncate pr-4 text-[15px]">{cat.name}</span>
                     <div className="flex items-center gap-1 shrink-0">
-                       <button onClick={() => openCatEditor(cat)} className="w-10 h-10 flex items-center justify-center text-[#adaaaa] hover:text-[#53ddfc] rounded-full bg-[#20201f] transition-colors">
-                         <Edit3 size={16} />
-                       </button>
                        <button onClick={() => handleDeleteCategory(cat.id)} className="w-10 h-10 flex items-center justify-center text-[#adaaaa] hover:text-[#ff716c] rounded-full bg-[#20201f] transition-colors">
                          <Trash2 size={16} />
                        </button>
@@ -411,13 +268,8 @@ export default function SettingsPage() {
             <form onSubmit={handleSaveCategory} className="p-4 border-t border-[#484847]/30 bg-[#171716] shrink-0 mb-safe sm:mb-0">
               <div className="flex items-center justify-between mb-2">
                  <span className="text-xs font-bold text-[#53ddfc] uppercase tracking-widest pl-1">
-                   {editingCatId ? 'Renomear Setor' : 'Adicionar Novo'}
+                   Adicionar Novo Setor
                  </span>
-                 {editingCatId && (
-                   <button type="button" onClick={() => { setEditingCatId(null); setNewCatName(''); }} className="text-[10px] text-[#ff716c] font-black uppercase tracking-widest bg-[#ff716c]/10 px-2 py-1 rounded-md">
-                     Cancelar Edição
-                   </button>
-                 )}
               </div>
               <div className="flex gap-2">
                  <input 
@@ -432,7 +284,7 @@ export default function SettingsPage() {
                   disabled={!newCatName.trim()}
                   className="w-14 h-14 shrink-0 bg-[#06B6D4] text-[#004b58] font-black rounded-xl flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50 disabled:bg-[#484847] disabled:text-[#adaaaa]"
                  >
-                   {editingCatId ? <ArrowLeft size={24} className="text-white" /> : <Plus size={28} strokeWidth={2.5} />}
+                   <Plus size={28} strokeWidth={2.5} />
                  </button>
               </div>
             </form>

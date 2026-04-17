@@ -1,18 +1,34 @@
 "use client";
 
 import { useState } from "react";
-import { useLiveQuery } from "dexie-react-hooks";
-import { db, Product } from "@/db/db";
+import useSWR from "swr";
 import { ChevronLeft, Search, Package, Plus, Minus, Edit2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 
+interface Product {
+  id: number;
+  name: string;
+  price: string;
+  stock: number;
+  barcode?: string;
+  image_url?: string;
+}
+
 type AdjustmentMode = 'add' | 'subtract' | 'overwrite';
+
+// Fetcher padrão para o SWR (comunicação com a nossa nova API REST)
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function InventoryPage() {
   const router = useRouter();
-  const allProducts = useLiveQuery(() => db.products.toArray()) || [];
+  
+  // O Hook SWR substitui o Dexie: Faz cache local e atualizações em tempo real
+  const { data: allProducts, mutate, isLoading } = useSWR<Product[]>("/api/products", fetcher, {
+    fallbackData: [], // previne arrays nulos na primeira renderização
+    revalidateOnFocus: true // Ao voltar pra aba, garante que sempre busque do servidor se algo mudar
+  });
   
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -20,8 +36,9 @@ export default function InventoryPage() {
   // Modal states
   const [mode, setMode] = useState<AdjustmentMode>('add');
   const [quantityStr, setQuantityStr] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  const filteredProducts = allProducts.filter(p => 
+  const filteredProducts = (allProducts || []).filter(p => 
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     (p.barcode && p.barcode.includes(searchTerm))
   );
@@ -33,6 +50,7 @@ export default function InventoryPage() {
   };
 
   const closeModal = () => {
+    if (isUpdating) return;
     setSelectedProduct(null);
   };
 
@@ -58,16 +76,33 @@ export default function InventoryPage() {
        newStock = qty;
     }
 
+    setIsUpdating(true);
+
     try {
-      await db.products.update(selectedProduct.id, {
-        stock: newStock,
-        updatedAt: new Date().toISOString()
+      // 1. Optimistic Update (Engana os olhos mantendo UX rápida como se fosse offline)
+      mutate(currentData => currentData?.map(p => 
+        p.id === selectedProduct.id ? { ...p, stock: newStock } : p
+      ), false);
+
+      // 2. Chama a nova API para injetar no Banco da Nuvem de fato
+      const response = await fetch("/api/products", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: selectedProduct.id, stock: newStock })
       });
-      toast.success("Estoque sincronizado ao balanço!");
+
+      if (!response.ok) throw new Error("Erro na gravação da nuvem");
+
+      // 3. Re-autentica com o Vercel p/ garantir consistência
+      mutate();
+      toast.success("Estoque sincronizado na nuvem!");
       closeModal();
     } catch (err) {
-      toast.error("Erro interno ao atualizar produto.");
+      toast.error("Erro interno ao atualizar produto na nuvem.");
       console.error(err);
+      mutate(); // Revoga a atualização otimista se der erro
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -85,7 +120,10 @@ export default function InventoryPage() {
           <button onClick={() => router.back()} className="p-2 -ml-2 rounded-full active:scale-90 transition-transform bg-[#20201f] text-[#adaaaa] hover:text-[#53ddfc]">
             <ChevronLeft size={24} />
           </button>
-          <h1 className="text-[#53ddfc] font-black tracking-tighter text-2xl">Estoque</h1>
+          <div className="flex flex-col">
+             <h1 className="text-[#53ddfc] font-black tracking-tighter text-2xl">Estoque</h1>
+             <span className="text-[10px] text-[#adaaaa] uppercase tracking-widest font-bold flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-[#06B6D4] rounded-full animate-pulse"/> Sincronizado à Nuvem</span>
+          </div>
         </div>
         
         {/* BUSCA */}
@@ -94,7 +132,7 @@ export default function InventoryPage() {
             <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#adaaaa] group-focus-within:text-[#53ddfc] transition-colors" />
             <input 
               type="text" 
-              placeholder="Buscar mercadoria por nome ou código..." 
+              placeholder="Buscar mercadoria ligada na rede..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-[#1a1a1a] border border-[#484847]/50 focus:border-[#06B6D4] rounded-xl h-12 pl-12 pr-4 text-sm font-medium outline-none transition-all placeholder:text-[#484847] shadow-inner"
@@ -105,13 +143,18 @@ export default function InventoryPage() {
 
       {/* FEED (LIST) */}
       <main className="px-4 pt-6 max-w-md mx-auto">
-        {filteredProducts.length === 0 ? (
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 opacity-40">
+            <div className="w-10 h-10 border-4 border-t-[#06B6D4] border-[#484847] rounded-full animate-spin mb-4" />
+            <p className="font-bold text-sm text-white uppercase tracking-widest">Acessando Nuvem...</p>
+          </div>
+        ) : filteredProducts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 opacity-40 text-center">
             <div className="w-20 h-20 rounded-full border border-dashed border-[#adaaaa]/50 flex items-center justify-center mb-4 text-[#adaaaa]">
               <Package size={32} />
             </div>
             <p className="font-bold text-lg text-white">Prateleira vazia</p>
-            <p className="text-sm mt-1">Nenhum produto cadastrado bate com a pesquisa.</p>
+            <p className="text-sm mt-1">Nenhum produto cadastrado na rede bate com a pesquisa.</p>
           </div>
         ) : (
           <div className="flex flex-col gap-3">
@@ -126,8 +169,8 @@ export default function InventoryPage() {
               >
                 <div className="flex items-center gap-4 overflow-hidden">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-tr flex-shrink-0 from-[#004b58] to-[#1a1a1a] border border-[#06B6D4]/20 flex items-center justify-center overflow-hidden relative">
-                    {product.image ? (
-                       <img src={product.image} className="w-full h-full object-cover" alt={product.name} />
+                    {product.image_url ? (
+                       <img src={product.image_url} className="w-full h-full object-cover" alt={product.name} />
                     ) : (
                        <Package size={20} className="text-[#53ddfc] opacity-60" />
                     )}
@@ -135,13 +178,13 @@ export default function InventoryPage() {
                   <div className="flex flex-col truncate">
                     <span className="font-bold text-white text-base tracking-tight truncate max-w-[180px]">{product.name}</span>
                     <span className="text-[#adaaaa] text-xs font-bold uppercase tracking-widest mt-0.5 max-w-full">
-                       {formatCurrency(product.price)}
+                       {formatCurrency(Number(product.price))}
                     </span>
                   </div>
                 </div>
 
                 {/* Stock Battery Tag */}
-                <div className={`flex flex-col items-end flex-shrink-0 pl-2`}>
+                <div className="flex flex-col items-end flex-shrink-0 pl-2">
                    <div className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-inner transition-colors ${
                        isCritical 
                          ? 'bg-[#ff716c]/10 border border-[#ff716c]/30 animate-pulse' 
@@ -177,8 +220,8 @@ export default function InventoryPage() {
 
             <div className="px-5 pb-5 pt-1 flex flex-col items-center border-b border-[#484847]/30 flex-shrink-0">
               <div className="w-14 h-14 rounded-xl bg-gradient-to-tr flex-shrink-0 from-[#004b58] to-[#121212] border border-[#06B6D4]/30 flex items-center justify-center overflow-hidden mb-3 shadow-[0_4px_16px_rgba(6,182,212,0.2)]">
-                {selectedProduct.image ? (
-                   <img src={selectedProduct.image} className="w-full h-full object-cover" alt={selectedProduct.name} />
+                {selectedProduct.image_url ? (
+                   <img src={selectedProduct.image_url} className="w-full h-full object-cover" alt={selectedProduct.name} />
                 ) : (
                    <Package size={24} className="text-[#53ddfc]" />
                 )}
@@ -188,7 +231,7 @@ export default function InventoryPage() {
                 {selectedProduct.name}
               </h2>
               <div className="bg-[#1a1a1a] px-4 py-1.5 mt-2 rounded-full border border-[#484847] flex items-center gap-2">
-                 <span className="text-[#adaaaa] text-[11px] font-bold uppercase tracking-widest">Estoque Atual:</span>
+                 <span className="text-[#adaaaa] text-[11px] font-bold uppercase tracking-widest">Estoque na Nuvem:</span>
                  <span className="text-[#53ddfc] text-base font-black">{selectedProduct.stock}</span>
               </div>
             </div>
@@ -201,6 +244,7 @@ export default function InventoryPage() {
                   <button 
                     type="button" 
                     onClick={() => { setMode('add'); setQuantityStr(""); }}
+                    disabled={isUpdating}
                     className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg transition-all ${mode === 'add' ? 'bg-[#20201f] border border-[#484847] text-white shadow-sm' : 'text-[#adaaaa] hover:text-white'}`}
                   >
                      <Plus size={20} className={mode === 'add' ? 'text-[#06B6D4]' : ''} />
@@ -209,6 +253,7 @@ export default function InventoryPage() {
                   <button 
                     type="button" 
                     onClick={() => { setMode('subtract'); setQuantityStr(""); }}
+                    disabled={isUpdating}
                     className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg transition-all ${mode === 'subtract' ? 'bg-[#20201f] border border-[#484847] text-white shadow-sm' : 'text-[#adaaaa] hover:text-white'}`}
                   >
                      <Minus size={20} className={mode === 'subtract' ? 'text-[#ff716c]' : ''} />
@@ -217,6 +262,7 @@ export default function InventoryPage() {
                   <button 
                     type="button" 
                     onClick={() => { setMode('overwrite'); setQuantityStr(""); }}
+                    disabled={isUpdating}
                     className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg transition-all ${mode === 'overwrite' ? 'bg-[#20201f] border border-[#484847] text-white shadow-sm' : 'text-[#adaaaa] hover:text-white'}`}
                   >
                      <Edit2 size={18} className={mode === 'overwrite' ? 'text-white' : ''} />
@@ -228,7 +274,7 @@ export default function InventoryPage() {
                 <div className="flex flex-col items-center space-y-4">
                    
                    <div className="flex items-center gap-6">
-                     <button type="button" onClick={() => handleQuickAddQty(-1)} className="w-14 h-14 bg-[#1a1a1a] border border-[#484847]/50 rounded-2xl flex items-center justify-center text-white active:scale-95 shadow-sm hover:border-[#53ddfc] transition-colors">
+                     <button type="button" onClick={() => handleQuickAddQty(-1)} disabled={isUpdating} className="w-14 h-14 bg-[#1a1a1a] border border-[#484847]/50 rounded-2xl flex items-center justify-center text-white active:scale-95 shadow-sm hover:border-[#53ddfc] transition-colors disabled:opacity-50">
                         <Minus size={24} strokeWidth={3} />
                      </button>
                      
@@ -240,40 +286,42 @@ export default function InventoryPage() {
                           value={quantityStr}
                           onChange={(e) => setQuantityStr(e.target.value)}
                           placeholder="0"
-                          className="w-24 h-16 bg-transparent border-b-2 border-[#484847] focus:border-[#53ddfc] text-center text-4xl font-black text-white tracking-tighter outline-none transition-colors"
+                          disabled={isUpdating}
+                          className="w-24 h-16 bg-transparent border-b-2 border-[#484847] focus:border-[#53ddfc] text-center text-4xl font-black text-white tracking-tighter outline-none transition-colors disabled:opacity-50"
                         />
                      </div>
 
-                     <button type="button" onClick={() => handleQuickAddQty(1)} className="w-14 h-14 bg-[#1a1a1a] border border-[#484847]/50 rounded-2xl flex items-center justify-center text-white active:scale-95 shadow-sm hover:border-[#53ddfc] transition-colors">
+                     <button type="button" onClick={() => handleQuickAddQty(1)} disabled={isUpdating} className="w-14 h-14 bg-[#1a1a1a] border border-[#484847]/50 rounded-2xl flex items-center justify-center text-white active:scale-95 shadow-sm hover:border-[#53ddfc] transition-colors disabled:opacity-50">
                         <Plus size={24} strokeWidth={3} />
                      </button>
                    </div>
 
                    <p className="text-[#adaaaa] text-[11px] font-medium text-center px-2">
-                     {mode === 'add' && "Qual a quantidade exata de entrada deste lote?"}
-                     {mode === 'subtract' && "Quantas unidades sofreram dano ou perda?"}
-                     {mode === 'overwrite' && "Qual contagem física da mercadoria real?"}
+                     {mode === 'add' && "Qual a entrada de rede real?"}
+                     {mode === 'subtract' && "Quantas unidades deduzir na nuvem?"}
+                     {mode === 'overwrite' && "Qual o controle exato final no banco?"}
                    </p>
                 </div>
               </div>
 
-              {/* Action Buttons Pinned at the Bottom (with safe-area padding for mobile) */}
-              <div className="px-5 pt-4 pb-8 sm:pb-6 border-t border-[#484847]/30 flex gap-3 bg-[#131313] mt-auto flex-shrink-0 z-20 shadow-[0_-12px_24px_rgba(0,0,0,0.4)]">
+               {/* Action Buttons Pinned at the Bottom*/}
+               <div className="px-5 pt-4 pb-8 sm:pb-6 border-t border-[#484847]/30 flex gap-3 bg-[#131313] mt-auto flex-shrink-0 z-20 shadow-[0_-12px_24px_rgba(0,0,0,0.4)]">
                  <button 
                   type="button" 
                   onClick={closeModal}
-                  className="flex-[0.8] h-12 sm:h-14 bg-[#1a1a1a] border border-[#484847]/50 hover:bg-[#20201f] text-white font-bold text-sm sm:text-base rounded-xl flex items-center justify-center active:scale-95 transition-all outline-none"
+                  disabled={isUpdating}
+                  className="flex-[0.8] h-12 sm:h-14 bg-[#1a1a1a] border border-[#484847]/50 hover:bg-[#20201f] text-white font-bold text-sm sm:text-base rounded-xl flex items-center justify-center active:scale-95 transition-all outline-none disabled:opacity-50"
                  >
                    Cancelar
                  </button>
                  <button 
                   type="submit"
-                  disabled={!quantityStr || parseInt(quantityStr, 10) === 0}
+                  disabled={!quantityStr || parseInt(quantityStr, 10) === 0 || isUpdating}
                   className="flex-[1.2] h-12 sm:h-14 bg-gradient-to-tr from-[#06B6D4] to-[#53ddfc] text-[#004b58] font-black text-sm sm:text-base rounded-xl flex items-center justify-center active:scale-95 transition-all disabled:opacity-50 disabled:from-[#484847] disabled:to-[#484847] disabled:text-[#adaaaa]"
                  >
-                   Confirmar
+                   {isUpdating ? "Salvando..." : "Confirmar via Web"}
                  </button>
-              </div>
+               </div>
             </form>
           </div>
         </div>

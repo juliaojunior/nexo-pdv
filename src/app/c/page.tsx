@@ -6,18 +6,18 @@ export const revalidate = 0; // Garante que a Vitrine não sofra cache e exija d
 export default async function CatalogPage() {
   const client = await cloudDb.connect();
 
-  // Extração Simuntânea da Nuvem
+  // Extração Simultânea da Nuvem (Buscando das novas tabelas nexo_)
   const [pResult, cResult, sResult] = await Promise.all([
-    client.sql`SELECT * FROM cloud_products ORDER BY name ASC`.catch(() => ({ rows: [] })),
-    client.sql`SELECT * FROM cloud_categories ORDER BY name ASC`.catch(() => ({ rows: [] })),
-    client.sql`SELECT * FROM cloud_settings`.catch(() => ({ rows: [] }))
+    client.sql`SELECT id as local_id, name, price, stock, category_id as categoryid, image_url as imageurl FROM nexo_products ORDER BY name ASC`.catch(() => ({ rows: [] })),
+    client.sql`SELECT id as local_id, name FROM nexo_categories ORDER BY name ASC`.catch(() => ({ rows: [] })),
+    client.sql`SELECT key, value FROM nexo_settings`.catch(() => ({ rows: [] }))
   ]);
   client.release();
 
   // Mapeamento dinâmico das configurações da loja (nome, zap)
   const settings: Record<string, string> = {};
   sResult.rows.forEach(row => {
-    settings[row.local_id] = row.value;
+    settings[row.key] = row.value;
   });
 
   return (
