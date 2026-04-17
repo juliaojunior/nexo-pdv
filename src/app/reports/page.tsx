@@ -60,7 +60,7 @@ export default function ReportsPage() {
 
   // Mapeamos os valores de volta para um Array e ordenamos decrescente
   const top5Products = Object.values(productSalesMap)
-    .sort((a, b) => b.quantity - a.quantity)
+    .sort((a: any, b: any) => b.quantity - a.quantity)
     .slice(0, 5);
 
   // Lógica Real do Gráfico de Volume (Agregação por Dia da Semana: Seg a Dom)
