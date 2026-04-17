@@ -3,20 +3,16 @@
 import { useState } from "react";
 import { Settings, Users, PackageMinus, LogOut, ChevronRight, Share2, Compass, QrCode, FileText } from "lucide-react";
 import Link from "next/link";
-import { SignOutButton } from "@clerk/nextjs";
-import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "@/db/db";
+import { SignOutButton, useAuth } from "@clerk/nextjs";
 import { toast } from "sonner";
 
 export default function MorePage() {
-  const products = useLiveQuery(() => db.products.toArray());
-  const categories = useLiveQuery(() => db.categories.toArray());
+  const { userId } = useAuth();
   const [isSharing, setIsSharing] = useState(false);
 
   const handleShareMenu = async () => {
-    if (!products || !categories) return;
-    if (products.length === 0) {
-      toast.error("O catálogo está vazio! Adicione produtos primeiro.");
+    if (!userId) {
+      toast.error("Erro interno. Identidade da Loja indisponível.");
       return;
     }
     
@@ -24,12 +20,12 @@ export default function MorePage() {
     setIsSharing(true);
 
     try {
-      // O novo catálogo Nuvem em tempo real!
-      const finalLink = `${window.location.origin}/c`;
+      // O novo catálogo Dinâmico (Cloud-First)
+      const finalLink = `${window.location.origin}/c/${userId}`;
 
       // Tenta Copiar
       await navigator.clipboard.writeText(finalLink).catch(() => {});
-      toast.success("Link encurtado copiado! Pode usar no Insta.");
+      toast.success("Link Seguro copiado! Cole na bio do Insta.");
 
       // Share Tooltip Nativo
       if (navigator.share) {
