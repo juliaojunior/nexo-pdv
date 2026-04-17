@@ -5,7 +5,7 @@ export const revalidate = 0; // Garante que a Vitrine não sofra cache e exija d
 
 export default async function CatalogPage() {
   const client = await cloudDb.connect();
-  
+
   // Extração Simuntânea da Nuvem
   const [pResult, cResult, sResult] = await Promise.all([
     client.sql`SELECT * FROM cloud_products ORDER BY name ASC`.catch(() => ({ rows: [] })),
@@ -21,10 +21,11 @@ export default async function CatalogPage() {
   });
 
   return (
-    <CatalogClient 
-      products={(pResult.rows as any[]) || []} 
-      categories={(cResult.rows as any[]) || []} 
-      settings={settings} 
+    <CatalogClient
+      products={(pResult.rows as any[]) || []}
+      categories={(cResult.rows as any[]) || []}
+      settings={settings}
     />
   );
 }
+
