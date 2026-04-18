@@ -101,7 +101,6 @@ export function ProductForm({ initialData, onSubmit, categories }: ProductFormPr
             <input 
               type="file" 
               accept="image/*" 
-              capture="environment"
               onChange={handleImageCapture}
               className="hidden" 
             />

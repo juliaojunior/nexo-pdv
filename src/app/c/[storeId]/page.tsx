@@ -1,8 +1,35 @@
 import { cloudDb } from '@/lib/cloudDb';
 import CatalogClient from '@/components/CatalogClient';
 import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
 
 export const revalidate = 0; // Garante que a Vitrine não sofra cache e exija dados em tempo real (Estoque real)
+
+// Função que muda a 'Cara' e o 'Texto' do Link quando ele é colado no WhatsApp
+export async function generateMetadata(props: { params: Promise<{ storeId: string }> }): Promise<Metadata> {
+  const params = await props.params;
+  const storeId = params.storeId;
+  const client = await cloudDb.connect();
+  
+  let storeName = "Nexo Loja";
+  try {
+     const res = await client.sql`SELECT value FROM nexo_settings WHERE user_id = ${storeId} AND key = 'nexo_storeName'`;
+     if (res.rowCount && res.rows[0].value) storeName = res.rows[0].value;
+  } catch(e) {}
+  finally { client.release(); }
+
+  const formattedName = `✨ ${storeName} ✨`;
+
+  return {
+    title: formattedName,
+    description: `🚀 Acesse nosso Catálogo Digital Online e faça seu pedido agora mesmo!`,
+    openGraph: {
+       title: formattedName,
+       description: `🚀 Acesse o nosso Catálogo Digital Online e faça o seu pedido de forma rápida!`,
+       type: "website",
+    }
+  };
+}
 
 export default async function StoreCatalogPage(props: { params: Promise<{ storeId: string }> }) {
   const params = await props.params;
