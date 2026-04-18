@@ -17,7 +17,7 @@ const productSchema = z.object({
 });
 
 const patchProductSchema = productSchema.partial().extend({
-  id: z.number({ required_error: "ID de produto é obrigatório" })
+  id: z.number({ message: "ID de produto é obrigatório" })
 });
 
 export async function GET() {
