@@ -83,28 +83,31 @@ export function ProductForm({ initialData, onSubmit, categories }: ProductFormPr
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6 w-full pb-20">
         
         {/* Foto do Produto */}
-        <div className="flex justify-center mb-2">
-          <label className="relative w-32 h-32 rounded-3xl overflow-hidden bg-[#20201f] border border-[#484847]/40 flex flex-col items-center justify-center cursor-pointer hover:border-[#53ddfc] transition-colors shadow-sm active:scale-95 group">
+        <div className="flex flex-col items-center gap-3 mb-2">
+          <div className="relative w-32 h-32 rounded-3xl overflow-hidden bg-[#20201f] border border-[#484847]/40 flex flex-col items-center justify-center shadow-sm">
             {previewImage ? (
-              <>
-                <img src={previewImage} alt="Produto" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <ImagePlus size={24} className="text-white" />
-                </div>
-              </>
+              <img src={previewImage} alt="Produto" className="w-full h-full object-cover" />
             ) : (
-              <div className="flex flex-col items-center text-[#adaaaa] group-hover:text-[#53ddfc] transition-colors gap-2">
+              <div className="flex flex-col items-center text-[#adaaaa] gap-2">
                 <ImagePlus size={32} />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-center px-2">Add Foto</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-center px-2">Sem Foto</span>
               </div>
             )}
-            <input 
-              type="file" 
-              accept="image/*" 
-              onChange={handleImageCapture}
-              className="hidden" 
-            />
-          </label>
+          </div>
+
+          <div className="flex gap-3">
+             <label className="flex items-center gap-2 bg-[#20201f] border border-[#484847]/50 text-white px-4 py-2.5 rounded-xl cursor-pointer active:scale-95 transition-all shadow-sm">
+               <Camera size={18} className="text-[#53ddfc]" />
+               <span className="text-[10px] font-bold uppercase tracking-widest">Câmera</span>
+               <input type="file" accept="image/*" capture="environment" onChange={handleImageCapture} className="hidden" />
+             </label>
+
+             <label className="flex items-center gap-2 bg-[#20201f] border border-[#484847]/50 text-white px-4 py-2.5 rounded-xl cursor-pointer active:scale-95 transition-all shadow-sm">
+               <ImagePlus size={18} className="text-[#53ddfc]" />
+               <span className="text-[10px] font-bold uppercase tracking-widest">Galeria</span>
+               <input type="file" accept="image/*" onChange={handleImageCapture} className="hidden" />
+             </label>
+          </div>
         </div>
 
         <div className="flex flex-col gap-4">
