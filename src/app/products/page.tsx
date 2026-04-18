@@ -221,7 +221,7 @@ export default function ProductsPage() {
              return (
                <div key={product.id} className="bg-[#1a1a1a] p-3 rounded-2xl flex justify-between items-center border border-[#484847]/30 shadow-sm transition-transform hover:bg-[#20201f] group relative overflow-hidden">
                  
-                 <div className="flex items-center gap-3 w-full pr-2 z-10">
+                 <div className="flex items-center gap-3 flex-1 pr-2 z-10 min-w-0">
                    {/* Mini Thumbnail */}
                    <div className="w-14 h-14 rounded-xl bg-[#20201f] border border-[#484847]/30 flex items-center justify-center overflow-hidden shrink-0 relative">
                      {product.image ? (
@@ -231,7 +231,7 @@ export default function ProductsPage() {
                      )}
                    </div>
                    
-                   <div className="flex flex-col gap-0.5 w-full justify-center">
+                   <div className="flex flex-col gap-0.5 flex-1 justify-center min-w-0">
                      <span className="text-white font-bold leading-tight line-clamp-1 pr-2">{product.name}</span>
                      <div className="flex items-center gap-2 w-full mt-0.5">
                        <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest bg-[#20201f] px-2 py-0.5 rounded-md border border-[#484847]/20 shrink-0">{catName}</span>
