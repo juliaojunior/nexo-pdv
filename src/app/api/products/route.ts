@@ -1,6 +1,23 @@
 import { NextResponse } from 'next/server';
 import { cloudDb } from '@/lib/cloudDb';
 import { auth } from '@clerk/nextjs/server';
+import { z } from 'zod';
+
+// Zod Security Shield: Evita invasão de strings maliciosas em campos de número e valores irracionais.
+const productSchema = z.object({
+  name: z.string().min(2, "Nome deve ter no mínimo 2 caracteres"),
+  price: z.number().min(0, "Preço inválido"),
+  stock: z.number().min(0, "Estoque não pode ser negativo"),
+  barcode: z.string().optional().nullable(),
+  categoryId: z.number().optional().nullable(),
+  image: z.string().optional().nullable(),
+  promotionalPrice: z.number().min(0).optional().nullable(),
+  promotionEndDate: z.string().optional().nullable()
+});
+
+const patchProductSchema = productSchema.partial().extend({
+  id: z.number({ required_error: "ID de produto é obrigatório" })
+});
 
 export async function GET() {
   try {
@@ -32,7 +49,13 @@ export async function POST(req: Request) {
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    const { name, price, stock, barcode, categoryId, image, promotionalPrice, promotionEndDate } = body;
+    const parseResult = productSchema.safeParse(body);
+    
+    if (!parseResult.success) {
+       return NextResponse.json({ error: "Payload malicioso ou inválido processado.", details: parseResult.error.format() }, { status: 400 });
+    }
+
+    const { name, price, stock, barcode, categoryId, image, promotionalPrice, promotionEndDate } = parseResult.data;
 
     const client = await cloudDb.connect();
 
@@ -59,9 +82,13 @@ export async function PATCH(req: Request) {
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    const { id, name, price, stock, barcode, categoryId, image, promotionalPrice, promotionEndDate } = body;
+    const parseResult = patchProductSchema.safeParse(body);
 
-    if (!id) return NextResponse.json({ error: "Product ID is required" }, { status: 400 });
+    if (!parseResult.success) {
+       return NextResponse.json({ error: "Payload malicioso ou inválido processado na edição.", details: parseResult.error.format() }, { status: 400 });
+    }
+
+    const { id, name, price, stock, barcode, categoryId, image, promotionalPrice, promotionEndDate } = parseResult.data;
 
     const client = await cloudDb.connect();
     

@@ -413,10 +413,12 @@ export default function CatalogClient({
       )}
 
       {/* Estilos essenciais */}
-      <style dangerouslySetInnerHTML={{__html: `
+      <style>
+        {`
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}} />
+        `}
+      </style>
     </div>
   );
 }

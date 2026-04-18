@@ -21,13 +21,25 @@ export async function GET() {
   }
 }
 
+import { z } from 'zod';
+
+const categorySchema = z.object({
+  name: z.string().min(2, "Nome da categoria precisa ter ao menos 2 caracteres").max(50, "Nome muito longo")
+});
+
 export async function POST(req: Request) {
   try {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    const { name } = body;
+    const parseResult = categorySchema.safeParse(body);
+
+    if (!parseResult.success) {
+      return NextResponse.json({ error: "Nome de categoria inválido.", details: parseResult.error.format() }, { status: 400 });
+    }
+
+    const { name } = parseResult.data;
 
     const client = await cloudDb.connect();
     const { rows } = await client.sql`
