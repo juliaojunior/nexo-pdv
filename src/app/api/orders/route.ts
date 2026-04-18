@@ -69,14 +69,23 @@ export async function POST(request: Request) {
     for (const item of cartItems) {
        if (!item.productId) continue;
 
-       const { rows } = await client.sql`SELECT name, price FROM nexo_products WHERE id = ${item.productId} AND user_id = ${storeId}`;
+       const { rows } = await client.sql`SELECT name, price, promotional_price, promotion_end_date FROM nexo_products WHERE id = ${item.productId} AND user_id = ${storeId}`;
        
        if (rows.length === 0) {
           client.release();
           return NextResponse.json({ error: `Produto indisponível ou apagado. ID: ${item.productId}` }, { status: 404 });
        }
 
-       const productRealPrice = Number(rows[0].price);
+       let productRealPrice = Number(rows[0].price);
+       
+       // Aplica a promoção se existir e estiver no prazo válido
+       if (rows[0].promotional_price && rows[0].promotion_end_date) {
+          const promoExpire = new Date(rows[0].promotion_end_date).getTime();
+          if (Date.now() <= promoExpire) {
+             productRealPrice = Number(rows[0].promotional_price);
+          }
+       }
+
        realTotalPrice += productRealPrice * item.quantity;
 
        realCartItems.push({

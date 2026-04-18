@@ -15,7 +15,7 @@ export default async function StoreCatalogPage(props: { params: Promise<{ storeI
   try {
     // Extração Restrita! Apenas da Loja (storeId correspondente)
     const [pResult, cResult, sResult] = await Promise.all([
-      client.sql`SELECT id as local_id, name, price, stock, category_id as categoryid, image_url as imageurl FROM nexo_products WHERE user_id = ${storeId} ORDER BY name ASC`,
+      client.sql`SELECT id as local_id, name, price, stock, category_id as categoryid, image_url as imageurl, promotional_price as "promotionalPrice", promotion_end_date as "promotionEndDate" FROM nexo_products WHERE user_id = ${storeId} ORDER BY name ASC`,
       client.sql`SELECT id as local_id, name FROM nexo_categories WHERE user_id = ${storeId} ORDER BY name ASC`,
       client.sql`SELECT key, value FROM nexo_settings WHERE user_id = ${storeId}`
     ]);

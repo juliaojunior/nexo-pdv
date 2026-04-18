@@ -12,6 +12,8 @@ interface Product {
   stock: number;
   categoryid?: number;
   imageurl?: string;
+  promotionalPrice?: string | number;
+  promotionEndDate?: string;
 }
 
 interface Category {
@@ -47,7 +49,15 @@ export default function CatalogClient({
     return matchCat && matchSearch;
   });
 
-  const cartTotal = cart.reduce((acc, curr) => acc + (Number(curr.price) * curr.quantity), 0);
+  // Função Local de Preço
+  const calcActivePrice = (p: Product) => {
+    if (!p.promotionalPrice || !p.promotionEndDate) return Number(p.price);
+    const expire = new Date(p.promotionEndDate).getTime();
+    if (Date.now() <= expire) return Number(p.promotionalPrice);
+    return Number(p.price);
+  };
+
+  const cartTotal = cart.reduce((acc, curr) => acc + (calcActivePrice(curr) * curr.quantity), 0);
   const cartItemsCount = cart.reduce((acc, curr) => acc + curr.quantity, 0);
 
   const handleAddToCart = (product: Product) => {
@@ -74,7 +84,7 @@ export default function CatalogClient({
   const buildWhatsappLink = () => {
      let text = `🛍️ *Novo Pedido - ${storeName}*\n\n`;
      cart.forEach(i => {
-       text += `${i.quantity}x ${i.name} - R$ ${(Number(i.price)*i.quantity).toFixed(2)}\n`;
+       text += `${i.quantity}x ${i.name} - R$ ${(calcActivePrice(i)*i.quantity).toFixed(2)}\n`;
      });
      text += `\n*Total estimado: R$ ${cartTotal.toFixed(2)}*\n\n`;
      text += `Podemos prosseguir com o pagamento?`;
@@ -104,7 +114,7 @@ export default function CatalogClient({
          customerName,
          customerPhone: customerWpp,
          paymentMethod,
-         cartItems: cart.map(i => ({ productId: i.local_id, name: i.name, price: Number(i.price), quantity: i.quantity })),
+         cartItems: cart.map(i => ({ productId: i.local_id, name: i.name, price: calcActivePrice(i), quantity: i.quantity })),
          total: cartTotal
        };
 
@@ -211,7 +221,16 @@ export default function CatalogClient({
 
                   <div className="flex flex-col mt-auto">
                     <span className="text-white font-bold leading-tight mb-1 line-clamp-2">{product.name}</span>
-                    <span className="text-[#53ddfc] font-black text-lg">R$ {Number(product.price).toFixed(2).replace('.', ',')}</span>
+                    <span className="text-[#53ddfc] font-black text-lg">
+                      {calcActivePrice(product) < Number(product.price) ? (
+                         <div className="flex flex-col mt-1">
+                           <span className="text-[11px] text-[#ff716c] line-through font-normal leading-none" style={{marginBottom: '-2px'}}>R$ {Number(product.price).toFixed(2).replace('.', ',')}</span>
+                           <span className="flex items-center gap-1.5 align-middle leading-none mt-1">R$ {calcActivePrice(product).toFixed(2).replace('.', ',')} <span className="text-[9px] bg-[#53ddfc] text-[#004b58] px-1.5 py-0.5 rounded font-black tracking-widest uppercase">Promo</span></span>
+                         </div>
+                      ) : (
+                         <span className="mt-1 block">R$ {Number(product.price).toFixed(2).replace('.', ',')}</span>
+                      )}
+                    </span>
                   </div>
 
                   {!isEsgotado ? (
@@ -289,11 +308,11 @@ export default function CatalogClient({
                          </div>
                          <div className="flex flex-col">
                            <span className="text-white font-bold text-sm leading-tight line-clamp-1">{item.name}</span>
-                           <span className="text-[#53ddfc] font-black">R$ {Number(item.price).toFixed(2).replace('.', ',')}</span>
+                           <span className="text-[#53ddfc] font-black">R$ {calcActivePrice(item).toFixed(2).replace('.', ',')}</span>
                          </div>
                       </div>
                       <div className="flex flex-col items-end gap-2">
-                        <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest">Total R$ {(Number(item.price)*item.quantity).toFixed(2).replace('.',',')}</span>
+                        <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest">Total R$ {(calcActivePrice(item)*item.quantity).toFixed(2).replace('.',',')}</span>
                         <div className="flex items-center gap-3 bg-[#20201f] rounded-full p-1 border border-[#484847]/30">
                             <button onClick={() => handleUpdateQty(item.local_id, -1)} className="w-6 h-6 rounded-full bg-[#121212] text-white flex items-center justify-center active:scale-95"><Minus size={12} /></button>
                             <span className="text-white font-black w-3 text-center text-xs">{item.quantity}</span>
