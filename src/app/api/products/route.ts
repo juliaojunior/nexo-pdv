@@ -12,7 +12,8 @@ const productSchema = z.object({
   categoryId: z.number().optional().nullable(),
   image: z.string().optional().nullable(),
   promotionalPrice: z.number().min(0).optional().nullable(),
-  promotionEndDate: z.string().optional().nullable()
+  promotionEndDate: z.string().optional().nullable(),
+  description: z.string().optional().nullable()
 });
 
 const patchProductSchema = productSchema.partial().extend({
@@ -29,6 +30,7 @@ export async function GET() {
     // Safety check para garantir que as colunas de promoção existam sem quebrar!
     await client.sql`ALTER TABLE nexo_products ADD COLUMN IF NOT EXISTS promotional_price NUMERIC(10, 2);`;
     await client.sql`ALTER TABLE nexo_products ADD COLUMN IF NOT EXISTS promotion_end_date TIMESTAMP;`;
+    await client.sql`ALTER TABLE nexo_products ADD COLUMN IF NOT EXISTS description TEXT;`;
 
     const { rows } = await client.sql`
       SELECT * FROM nexo_products 
@@ -55,17 +57,18 @@ export async function POST(req: Request) {
        return NextResponse.json({ error: "Payload malicioso ou inválido processado.", details: parseResult.error.format() }, { status: 400 });
     }
 
-    const { name, price, stock, barcode, categoryId, image, promotionalPrice, promotionEndDate } = parseResult.data;
+    const { name, price, stock, barcode, categoryId, image, promotionalPrice, promotionEndDate, description } = parseResult.data;
 
     const client = await cloudDb.connect();
 
     // Safety check na inserção também
     await client.sql`ALTER TABLE nexo_products ADD COLUMN IF NOT EXISTS promotional_price NUMERIC(10, 2);`;
     await client.sql`ALTER TABLE nexo_products ADD COLUMN IF NOT EXISTS promotion_end_date TIMESTAMP;`;
+    await client.sql`ALTER TABLE nexo_products ADD COLUMN IF NOT EXISTS description TEXT;`;
 
     const { rows } = await client.sql`
-      INSERT INTO nexo_products (user_id, name, price, stock, barcode, category_id, image_url, promotional_price, promotion_end_date)
-      VALUES (${userId}, ${name}, ${price}, ${stock}, ${barcode || null}, ${categoryId || null}, ${image || null}, ${promotionalPrice || null}, ${promotionEndDate || null})
+      INSERT INTO nexo_products (user_id, name, price, stock, barcode, category_id, image_url, promotional_price, promotion_end_date, description)
+      VALUES (${userId}, ${name}, ${price}, ${stock}, ${barcode || null}, ${categoryId || null}, ${image || null}, ${promotionalPrice || null}, ${promotionEndDate || null}, ${description || null})
       RETURNING *;
     `;
     client.release();
@@ -88,12 +91,13 @@ export async function PATCH(req: Request) {
        return NextResponse.json({ error: "Payload malicioso ou inválido processado na edição.", details: parseResult.error.format() }, { status: 400 });
     }
 
-    const { id, name, price, stock, barcode, categoryId, image, promotionalPrice, promotionEndDate } = parseResult.data;
+    const { id, name, price, stock, barcode, categoryId, image, promotionalPrice, promotionEndDate, description } = parseResult.data;
 
     const client = await cloudDb.connect();
     
     await client.sql`ALTER TABLE nexo_products ADD COLUMN IF NOT EXISTS promotional_price NUMERIC(10, 2);`;
     await client.sql`ALTER TABLE nexo_products ADD COLUMN IF NOT EXISTS promotion_end_date TIMESTAMP;`;
+    await client.sql`ALTER TABLE nexo_products ADD COLUMN IF NOT EXISTS description TEXT;`;
 
     // Atualiza apenas os campos enviados no body
     const { rows } = await client.sql`
@@ -107,6 +111,7 @@ export async function PATCH(req: Request) {
         image_url = COALESCE(${image}, image_url),
         promotional_price = COALESCE(${promotionalPrice}, promotional_price),
         promotion_end_date = COALESCE(${promotionEndDate}, promotion_end_date),
+        description = COALESCE(${description}, description),
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ${id} AND user_id = ${userId}
       RETURNING *;

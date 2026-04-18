@@ -15,6 +15,7 @@ const productSchema = z.object({
   barcode: z.string().optional(),
   stock: z.number().min(0, "O estoque não pode ser negativo"),
   image: z.string().optional(),
+  description: z.string().optional(),
 });
 
 export type ProductFormValues = z.infer<typeof productSchema>;
@@ -43,6 +44,7 @@ export function ProductForm({ initialData, onSubmit, categories }: ProductFormPr
       barcode: initialData?.barcode || "",
       stock: initialData?.stock || 0,
       image: initialData?.image || "",
+      description: initialData?.description || "",
     },
   });
 
@@ -122,6 +124,19 @@ export function ProductForm({ initialData, onSubmit, categories }: ProductFormPr
               className={`w-full bg-[#20201f] rounded-xl py-3.5 px-4 outline-none text-white font-medium border ${errors.name ? 'border-[#ff716c] focus:ring-1 focus:ring-[#ff716c]' : 'border-[#484847]/50 focus:border-[#06B6D4] focus:ring-1 focus:ring-[#06B6D4]'}`}
             />
             {errors.name && <span className="text-[#ff716c] text-xs font-semibold pl-1">{errors.name.message}</span>}
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className={`text-xs font-bold uppercase tracking-widest pl-1 transition-colors ${errors.description ? 'text-[#ff716c]' : 'text-[#adaaaa]'}`}>
+              Descrição / Detalhes (Opcional)
+            </label>
+            <textarea 
+              {...register("description")}
+              placeholder="Ex: Refrescante, ideal para almoço..."
+              rows={3}
+              className={`w-full bg-[#20201f] rounded-xl py-3.5 px-4 outline-none text-white font-medium border resize-none ${errors.description ? 'border-[#ff716c] focus:ring-1 focus:ring-[#ff716c]' : 'border-[#484847]/50 focus:border-[#06B6D4] focus:ring-1 focus:ring-[#06B6D4]'}`}
+            />
+            {errors.description && <span className="text-[#ff716c] text-xs font-semibold pl-1">{errors.description.message}</span>}
           </div>
 
           <div className="flex flex-col gap-1.5">

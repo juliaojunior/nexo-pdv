@@ -14,6 +14,7 @@ interface Product {
   imageurl?: string;
   promotionalPrice?: string | number;
   promotionEndDate?: string;
+  description?: string;
 }
 
 interface Category {
@@ -41,6 +42,7 @@ export default function CatalogClient({
   const [activeCategory, setActiveCategory] = useState<number | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // Filtro
   const displayedProducts = products.filter(p => {
@@ -200,7 +202,7 @@ export default function CatalogClient({
               const isEsgotado = product.stock <= 0;
 
               return (
-                <div key={product.local_id} className="bg-[#1a1a1a] border border-[#484847]/30 rounded-2xl p-4 flex flex-col relative overflow-hidden transition-all hover:border-[#53ddfc]/30">
+                <div key={product.local_id} onClick={() => setSelectedProduct(product)} className="bg-[#1a1a1a] border border-[#484847]/30 rounded-2xl p-4 flex flex-col relative overflow-hidden transition-all hover:border-[#53ddfc]/30 cursor-pointer">
                   <div className="w-full aspect-square bg-[#20201f] rounded-xl mb-3 flex items-center justify-center overflow-hidden border border-[#484847]/20 relative">
                      {product.imageurl ? (
                        <img src={product.imageurl} alt={product.name} className="w-full h-full object-cover" />
@@ -210,7 +212,7 @@ export default function CatalogClient({
 
                      {!isEsgotado && inCartItem && (
                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[2px]">
-                          <div className="flex items-center gap-3 bg-[#121212]/90 border border-[#484847]/50 rounded-full p-1.5 shadow-xl">
+                          <div className="flex items-center gap-3 bg-[#121212]/90 border border-[#484847]/50 rounded-full p-1.5 shadow-xl" onClick={e => e.stopPropagation()}>
                             <button onClick={() => handleUpdateQty(product.local_id, -1)} className="w-8 h-8 rounded-full bg-[#20201f] text-white flex items-center justify-center active:scale-95"><Minus size={14} /></button>
                             <span className="text-white font-black w-4 text-center">{inCartItem.quantity}</span>
                             <button disabled={inCartItem.quantity >= product.stock} onClick={() => handleUpdateQty(product.local_id, 1)} className="w-8 h-8 rounded-full bg-[#06B6D4] text-[#121212] flex items-center justify-center active:scale-95 disabled:opacity-50"><Plus size={14} strokeWidth={3} /></button>
@@ -235,12 +237,9 @@ export default function CatalogClient({
 
                   {!isEsgotado ? (
                      !inCartItem && (
-                      <button 
-                        onClick={() => handleAddToCart(product)}
-                        className="absolute bottom-4 right-4 w-9 h-9 bg-[#06B6D4] text-[#121212] rounded-full flex items-center justify-center shadow-[0_4px_15px_rgba(6,182,212,0.4)] active:scale-90 transition-transform"
-                      >
-                        <Plus size={20} strokeWidth={3} />
-                      </button>
+                      <div className="absolute bottom-4 right-4 text-[#adaaaa] flex items-center text-[10px] uppercase font-bold tracking-wider">
+                         Detalhes
+                      </div>
                     )
                   ) : (
                     <div className="absolute top-4 right-4 bg-red-500/90 backdrop-blur-sm text-white px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest">
@@ -260,6 +259,76 @@ export default function CatalogClient({
            </div>
          )}
       </main>
+
+      {/* MODAL DE DETALHES DO PRODUTO */}
+      {selectedProduct && (
+        <div className="fixed inset-0 z-[60] flex flex-col justify-end bg-black/80 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setSelectedProduct(null)}>
+           <div className="bg-[#121212] rounded-t-3xl flex flex-col border-t border-[#484847]/30 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom-full duration-300 max-w-3xl mx-auto w-full relative overflow-hidden" onClick={e => e.stopPropagation()}>
+             
+             {/* Thumbnail gigante do produto */}
+             <div className="relative w-full h-[35vh] bg-[#20201f] flex items-center justify-center shrink-0">
+               <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-[#121212]/80 text-[#adaaaa] flex items-center justify-center hover:text-white active:scale-95 z-10"><X size={20} /></button>
+               {selectedProduct.imageurl ? (
+                  <img src={selectedProduct.imageurl} alt={selectedProduct.name} className="w-full h-full object-cover" />
+               ) : (
+                  <ShoppingBag size={64} className="text-[#3a3a3a]" />
+               )}
+             </div>
+
+             <div className="p-6 flex flex-col gap-3 overflow-y-auto max-h-[45vh] hide-scrollbar border-t border-[#484847]/30">
+               <div className="flex justify-between items-start gap-4">
+                 <h2 className="text-white font-black text-2xl tracking-tight leading-tight">{selectedProduct.name}</h2>
+                 <div className="bg-[#20201f] text-white px-2.5 py-1.5 rounded-lg flex flex-col items-center justify-center border border-[#484847]/10 shrink-0 min-w-[50px]">
+                   <span className="font-black text-sm leading-none">{selectedProduct.stock}</span>
+                   <span className="text-[#adaaaa] text-[9px] font-black uppercase tracking-widest leading-none mt-1">est.</span>
+                 </div>
+               </div>
+               
+               <div className="flex items-end gap-2 mt-[-4px]">
+                 <span className="text-[#53ddfc] font-black text-3xl">R$ {calcActivePrice(selectedProduct).toFixed(2).replace('.', ',')}</span>
+                 {calcActivePrice(selectedProduct) < Number(selectedProduct.price) && (
+                   <span className="text-sm text-[#ff716c] line-through font-normal mb-1 pb-0.5">R$ {Number(selectedProduct.price).toFixed(2).replace('.', ',')}</span>
+                 )}
+               </div>
+
+               {selectedProduct.description && (
+                 <div className="mt-2 pt-4 border-t border-[#484847]/30">
+                   <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest mb-2 block">Destaques e Detalhes</span>
+                   <p className="text-[#d1d1d1] text-sm leading-relaxed whitespace-pre-wrap">{selectedProduct.description}</p>
+                 </div>
+               )}
+             </div>
+
+             <div className="p-6 bg-[#1a1a1a] border-t border-[#484847]/50 pb-8 mt-auto shrink-0 z-20 shadow-[0_-15px_30px_rgba(0,0,0,0.4)]">
+               {selectedProduct.stock > 0 ? (
+                 cart.find(i => i.local_id === selectedProduct.local_id) ? (
+                   <div className="flex items-center justify-between bg-[#20201f] rounded-xl p-2.5 border border-[#484847]/30 shadow-inner">
+                      <span className="text-[#adaaaa] ml-4 font-bold uppercase tracking-widest text-xs">Na Sacola:</span>
+                      <div className="flex items-center gap-4 bg-[#121212] rounded-lg p-1.5">
+                        <button onClick={() => handleUpdateQty(selectedProduct.local_id, -1)} className="w-10 h-10 rounded-lg bg-[#20201f] text-white flex items-center justify-center active:scale-95"><Minus size={18} /></button>
+                        <span className="text-white font-black w-6 text-center text-xl">{cart.find(i => i.local_id === selectedProduct.local_id)?.quantity}</span>
+                        <button disabled={cart.find(i => i.local_id === selectedProduct.local_id)!.quantity >= selectedProduct.stock} onClick={() => handleUpdateQty(selectedProduct.local_id, 1)} className="w-10 h-10 rounded-lg bg-[#06B6D4] text-[#121212] flex items-center justify-center active:scale-95 disabled:opacity-50"><Plus size={18} strokeWidth={3} /></button>
+                      </div>
+                   </div>
+                 ) : (
+                   <button 
+                     onClick={() => { handleAddToCart(selectedProduct); setSelectedProduct(null); toast.success("Adicionado à sacola!"); }}
+                     className="w-full py-4 rounded-xl flex items-center justify-center gap-3 font-black text-lg uppercase tracking-wide shadow-[0_5px_20px_rgba(6,182,212,0.3)] transition-transform active:scale-[0.98] bg-[#06B6D4] text-[#121212]"
+                   >
+                     <ShoppingBag size={22} />
+                     Adicionar à Sacola
+                   </button>
+                 )
+               ) : (
+                 <button disabled className="w-full py-4 rounded-xl flex items-center justify-center font-black text-lg uppercase tracking-wide bg-[#20201f] text-[#adaaaa] opacity-70">
+                   Esgotado
+                 </button>
+               )}
+             </div>
+
+           </div>
+        </div>
+      )}
 
       {/* FLOAT CART BAR */}
       {cartItemsCount > 0 && !cartOpen && !checkoutModalOpen && (

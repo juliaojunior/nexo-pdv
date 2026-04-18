@@ -37,7 +37,8 @@ export default function ProductsPage() {
     categoryId: p.category_id,
     image: p.image_url,
     promotionalPrice: p.promotional_price ? Number(p.promotional_price) : undefined,
-    promotionEndDate: p.promotion_end_date
+    promotionEndDate: p.promotion_end_date,
+    description: p.description
   }));
 
   // Lógica de Filtragem de Busca
@@ -65,6 +66,7 @@ export default function ProductsPage() {
         barcode: data.barcode,
         image: finalImageUrl,
         stock: data.stock,
+        description: data.description,
       };
 
       if (editingProduct) {

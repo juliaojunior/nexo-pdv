@@ -38,6 +38,7 @@ export async function GET() {
         barcode VARCHAR(100),
         category_id INTEGER REFERENCES nexo_categories(id) ON DELETE SET NULL,
         image_url TEXT,
+        description TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
