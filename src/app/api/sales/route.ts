@@ -60,6 +60,16 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { total, paymentMethod, amountReceived, change, customerId, date, items } = body;
 
+    // 0. TRAVA DE ESTOQUE NEGATIVO (Bloqueia Reversing Math e inflação de estoque)
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return NextResponse.json({ error: "Carrinho vazio ou inválido." }, { status: 400 });
+    }
+    for (const item of items) {
+      if (typeof item.quantity !== 'number' || item.quantity <= 0) {
+         return NextResponse.json({ error: `A quantidade do item ${item.productName || 'desconhecido'} é inválida ou negativa.` }, { status: 400 });
+      }
+    }
+
     const client = await cloudDb.connect();
 
     // 1. Safety Checks das Colunas
