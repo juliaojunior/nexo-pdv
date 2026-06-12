@@ -11,6 +11,7 @@ import { ReceiptModal, ReceiptData } from "@/components/ReceiptModal";
 import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
 import { Plus, Camera, Search, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { OfflineBadge } from "@/components/OfflineBadge";
 
 import { cachedFetcher as fetcher } from "@/lib/offline/cachedFetcher";
 
@@ -92,7 +93,8 @@ export default function Home() {
             <h1 className="text-primary-bright font-black tracking-tighter text-xl truncate max-w-[180px]">{storeName}</h1>
           </div>
           <div className="flex items-center gap-3">
-            <button 
+            <OfflineBadge />
+            <button
               onClick={() => setScannerOpen(true)}
               className="p-2 -mr-1 text-primary bg-surface-raised border border-border/40 rounded-full active:scale-90 transition-transform shadow-glow"
             >

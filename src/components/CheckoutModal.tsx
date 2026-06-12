@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { db } from "@/db/db";
+import { db, type SalePayload } from "@/db/db";
 import { useLiveQuery } from "dexie-react-hooks";
+import { submitSale } from "@/lib/offline/submitSale";
 import { useCartStore } from "@/stores/cart.store";
 import { formatCurrency } from "@/lib/utils";
 import { X, Minus, Plus, Users, Search, CheckCircle2 } from "lucide-react";
@@ -61,7 +62,8 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
     const tsId = toast.loading("Registrando venda...");
 
     try {
-      const saleData = {
+      const saleData: SalePayload = {
+        clientId: crypto.randomUUID(),
         total,
         paymentMethod,
         amountReceived: paymentMethod === 'Dinheiro' ? amountReceived : undefined,
@@ -77,16 +79,14 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
         }))
       };
 
-      const res = await fetch('/api/sales', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(saleData)
-      });
-      const resJson = await res.json();
-      if (!res.ok) throw new Error(resJson.error || "Não foi possível registrar a venda.");
-      
+      const result = await submitSale(saleData, selectedCustomer?.name);
+
       clearCart();
-      toast.success(paymentMethod === 'Fiado' ? "Dívida adicionada à conta do Cliente!" : "Venda registrada!", { id: tsId });
+      if (result.status === 'queued') {
+        toast.warning("Sem conexão. Venda salva no aparelho — será enviada automaticamente quando a internet voltar.", { id: tsId, duration: 6000 });
+      } else {
+        toast.success(paymentMethod === 'Fiado' ? "Dívida adicionada à conta do Cliente!" : "Venda registrada!", { id: tsId });
+      }
       
       const completedReceiptData = {
         items: saleData.items,

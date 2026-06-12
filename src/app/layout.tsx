@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import { BottomNav } from "@/components/BottomNav";
+import { SyncProvider } from "@/components/SyncProvider";
 import { ClerkProvider } from '@clerk/nextjs';
 import { ptBR } from "@clerk/localizations";
 import "./globals.css";
@@ -49,6 +50,7 @@ export default function RootLayout({
           </main>
           
           {/* Componentes Globais Injetados */}
+          <SyncProvider />
           <BottomNav />
           <Toaster position="top-center" theme="dark" richColors />
         </body>
