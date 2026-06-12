@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import useSWR from "swr";
 import { UserButton } from "@clerk/nextjs";
 import { useCartStore } from "@/stores/cart.store";
@@ -137,7 +138,7 @@ export default function Home() {
         {isLoading ? (
            <div className="flex flex-col items-center justify-center p-8 text-center mt-10 opacity-50">
                <div className="w-10 h-10 border-4 border-border border-t-primary animate-spin rounded-full mb-4"></div>
-               <p className="font-bold text-white uppercase tracking-widest text-xs">Conectando Vitrine Nuvem...</p>
+               <p className="font-bold text-white text-sm">Carregando produtos...</p>
            </div>
         ) : filteredProducts.length > 0 ? (
           <div className="grid grid-cols-2 gap-4 pb-10">
@@ -173,9 +174,10 @@ export default function Home() {
                    {/* Add To Cart FAB Layer */}
                    <button 
                      onClick={() => addItem({...product, price: activePrice}, 1)}
-                     className="absolute top-2 right-2 bg-background/80 backdrop-blur-md p-1.5 rounded-full active:scale-90 transition-all border border-border/50 hover:bg-primary-deep group-hover:border-primary z-20 shadow-md"
+                     className="absolute top-1.5 right-1.5 bg-background/80 backdrop-blur-md w-11 h-11 flex items-center justify-center rounded-full active:scale-90 transition-all border border-border/50 hover:bg-primary-deep group-hover:border-primary z-20 shadow-md"
+                     aria-label={`Adicionar ${product.name} ao carrinho`}
                    >
-                    <Plus size={18} className="text-primary-bright" />
+                    <Plus size={20} className="text-primary-bright" />
                   </button>
                   <div className={`absolute bottom-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold z-20 ${product.stock <= 5 ? 'bg-danger/90 text-white' : 'bg-background/80 text-muted'}`}>
                     {product.stock} em est.
@@ -205,8 +207,11 @@ export default function Home() {
              <div className="bg-surface-raised p-4 rounded-full mb-4">
                 <Search size={28} className="text-primary-bright" />
              </div>
-             <p className="font-bold text-white mb-2 text-lg">Catálogo em branco</p>
-             <p className="text-sm">Abra a aba <strong>Mais - Configurações - Departamentos</strong> para validar se está na nuvem e o Catálogo ali embaixo.</p>
+             <p className="font-bold text-white mb-2 text-lg">Nenhum produto ainda</p>
+             <p className="text-sm mb-5">Seus produtos aparecerão aqui, prontos para vender.</p>
+             <Link href="/products" className="bg-primary text-primary-deep font-bold px-6 py-3 rounded-xl active:scale-95 transition-transform shadow-glow">
+               Cadastrar primeiro produto
+             </Link>
           </div>
         )}
       </main>
@@ -252,7 +257,7 @@ export default function Home() {
           mutateProducts();
           // Play beep sound if enabled
           if (typeof window !== "undefined" && localStorage.getItem("nexo_checkoutSounds") !== "false") {
-             const audio = new Audio("https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3?filename=success-1-6297.mp3");
+             const audio = new Audio("/sounds/success.mp3");
              audio.volume = 0.5;
              audio.play().catch(()=>null);
           }

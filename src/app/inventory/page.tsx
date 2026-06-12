@@ -91,14 +91,14 @@ export default function InventoryPage() {
         body: JSON.stringify({ id: selectedProduct.id, stock: newStock })
       });
 
-      if (!response.ok) throw new Error("Erro na gravação da nuvem");
+      if (!response.ok) throw new Error("Não foi possível salvar o estoque");
 
       // 3. Re-autentica com o Vercel p/ garantir consistência
       mutate();
-      toast.success("Estoque sincronizado na nuvem!");
+      toast.success("Estoque atualizado!");
       closeModal();
     } catch (err) {
-      toast.error("Erro interno ao atualizar produto na nuvem.");
+      toast.error("Não foi possível atualizar o produto.");
       console.error(err);
       mutate(); // Revoga a atualização otimista se der erro
     } finally {
@@ -122,7 +122,7 @@ export default function InventoryPage() {
           </button>
           <div className="flex flex-col">
              <h1 className="text-primary-bright font-black tracking-tighter text-2xl">Estoque</h1>
-             <span className="text-[10px] text-muted uppercase tracking-widest font-bold flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"/> Sincronizado à Nuvem</span>
+             <span className="text-[10px] text-muted uppercase tracking-widest font-bold flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"/> Estoque da loja</span>
           </div>
         </div>
         
@@ -132,7 +132,7 @@ export default function InventoryPage() {
             <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-primary-bright transition-colors" />
             <input 
               type="text" 
-              placeholder="Buscar mercadoria ligada na rede..." 
+              placeholder="Buscar produto..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-surface border border-border/50 focus:border-primary rounded-xl h-12 pl-12 pr-4 text-sm font-medium outline-none transition-all placeholder:text-border shadow-inner"
@@ -146,7 +146,7 @@ export default function InventoryPage() {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 opacity-40">
             <div className="w-10 h-10 border-4 border-t-primary border-border rounded-full animate-spin mb-4" />
-            <p className="font-bold text-sm text-white uppercase tracking-widest">Acessando Nuvem...</p>
+            <p className="font-bold text-sm text-white uppercase tracking-widest">Carregando estoque...</p>
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 opacity-40 text-center">
@@ -154,7 +154,7 @@ export default function InventoryPage() {
               <Package size={32} />
             </div>
             <p className="font-bold text-lg text-white">Prateleira vazia</p>
-            <p className="text-sm mt-1">Nenhum produto cadastrado na rede bate com a pesquisa.</p>
+            <p className="text-sm mt-1">Nenhum produto encontrado para essa busca.</p>
           </div>
         ) : (
           <div className="flex flex-col gap-3">
@@ -231,7 +231,7 @@ export default function InventoryPage() {
                 {selectedProduct.name}
               </h2>
               <div className="bg-surface px-4 py-1.5 mt-2 rounded-full border border-border flex items-center gap-2">
-                 <span className="text-muted text-[11px] font-bold uppercase tracking-widest">Estoque na Nuvem:</span>
+                 <span className="text-muted text-[11px] font-bold uppercase tracking-widest">Estoque atual:</span>
                  <span className="text-primary-bright text-base font-black">{selectedProduct.stock}</span>
               </div>
             </div>
@@ -298,7 +298,7 @@ export default function InventoryPage() {
 
                    <p className="text-muted text-[11px] font-medium text-center px-2">
                      {mode === 'add' && "Qual a entrada de rede real?"}
-                     {mode === 'subtract' && "Quantas unidades deduzir na nuvem?"}
+                     {mode === 'subtract' && "Quantas unidades deduzir?"}
                      {mode === 'overwrite' && "Qual o controle exato final no banco?"}
                    </p>
                 </div>

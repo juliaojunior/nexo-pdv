@@ -109,7 +109,7 @@ export default function OrdersPage() {
 
       {isLoading && (
          <div className="h-40 flex items-center justify-center text-muted animate-pulse">
-           Buscando nuvem...
+           Buscando pedidos...
          </div>
       )}
 

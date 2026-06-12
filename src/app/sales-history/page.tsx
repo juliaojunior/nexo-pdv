@@ -28,7 +28,7 @@ export default function SalesHistoryPage() {
 
   const handleRevertSale = async () => {
     if (!revertCandidate) return;
-    const tsId = toast.loading("Autorizando estorno na Vercel e destravando estoque...");
+    const tsId = toast.loading("Estornando venda e devolvendo itens ao estoque...");
 
     try {
       mutate(sales.filter((s: any) => s.id !== revertCandidate), false);
@@ -40,7 +40,7 @@ export default function SalesHistoryPage() {
       setRevertCandidate(null);
       mutate();
     } catch (e: any) {
-      toast.error("Houve uma falha ao tentar estornar esta venda na nuvem.", { id: tsId });
+      toast.error("Não foi possível estornar a venda.", { id: tsId });
       mutate();
     }
   };
@@ -56,7 +56,7 @@ export default function SalesHistoryPage() {
           </button>
           <div className="flex flex-col">
             <h1 className="text-primary-bright font-black tracking-tighter text-2xl">Histórico de Caixa</h1>
-            <span className="text-[10px] text-muted uppercase tracking-widest font-bold flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"/> Sincronizado à Vercel</span>
+            <span className="text-[10px] text-muted uppercase tracking-widest font-bold flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"/> Histórico de vendas</span>
           </div>
         </div>
       </header>
@@ -93,8 +93,8 @@ export default function SalesHistoryPage() {
               <div className="bg-surface-raised p-4 rounded-full mb-4 shadow-inner">
                  <Receipt size={28} className="text-border" />
               </div>
-              <p className="font-bold text-white mb-2 text-lg tracking-tight">O Cofre está vázio</p>
-              <p className="text-xs leading-relaxed max-w-[200px]">Nenhum faturamento registrado na Nuvem até o momento.</p>
+              <p className="font-bold text-white mb-2 text-lg tracking-tight">Nenhuma venda ainda</p>
+              <p className="text-xs leading-relaxed max-w-[200px]">Suas vendas aparecerão aqui.</p>
            </div>
          ) : (
            filteredSales.map((sale: any) => {
@@ -167,8 +167,8 @@ export default function SalesHistoryPage() {
              
              <h2 className="text-xl font-black text-white tracking-tight mb-2">Atenção Risco Alto</h2>
              <p className="text-muted text-sm leading-relaxed mb-6">
-                Você está ordenando a Vercel a revogar e <strong className="text-white">destruir esta venda</strong>.<br/><br/>
-                Os valores sairão dos seus relatórios de lucro da Nuvem, e os produtos retornarão imediatamente para a Vitrine (Aba Estoque).
+                Você está prestes a <strong className="text-white">estornar esta venda</strong>.<br/><br/>
+                O valor sairá dos relatórios e os produtos voltarão ao estoque.
              </p>
 
              <div className="flex gap-3 w-full">
@@ -182,7 +182,7 @@ export default function SalesHistoryPage() {
                   onClick={handleRevertSale}
                   className="flex-1 bg-danger text-surface font-black text-sm uppercase tracking-wider py-4 rounded-xl hover:bg-danger/90 active:scale-95 transition-all text-center"
                 >
-                  Estornar da Nuvem
+                  Estornar venda
                 </button>
              </div>
            </div>

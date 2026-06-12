@@ -43,7 +43,7 @@ export default function SettingsPage() {
     fetch('/api/settings', {
       method: 'POST',
       body: JSON.stringify(payload),
-    }).catch(e => toast.error("Falha ao salvar configuração na nuvem."));
+    }).catch(e => toast.error("Não foi possível salvar. Verifique sua conexão."));
   };
 
   const syncAllStoreSettingsToCloud = () => {
@@ -52,7 +52,7 @@ export default function SettingsPage() {
       { key: 'nexo_storeDocument', value: storeDocument },
       { key: 'nexo_storePhone', value: storePhone }
     ]);
-    toast.success("Dados salvos e sincronizados na Vercel.");
+    toast.success("Dados salvos!");
   };
 
   const handleStoreUpdate = (field: 'name' | 'doc' | 'phone', val: string) => {
@@ -97,7 +97,7 @@ export default function SettingsPage() {
       });
       if (!res.ok) throw new Error();
 
-      toast.success("Nova categoria gerada na Nuvem!");
+      toast.success("Categoria criada!");
       setNewCatName("");
       mutate();
     } catch (err) {
@@ -116,7 +116,7 @@ export default function SettingsPage() {
         const res = await fetch(`/api/categories?id=${id}`, { method: 'DELETE' });
         if (!res.ok) throw new Error();
         
-        toast.success("Categoria extinta da Nuvem.");
+        toast.success("Categoria excluída.");
         mutate();
       } catch (err) {
         toast.error("Erro interno ao deletar.");
@@ -136,7 +136,7 @@ export default function SettingsPage() {
           </button>
           <div className="flex flex-col">
             <h1 className="text-primary-bright font-black tracking-tighter text-2xl">Configurações</h1>
-            <span className="text-[10px] text-muted uppercase tracking-widest font-bold flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"/> Totalmente na Nuvem</span>
+            <span className="text-[10px] text-muted uppercase tracking-widest font-bold flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"/> Configurações da loja</span>
           </div>
         </div>
       </header>
@@ -187,7 +187,7 @@ export default function SettingsPage() {
               />
             </div>
             <p className="text-[10px] text-muted leading-relaxed mt-1 px-1">
-              * Estes dados de Contato e Nuvem ficarão vinculados visivelmente em sua Vitrine Pública.
+              * Estes dados de contato aparecem na sua vitrine pública.
             </p>
 
             {/* GERADOR DE LINK EXCLUSIVO DA LOJA */}
@@ -227,7 +227,7 @@ export default function SettingsPage() {
           >
             <div className="flex flex-col text-left">
               <span className="font-bold text-white text-base tracking-tight mb-0.5">Gerenciar Departamentos</span>
-              <span className="text-muted text-xs font-medium">Você possui {allCategories.length} categorias na nuvem</span>
+              <span className="text-muted text-xs font-medium">Você possui {allCategories.length} categorias</span>
             </div>
             <div className="w-10 h-10 rounded-full bg-surface-raised group-hover:bg-primary-deep/40 border border-border flex items-center justify-center transition-colors">
               <Edit3 size={18} className="text-primary-bright" />
@@ -302,7 +302,7 @@ export default function SettingsPage() {
               {allCategories.length === 0 ? (
                  <div className="flex flex-col items-center justify-center h-40 opacity-40 text-center">
                     <Tags size={32} className="text-muted mb-2" />
-                    <p className="font-bold text-white">Nenhum setor criado na Nuvem</p>
+                    <p className="font-bold text-white">Nenhuma categoria criada</p>
                  </div>
               ) : (
                 allCategories.map(cat => (

@@ -58,7 +58,7 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
     }
 
     setIsSubmitting(true);
-    const tsId = toast.loading("Registrando venda no cofre da Nuvem...");
+    const tsId = toast.loading("Registrando venda...");
 
     try {
       const saleData = {
@@ -83,10 +83,10 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
         body: JSON.stringify(saleData)
       });
       const resJson = await res.json();
-      if (!res.ok) throw new Error(resJson.error || "Falha na transação da nuvem.");
+      if (!res.ok) throw new Error(resJson.error || "Não foi possível registrar a venda.");
       
       clearCart();
-      toast.success(paymentMethod === 'Fiado' ? "Dívida adicionada à conta do Cliente!" : "Venda finalizada com sucesso na Vercel!", { id: tsId });
+      toast.success(paymentMethod === 'Fiado' ? "Dívida adicionada à conta do Cliente!" : "Venda registrada!", { id: tsId });
       
       const completedReceiptData = {
         items: saleData.items,
@@ -234,11 +234,11 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
                 
                 <div className="flex items-center gap-2">
                    <div className="flex items-center bg-surface-raised rounded-lg border border-border/40 shadow-inner overflow-hidden">
-                     <button type="button" onClick={() => updateQuantity(item.id!, item.quantity - 1)} className="px-2.5 py-1.5 text-danger hover:bg-danger/10 active:opacity-50 transition-colors">
+                     <button type="button" onClick={() => updateQuantity(item.id!, item.quantity - 1)} className="min-w-11 min-h-11 flex items-center justify-center text-danger hover:bg-danger/10 active:opacity-50 transition-colors">
                        <Minus size={14} strokeWidth={3} />
                      </button>
                      <span className="text-white font-black w-6 text-center text-sm">{item.quantity}</span>
-                     <button type="button" onClick={() => updateQuantity(item.id!, item.quantity + 1)} className="px-2.5 py-1.5 text-primary-bright hover:bg-primary-bright/10 active:opacity-50 transition-colors border-l border-border/40">
+                     <button type="button" onClick={() => updateQuantity(item.id!, item.quantity + 1)} className="min-w-11 min-h-11 flex items-center justify-center text-primary-bright hover:bg-primary-bright/10 active:opacity-50 transition-colors border-l border-border/40">
                        <Plus size={14} strokeWidth={3} />
                      </button>
                    </div>

@@ -53,7 +53,7 @@ export default function ProductsPage() {
 
       // Se existir nova imagem local (não é URL definitiva ainda)
       if (data.image && data.image !== editingProduct?.image && data.image.startsWith("data:image")) {
-         toast.info("Fazendo upload da foto para nuvem...", { id: 'upload' });
+         toast.info("Enviando foto...", { id: 'upload' });
          finalImageUrl = await uploadImageToImgBB(data.image);
          toast.success("Foto processada!", { id: 'upload' });
       }
@@ -78,7 +78,7 @@ export default function ProductsPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        toast.success("Produto editado e atualizado na Nuvem!");
+        toast.success("Produto atualizado!");
       } else {
         // Optimistic Create (Aparece instantaneamente com id imaginario ate voltar)
         mutate([...(rawDbProducts || []), { ...payload, id: Date.now(), image_url: finalImageUrl, category_id: data.categoryId }], false);
@@ -88,14 +88,14 @@ export default function ProductsPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        toast.success("Novo produto catalogado na rede!");
+        toast.success("Produto cadastrado!");
       }
 
       mutate(); // Re-fetch final pra garantir segurança
       setModalOpen(false);
       setEditingProduct(null);
     } catch (error) {
-      toast.error("Erro interno ao transacionar com o banco em nuvem.");
+      toast.error("Não foi possível salvar o produto. Verifique sua conexão.");
       mutate();
     }
   };
@@ -122,11 +122,11 @@ export default function ProductsPage() {
       const res = await fetch(`/api/products?id=${deleteCandidate.id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error();
 
-      toast.success(`Catálogo: ${deleteCandidate.name} foi expurgado da Nuvem.`);
+      toast.success(`${deleteCandidate.name} foi excluído.`);
       setDeleteCandidate(null);
       mutate();
     } catch (error) {
-      toast.error("Erro ao tentar romper produto da nuvem.");
+      toast.error("Não foi possível excluir o produto.");
       mutate();
     }
   };
@@ -173,7 +173,7 @@ export default function ProductsPage() {
          body: JSON.stringify({ id: promoProduct.id, promotionalPrice: null, promotionEndDate: null })
        });
 
-      toast.success("Promoção recolhida. Preço original restaurado na rede.");
+      toast.success("Promoção encerrada. Preço original restaurado.");
       setPromoProduct(null);
       mutate();
     } catch (e) {
@@ -187,7 +187,7 @@ export default function ProductsPage() {
       <header className="flex justify-between items-center mb-6">
         <div className="flex flex-col">
            <h1 className="text-primary-bright font-black tracking-tighter text-2xl">Catálogo</h1>
-           <span className="text-[10px] text-muted uppercase tracking-widest font-bold flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"/> Baseado em Nuvem SWR</span>
+           <span className="text-[10px] text-muted uppercase tracking-widest font-bold flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"/> Catálogo da loja</span>
         </div>
       </header>
 
@@ -198,7 +198,7 @@ export default function ProductsPage() {
         </span>
         <input 
           type="text" 
-          placeholder="Buscar produtos na rede..." 
+          placeholder="Buscar produtos..." 
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full bg-surface-raised border border-border/40 rounded-xl py-3.5 pl-12 pr-4 outline-none text-white font-medium focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm shadow-background/50 placeholder:text-muted/50"
@@ -321,7 +321,7 @@ export default function ProductsPage() {
           <div className="bg-background w-full max-w-md sm:rounded-2xl border-t sm:border border-border/50 shadow-2xl flex flex-col h-[95vh] sm:h-auto sm:max-h-[95vh]">
             <div className="flex justify-between items-center p-6 border-b border-border/20 shrink-0">
               <h2 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
-                 {editingProduct ? <><Edit3 size={20} className="text-primary-bright" /> Reparar Produto</> : <><Tag size={20} className="text-primary-bright" /> Ingresso p/ Nuvem</>}
+                 {editingProduct ? <><Edit3 size={20} className="text-primary-bright" /> Editar Produto</> : <><Tag size={20} className="text-primary-bright" /> Novo Produto</>}
               </h2>
               <button onClick={() => { setModalOpen(false); setEditingProduct(null); }} className="text-muted hover:text-danger transition-colors p-2 rounded-full bg-surface-raised">
                 <X size={20} />
@@ -427,7 +427,7 @@ export default function ProductsPage() {
              <h2 className="text-xl font-black text-white tracking-tight mb-2">Excluir Produto?</h2>
              <p className="text-muted text-sm leading-relaxed mb-6">
                 Tem certeza que deseja apagar <br/>
-                <strong className="text-white text-base">"{deleteCandidate.name}"</strong> <br/>da nuvem? Ele sumirá do catálogo publico.
+                <strong className="text-white text-base">"{deleteCandidate.name}"</strong> <br/>? Ele sairá do catálogo público.
              </p>
 
              <div className="flex gap-3 w-full">
