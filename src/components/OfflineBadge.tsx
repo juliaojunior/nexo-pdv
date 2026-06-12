@@ -1,25 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { WifiOff, CloudUpload, AlertTriangle } from "lucide-react";
 import { db } from "@/db/db";
 
+function subscribeOnline(callback: () => void) {
+  window.addEventListener("online", callback);
+  window.addEventListener("offline", callback);
+  return () => {
+    window.removeEventListener("online", callback);
+    window.removeEventListener("offline", callback);
+  };
+}
+
 // Chip de status no header: offline / vendas aguardando sync / vendas rejeitadas
 export function OfflineBadge() {
-  const [online, setOnline] = useState(true);
-
-  useEffect(() => {
-    setOnline(navigator.onLine);
-    const up = () => setOnline(true);
-    const down = () => setOnline(false);
-    window.addEventListener("online", up);
-    window.addEventListener("offline", down);
-    return () => {
-      window.removeEventListener("online", up);
-      window.removeEventListener("offline", down);
-    };
-  }, []);
+  // Server snapshot `true`: no SSR assumimos online para não piscar o chip
+  const online = useSyncExternalStore(
+    subscribeOnline,
+    () => navigator.onLine,
+    () => true
+  );
 
   const pendingCount = useLiveQuery(
     () => db.pendingSales.where("status").equals("pending").count(),
