@@ -212,7 +212,7 @@ export function ProductForm({ initialData, onSubmit, categories }: ProductFormPr
         <button 
           type="submit" 
           disabled={isSubmitting}
-          className="w-full fixed bottom-5 left-1/2 -translate-x-1/2 max-w-[calc(100%-2rem)] sm:relative sm:left-auto sm:translate-x-0 sm:max-w-none bg-primary hover:bg-primary-bright text-primary-deep font-black text-lg uppercase tracking-wider py-4 rounded-xl mt-4 sm:mt-0 active:scale-[0.98] transition-transform disabled:opacity-50 z-50 shadow-[0_4px_32px_rgba(6,182,212,0.4)]"
+          className="w-full fixed bottom-5 left-1/2 -translate-x-1/2 max-w-[calc(100%-2rem)] sm:relative sm:left-auto sm:translate-x-0 sm:max-w-none bg-primary hover:bg-primary-bright text-primary-deep font-black text-lg uppercase tracking-wider py-4 rounded-xl mt-4 sm:mt-0 active:scale-[0.98] transition-transform disabled:opacity-50 z-50 shadow-glow"
         >
           {isSubmitting ? "Finalizando..." : "Salvar Produto"}
         </button>

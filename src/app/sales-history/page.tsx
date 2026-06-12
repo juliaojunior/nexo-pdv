@@ -70,13 +70,13 @@ export default function SalesHistoryPage() {
             <div className="flex bg-surface rounded-lg border border-border/30 overflow-hidden">
                <button 
                   onClick={() => setFilterMode('all')}
-                  className={`px-3 py-1.5 text-[10px] sm:text-xs font-black uppercase tracking-widest transition-colors ${filterMode === 'all' ? 'bg-primary text-primary-deep' : 'text-muted hover:text-white'}`}
+                  className={`px-3 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-colors ${filterMode === 'all' ? 'bg-primary text-primary-deep' : 'text-muted hover:text-white'}`}
                >
                   Tudo
                </button>
                <button 
                   onClick={() => setFilterMode('fiado')}
-                  className={`px-3 py-1.5 text-[10px] sm:text-xs font-black uppercase tracking-widest transition-colors border-l border-border/30 ${filterMode === 'fiado' ? 'bg-warning text-surface' : 'text-muted hover:text-white'}`}
+                  className={`px-3 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-colors border-l border-border/30 ${filterMode === 'fiado' ? 'bg-warning text-surface' : 'text-muted hover:text-white'}`}
                >
                   Fiados
                </button>
@@ -117,7 +117,7 @@ export default function SalesHistoryPage() {
                        </div>
                     </div>
                     <div className="flex flex-col items-end">
-                      <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md mb-1 ${
+                      <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md mb-1 ${
                         sale.paymentMethod === 'PIX' ? 'bg-primary/10 text-primary border border-primary/30' :
                         sale.paymentMethod === 'Dinheiro' ? 'bg-success/10 text-success border border-success/30' :
                         sale.paymentMethod === 'Fiado' ? 'bg-warning/10 text-warning border border-warning/30' :
@@ -158,7 +158,7 @@ export default function SalesHistoryPage() {
       {/* Modal de Confirmação de Estorno */}
       {revertCandidate && (
         <div className="fixed inset-0 z-[100] bg-background/95 flex flex-col justify-center items-center backdrop-blur-md p-4 animate-in fade-in duration-200">
-           <div className="bg-surface w-full max-w-sm rounded-3xl border border-danger/30 shadow-[0_10px_50px_rgba(255,113,108,0.15)] flex flex-col p-6 items-center text-center relative overflow-hidden">
+           <div className="bg-surface w-full max-w-sm rounded-3xl border border-danger/30 flex flex-col p-6 items-center text-center relative overflow-hidden">
              
              <div className="bg-surface-raised p-4 rounded-full text-danger mb-4 shadow-inner border border-danger/20 relative">
                <AlertTriangle size={32} />
@@ -180,7 +180,7 @@ export default function SalesHistoryPage() {
                 </button>
                 <button 
                   onClick={handleRevertSale}
-                  className="flex-1 bg-danger text-surface font-black text-sm uppercase tracking-wider py-4 rounded-xl shadow-[0_4px_24px_rgba(255,113,108,0.3)] hover:bg-danger/90 active:scale-95 transition-all text-center"
+                  className="flex-1 bg-danger text-surface font-black text-sm uppercase tracking-wider py-4 rounded-xl hover:bg-danger/90 active:scale-95 transition-all text-center"
                 >
                   Estornar da Nuvem
                 </button>

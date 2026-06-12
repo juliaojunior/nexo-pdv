@@ -19,7 +19,7 @@ export function BottomNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 w-full z-50 pb-safe bg-surface/95 backdrop-blur-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.5)] border-t border-border/40">
+    <nav className="fixed bottom-0 w-full z-50 pb-safe bg-surface/95 backdrop-blur-2xl shadow-overlay border-t border-border/40">
       <div className="flex justify-around items-center h-20 px-1 w-full max-w-md mx-auto">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
@@ -36,7 +36,7 @@ export function BottomNav() {
               }`}
             >
               <Icon size={22} className={isActive ? "fill-current" : ""} />
-              <span className="font-['Inter'] text-[10px] uppercase tracking-widest font-bold mt-1">
+              <span className="font-['Inter'] text-[11px] uppercase tracking-wide font-bold mt-1">
                 {item.label}
               </span>
             </Link>

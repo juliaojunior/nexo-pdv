@@ -204,7 +204,7 @@ export default function SettingsPage() {
                     toast.success("Link Exclusivo Copiado!");
                   }}
                   disabled={!userId}
-                  className="w-12 h-12 shrink-0 bg-danger text-background rounded-xl flex items-center justify-center hover:bg-danger/90 active:scale-95 transition-all shadow-[0_4px_16px_rgba(255,113,108,0.3)] disabled:opacity-50"
+                  className="w-12 h-12 shrink-0 bg-danger text-background rounded-xl flex items-center justify-center hover:bg-danger/90 active:scale-95 transition-all disabled:opacity-50"
                   title="Copiar Link"
                 >
                   <Copy size={20} strokeWidth={2.5}/>
@@ -223,7 +223,7 @@ export default function SettingsPage() {
           
           <button 
             onClick={() => setIsCatModalOpen(true)}
-            className="bg-gradient-to-br from-surface to-surface-raised overflow-hidden border border-border/30 hover:border-primary-bright/50 rounded-2xl p-4 flex items-center justify-between shadow-[0_4px_16px_rgba(0,0,0,0.2)] active:scale-[0.98] transition-all group"
+            className="bg-gradient-to-br from-surface to-surface-raised overflow-hidden border border-border/30 hover:border-primary-bright/50 rounded-2xl p-4 flex items-center justify-between shadow-xl active:scale-[0.98] transition-all group"
           >
             <div className="flex flex-col text-left">
               <span className="font-bold text-white text-base tracking-tight mb-0.5">Gerenciar Departamentos</span>
@@ -281,7 +281,7 @@ export default function SettingsPage() {
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center sm:justify-center overflow-hidden">
           <div className="absolute inset-0 bg-black/70 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setIsCatModalOpen(false)}></div>
           
-          <div className="relative w-full sm:max-w-md bg-background sm:rounded-3xl rounded-t-3xl border-t sm:border border-border/50 shadow-[0_-24px_48px_rgba(0,0,0,0.9)] flex flex-col h-[90vh] sm:h-[80vh] animate-in slide-in-from-bottom-full duration-300 mx-auto">
+          <div className="relative w-full sm:max-w-md bg-background sm:rounded-3xl rounded-t-3xl border-t sm:border border-border/50 shadow-overlay flex flex-col h-[90vh] sm:h-[80vh] animate-in slide-in-from-bottom-full duration-300 mx-auto">
             
             <div className="w-full flex justify-center py-3 sm:hidden shrink-0" onClick={() => setIsCatModalOpen(false)}>
               <div className="w-12 h-1.5 bg-border rounded-full"></div>

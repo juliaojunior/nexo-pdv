@@ -85,7 +85,7 @@ export default function Home() {
     <div className="bg-background min-h-screen text-foreground font-['Inter'] flex flex-col relative w-full pb-20">
       
       {/* TopAppBar com Scanner Rápido */}
-      <header className="fixed top-0 w-full z-30 bg-background/80 backdrop-blur-xl shadow-[0_8px_32px_rgba(83,221,252,0.08)]">
+      <header className="fixed top-0 w-full z-30 bg-background/80 backdrop-blur-xl shadow-glow">
         <div className="flex justify-between items-center px-4 h-16 w-full max-w-md mx-auto">
           <div className="flex items-center gap-3">
             <h1 className="text-primary-bright font-black tracking-tighter text-xl truncate max-w-[180px]">{storeName}</h1>
@@ -93,7 +93,7 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setScannerOpen(true)}
-              className="p-2 -mr-1 text-primary bg-surface-raised border border-border/40 rounded-full active:scale-90 transition-transform shadow-[0_2px_12px_rgba(6,182,212,0.2)]"
+              className="p-2 -mr-1 text-primary bg-surface-raised border border-border/40 rounded-full active:scale-90 transition-transform shadow-glow"
             >
               <Camera size={18} strokeWidth={2.5} />
             </button>
@@ -165,7 +165,7 @@ export default function Home() {
 
                    {/* Indicador Micro-Badge Promo Dentro Card */}
                    {promoActive && (
-                     <div className="absolute top-2 left-2 bg-danger text-white px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest shadow z-20">
+                     <div className="absolute top-2 left-2 bg-danger text-white px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest shadow z-20">
                        Promo
                      </div>
                    )}
@@ -177,7 +177,7 @@ export default function Home() {
                    >
                     <Plus size={18} className="text-primary-bright" />
                   </button>
-                  <div className={`absolute bottom-2 left-2 px-2 py-0.5 rounded text-[9px] font-bold z-20 ${product.stock <= 5 ? 'bg-danger/90 text-white' : 'bg-background/80 text-muted'}`}>
+                  <div className={`absolute bottom-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold z-20 ${product.stock <= 5 ? 'bg-danger/90 text-white' : 'bg-background/80 text-muted'}`}>
                     {product.stock} em est.
                   </div>
                 </div>
@@ -197,7 +197,6 @@ export default function Home() {
                 </div>
 
                 {/* Efeito Glow Promocional Fundo */}
-                {promoActive && <div className="absolute -inset-10 bg-gradient-to-tr from-danger/5 to-primary-bright/5 pointer-events-none" />}
               </div>
             )})}
           </div>
@@ -216,7 +215,7 @@ export default function Home() {
       {cartTotalItems > 0 && (
         <section className="fixed bottom-24 left-0 w-full z-40 px-4 animate-in slide-in-from-bottom-5 duration-300 pointer-events-none">
           <div className="max-w-md mx-auto pointer-events-auto">
-            <div className="bg-surface/95 backdrop-blur-2xl rounded-2xl h-16 flex items-center justify-between px-5 shadow-[0_-8px_32px_rgba(0,0,0,0.6)] border border-primary/30 hover:border-primary/60 transition-colors cursor-pointer"
+            <div className="bg-surface/95 backdrop-blur-2xl rounded-2xl h-16 flex items-center justify-between px-5 shadow-overlay border border-primary/30 hover:border-primary/60 transition-colors cursor-pointer"
                  onClick={() => setCheckoutOpen(true)}
             >
               <div className="flex flex-col relative top-0.5">

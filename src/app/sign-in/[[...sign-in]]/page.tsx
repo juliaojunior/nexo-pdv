@@ -23,12 +23,10 @@ export default function Page() {
         
         {/* Background Ambient Glow */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-primary-bright/10 blur-[120px] rounded-full"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-primary-bright/10 blur-[100px] rounded-full"></div>
         </div>
         
         <section className="z-10 w-full max-w-md">
-          <div className="bg-background rounded-xl p-6 sm:p-10 flex flex-col items-center space-y-8 sm:space-y-10 shadow-[0_32px_32px_rgba(83,221,252,0.08)]">
+          <div className="bg-background rounded-xl p-6 sm:p-10 flex flex-col items-center space-y-8 sm:space-y-10 shadow-glow">
             
             {/* Brand Anchor */}
             <div className="flex flex-col items-center space-y-4">
@@ -76,11 +74,11 @@ export default function Page() {
             {/* App Statistics / Bento Style Sub-component */}
             <div className="grid grid-cols-2 gap-4 w-full mt-2">
               <div className="bg-surface-raised p-4 rounded-xl border border-border/20">
-                <div className="text-primary-bright text-[10px] font-black uppercase tracking-widest mb-1">Agilidade</div>
+                <div className="text-primary-bright text-[10px] font-bold uppercase tracking-widest mb-1">Agilidade</div>
                 <div className="text-white font-bold text-sm">Vendas em 1-tap</div>
               </div>
               <div className="bg-surface-raised p-4 rounded-xl border border-border/20">
-                <div className="text-primary-bright text-[10px] font-black uppercase tracking-widest mb-1">Estoque</div>
+                <div className="text-primary-bright text-[10px] font-bold uppercase tracking-widest mb-1">Estoque</div>
                 <div className="text-white font-bold text-sm">Gestão Smart</div>
               </div>
             </div>
@@ -96,7 +94,7 @@ export default function Page() {
           <div className="w-[3px] h-[3px] rounded-full bg-border"></div>
           <a className="font-['Inter'] text-[10px] uppercase tracking-widest text-muted hover:text-primary-bright transition-colors cursor-pointer" href="#">Privacidade</a>
         </div>
-        <p className="font-['Inter'] text-[9px] uppercase tracking-widest text-muted opacity-40">© 2026 Nexo PDV. All rights reserved.</p>
+        <p className="font-['Inter'] text-[10px] uppercase tracking-widest text-muted opacity-40">© 2026 Nexo PDV. All rights reserved.</p>
       </footer>
 
       {/* Background Layer (The Canvas) */}

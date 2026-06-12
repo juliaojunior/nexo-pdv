@@ -125,8 +125,7 @@ export default function OrdersPage() {
 
       <div className="flex flex-col gap-4">
          {orders.map(order => (
-           <div key={order.id} className="bg-gradient-to-br from-surface to-background border border-primary-bright/20 rounded-2xl p-4 shadow-[0_4px_25px_rgba(6,182,212,0.1)] relative overflow-hidden">
-               <div className="absolute top-0 right-0 w-32 h-32 bg-primary-bright/5 rounded-full blur-[40px] pointer-events-none" />
+           <div key={order.id} className="bg-gradient-to-br from-surface to-background border border-primary-bright/20 rounded-2xl p-4 shadow-glow relative overflow-hidden">
                
                <div className="flex justify-between items-start mb-3 border-b border-border/30 pb-3">
                   <div>
@@ -154,7 +153,7 @@ export default function OrdersPage() {
 
                <button 
                  onClick={() => setModalOrder(order)}
-                 className="w-full bg-primary text-background py-3.5 rounded-xl font-black uppercase tracking-widest active:scale-[0.98] transition-transform shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:bg-primary-bright"
+                 className="w-full bg-primary text-background py-3.5 rounded-xl font-black uppercase tracking-widest active:scale-[0.98] transition-transform shadow-glow hover:bg-primary-bright"
                >
                  Avaliar Pedido
                </button>

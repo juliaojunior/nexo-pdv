@@ -162,7 +162,7 @@ export default function CustomersPage() {
       {/* FAB (Floating Action Button) */}
       <button 
         onClick={() => openForm()}
-        className="fixed bottom-24 right-4 sm:right-auto sm:left-1/2 sm:ml-[150px] w-14 h-14 bg-primary text-primary-deep rounded-full flex items-center justify-center shadow-[0_8px_32px_rgba(6,182,212,0.4)] hover:bg-primary-bright active:scale-90 transition-all z-20"
+        className="fixed bottom-24 right-4 sm:right-auto sm:left-1/2 sm:ml-[150px] w-14 h-14 bg-primary text-primary-deep rounded-full flex items-center justify-center shadow-glow hover:bg-primary-bright active:scale-90 transition-all z-20"
       >
         <Plus size={28} strokeWidth={2.5} />
       </button>
@@ -177,7 +177,7 @@ export default function CustomersPage() {
           ></div>
           
           {/* Sheet */}
-          <div className="relative w-full sm:max-w-md bg-background sm:rounded-3xl rounded-t-3xl border-t sm:border border-border/50 shadow-[0_-24px_48px_rgba(0,0,0,0.8)] flex flex-col max-h-[90vh] animate-in slide-in-from-bottom-full duration-300">
+          <div className="relative w-full sm:max-w-md bg-background sm:rounded-3xl rounded-t-3xl border-t sm:border border-border/50 shadow-overlay flex flex-col max-h-[90vh] animate-in slide-in-from-bottom-full duration-300">
             {/* Grabber */}
             <div className="w-full flex justify-center py-3 sm:hidden" onClick={closeForm}>
               <div className="w-12 h-1.5 bg-border rounded-full"></div>

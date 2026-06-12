@@ -192,7 +192,7 @@ export default function InventoryPage() {
                      }`}
                    >
                      <span className={`font-black text-lg leading-none ${isCritical ? 'text-danger' : 'text-white'}`}>{product.stock}</span>
-                     <span className={`text-[9px] uppercase tracking-widest leading-none mt-1 ${isCritical ? 'text-danger/70' : 'text-muted'}`}>un</span>
+                     <span className={`text-[10px] uppercase tracking-widest leading-none mt-1 ${isCritical ? 'text-danger/70' : 'text-muted'}`}>un</span>
                    </div>
                 </div>
               </div>
@@ -211,7 +211,7 @@ export default function InventoryPage() {
           ></div>
           
           {/* Sheet */}
-          <div className="relative w-full sm:max-w-md bg-background sm:rounded-3xl rounded-t-3xl border-t sm:border border-border/50 shadow-[0_-24px_48px_rgba(0,0,0,0.8)] flex flex-col max-h-[85vh] sm:max-h-[90vh] h-auto animate-in slide-in-from-bottom-full duration-300 z-10 mx-auto">
+          <div className="relative w-full sm:max-w-md bg-background sm:rounded-3xl rounded-t-3xl border-t sm:border border-border/50 shadow-overlay flex flex-col max-h-[85vh] sm:max-h-[90vh] h-auto animate-in slide-in-from-bottom-full duration-300 z-10 mx-auto">
             
             {/* Grabber */}
             <div className="w-full flex justify-center py-3 sm:hidden flex-shrink-0" onClick={closeModal}>
@@ -219,7 +219,7 @@ export default function InventoryPage() {
             </div>
 
             <div className="px-5 pb-5 pt-1 flex flex-col items-center border-b border-border/30 flex-shrink-0">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-tr flex-shrink-0 from-primary-deep to-background border border-primary/30 flex items-center justify-center overflow-hidden mb-3 shadow-[0_4px_16px_rgba(6,182,212,0.2)]">
+              <div className="w-14 h-14 rounded-xl bg-gradient-to-tr flex-shrink-0 from-primary-deep to-background border border-primary/30 flex items-center justify-center overflow-hidden mb-3 shadow-glow">
                 {selectedProduct.image_url ? (
                    <img src={selectedProduct.image_url} className="w-full h-full object-cover" alt={selectedProduct.name} />
                 ) : (
@@ -305,7 +305,7 @@ export default function InventoryPage() {
               </div>
 
                {/* Action Buttons Pinned at the Bottom*/}
-               <div className="px-5 pt-4 pb-8 sm:pb-6 border-t border-border/30 flex gap-3 bg-background mt-auto flex-shrink-0 z-20 shadow-[0_-12px_24px_rgba(0,0,0,0.4)]">
+               <div className="px-5 pt-4 pb-8 sm:pb-6 border-t border-border/30 flex gap-3 bg-background mt-auto flex-shrink-0 z-20 shadow-overlay">
                  <button 
                   type="button" 
                   onClick={closeModal}

@@ -72,7 +72,7 @@ export function BarcodeScannerModal({ onDetected, onClose }: BarcodeScannerModal
         </div>
 
         {/* Viewport Interativo do Html5Qrcode */}
-        <div className="relative w-full aspect-square rounded-3xl overflow-hidden bg-black ring-4 ring-surface-raised ring-offset-2 ring-offset-black shadow-[0_0_40px_rgba(6,182,212,0.15)] flex flex-col items-center justify-center">
+        <div className="relative w-full aspect-square rounded-3xl overflow-hidden bg-black ring-4 ring-surface-raised ring-offset-2 ring-offset-black shadow-glow flex flex-col items-center justify-center">
           
           {error ? (
             <div className="flex flex-col items-center p-6 text-center">

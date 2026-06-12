@@ -112,7 +112,7 @@ export default function ReportsPage() {
             {/* Backdrop Layer */}
             <div className="fixed inset-0 z-40" onClick={() => setIsFilterOpen(false)}></div>
             {/* Dropdown Card */}
-            <div className="absolute top-12 left-0 w-40 bg-surface border border-border/50 rounded-xl shadow-[0_16px_32px_rgba(0,0,0,0.5)] z-50 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            <div className="absolute top-12 left-0 w-40 bg-surface border border-border/50 rounded-xl shadow-xl z-50 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
               <button 
                 onClick={() => { setTimeFilter('month'); setIsFilterOpen(false); }}
                 className={`text-left px-4 py-3 text-sm font-bold transition-colors hover:bg-surface-raised ${timeFilter === 'month' ? 'text-primary-bright' : 'text-white'}`}
@@ -138,11 +138,11 @@ export default function ReportsPage() {
 
       {/* Cards de Métricas Estritos ao Design */}
       <div className="grid grid-cols-2 gap-4 mb-8">
-        <div className="bg-surface rounded-2xl p-5 border border-border/30 shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
+        <div className="bg-surface rounded-2xl p-5 border border-border/30 shadow-xl">
           <p className="text-muted text-xs font-bold uppercase tracking-widest mb-2">Total Vendido</p>
           <p className="text-primary font-black text-2xl lg:text-3xl tracking-tighter truncate">{formatCurrency(totalVendido)}</p>
         </div>
-        <div className="bg-surface rounded-2xl p-5 border border-border/30 shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
+        <div className="bg-surface rounded-2xl p-5 border border-border/30 shadow-xl">
           <p className="text-muted text-xs font-bold uppercase tracking-widest mb-2">Nº de Vendas</p>
           <p className="text-white font-black text-2xl lg:text-3xl tracking-tighter">{numeroVendas}</p>
         </div>
@@ -158,7 +158,7 @@ export default function ReportsPage() {
               <div key={i} className="flex flex-col items-center gap-2 flex-1 h-full justify-end relative group">
                 <div 
                   className={`w-full rounded-t-sm transition-all duration-500 ease-out 
-                    ${isHighest ? 'bg-primary shadow-[0_4px_16px_rgba(6,182,212,0.3)]' : 'bg-border hover:bg-muted'}`} 
+                    ${isHighest ? 'bg-primary shadow-glow' : 'bg-border hover:bg-muted'}`} 
                   style={{ height: `${data.percent}%`, minHeight: data.value > 0 ? '4%' : '0%' }}
                   title={formatCurrency(data.value)}
                 />

@@ -61,10 +61,9 @@ export default function MorePage() {
         {/* CÉLULA ESPECIAL DE COMPARTILHAMENTO DE CARDÁPIO */}
         <button 
           onClick={handleShareMenu}
-          className="bg-gradient-to-br from-primary/30 via-primary-deep to-background p-[1.5px] rounded-2xl mb-4 group active:scale-[0.98] transition-all shadow-[0_4px_32px_rgba(6,182,212,0.15)] w-full text-left"
+          className="bg-gradient-to-br from-primary/30 via-primary-deep to-background p-[1.5px] rounded-2xl mb-4 group active:scale-[0.98] transition-all shadow-glow w-full text-left"
         >
           <div className="bg-surface w-full h-full rounded-[14px] p-4 flex flex-col justify-between overflow-hidden relative">
-             <div className="absolute top-0 right-0 w-32 h-32 bg-primary-bright/10 rounded-full blur-[40px] pointer-events-none group-hover:bg-primary-bright/20 transition-all" />
              
              <div className="flex items-center gap-4 z-10 w-full mb-2">
                  <div className="bg-gradient-to-tr from-primary to-primary-bright p-3.5 rounded-xl shadow-inner group-hover:scale-110 transition-transform">
@@ -130,8 +129,8 @@ export default function MorePage() {
       
       {/* App Version Branding Footer */}
       <div className="mt-auto pt-16 pb-4 flex flex-col items-center justify-center opacity-40">
-        <span className="text-[10px] font-black tracking-widest uppercase">Nexo PDV</span>
-        <span className="text-[9px] font-medium">v0.1.0 • Offline-First PWA</span>
+        <span className="text-[10px] font-bold tracking-widest uppercase">Nexo PDV</span>
+        <span className="text-[10px] font-medium">v0.1.0 • Offline-First PWA</span>
       </div>
     </div>
   );

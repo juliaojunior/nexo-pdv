@@ -150,7 +150,7 @@ export default function CatalogClient({
       <header className="pt-8 pb-4 px-6 sticky top-0 z-20 bg-background/90 backdrop-blur-xl border-b border-border/30">
         <div className="max-w-3xl mx-auto flex flex-col gap-5">
            <div className="flex items-center gap-3">
-             <div className="w-12 h-12 bg-gradient-to-tr from-primary to-primary-bright rounded-full flex items-center justify-center text-background shadow-[0_0_15px_rgba(6,182,212,0.4)]">
+             <div className="w-12 h-12 bg-gradient-to-tr from-primary to-primary-bright rounded-full flex items-center justify-center text-background shadow-glow">
                  <Store size={24} strokeWidth={2.5} />
              </div>
              <div className="flex flex-col">
@@ -227,7 +227,7 @@ export default function CatalogClient({
                       {calcActivePrice(product) < Number(product.price) ? (
                          <div className="flex flex-col mt-1">
                            <span className="text-[11px] text-danger line-through font-normal leading-none" style={{marginBottom: '-2px'}}>R$ {Number(product.price).toFixed(2).replace('.', ',')}</span>
-                           <span className="flex items-center gap-1.5 align-middle leading-none mt-1">R$ {calcActivePrice(product).toFixed(2).replace('.', ',')} <span className="text-[9px] bg-primary-bright text-primary-deep px-1.5 py-0.5 rounded font-black tracking-widest uppercase">Promo</span></span>
+                           <span className="flex items-center gap-1.5 align-middle leading-none mt-1">R$ {calcActivePrice(product).toFixed(2).replace('.', ',')} <span className="text-[10px] bg-primary-bright text-primary-deep px-1.5 py-0.5 rounded font-bold tracking-widest uppercase">Promo</span></span>
                          </div>
                       ) : (
                          <span className="mt-1 block">R$ {Number(product.price).toFixed(2).replace('.', ',')}</span>
@@ -242,7 +242,7 @@ export default function CatalogClient({
                       </div>
                     )
                   ) : (
-                    <div className="absolute top-4 right-4 bg-red-500/90 backdrop-blur-sm text-white px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest">
+                    <div className="absolute top-4 right-4 bg-red-500/90 backdrop-blur-sm text-white px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-widest">
                        Esgotado
                     </div>
                   )}
@@ -263,7 +263,7 @@ export default function CatalogClient({
       {/* MODAL DE DETALHES DO PRODUTO */}
       {selectedProduct && (
         <div className="fixed inset-0 z-[60] flex flex-col justify-end bg-black/80 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setSelectedProduct(null)}>
-           <div className="bg-background rounded-t-3xl flex flex-col border-t border-border/30 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom-full duration-300 max-w-3xl mx-auto w-full relative overflow-hidden" onClick={e => e.stopPropagation()}>
+           <div className="bg-background rounded-t-3xl flex flex-col border-t border-border/30 shadow-overlay animate-in slide-in-from-bottom-full duration-300 max-w-3xl mx-auto w-full relative overflow-hidden" onClick={e => e.stopPropagation()}>
              
              {/* Thumbnail gigante do produto */}
              <div className="relative w-full h-[35vh] bg-surface-raised flex items-center justify-center shrink-0">
@@ -280,7 +280,7 @@ export default function CatalogClient({
                  <h2 className="text-white font-black text-2xl tracking-tight leading-tight">{selectedProduct.name}</h2>
                  <div className="bg-surface-raised text-white px-2.5 py-1.5 rounded-lg flex flex-col items-center justify-center border border-border/10 shrink-0 min-w-[50px]">
                    <span className="font-black text-sm leading-none">{selectedProduct.stock}</span>
-                   <span className="text-muted text-[9px] font-black uppercase tracking-widest leading-none mt-1">est.</span>
+                   <span className="text-muted text-[10px] font-bold uppercase tracking-widest leading-none mt-1">est.</span>
                  </div>
                </div>
                
@@ -299,7 +299,7 @@ export default function CatalogClient({
                )}
              </div>
 
-             <div className="p-6 bg-surface border-t border-border/50 pb-8 mt-auto shrink-0 z-20 shadow-[0_-15px_30px_rgba(0,0,0,0.4)]">
+             <div className="p-6 bg-surface border-t border-border/50 pb-8 mt-auto shrink-0 z-20 shadow-overlay">
                {selectedProduct.stock > 0 ? (
                  cart.find(i => i.local_id === selectedProduct.local_id) ? (
                    <div className="flex items-center justify-between bg-surface-raised rounded-xl p-2.5 border border-border/30 shadow-inner">
@@ -313,7 +313,7 @@ export default function CatalogClient({
                  ) : (
                    <button 
                      onClick={() => { handleAddToCart(selectedProduct); setSelectedProduct(null); toast.success("Adicionado à sacola!"); }}
-                     className="w-full py-4 rounded-xl flex items-center justify-center gap-3 font-black text-lg uppercase tracking-wide shadow-[0_5px_20px_rgba(6,182,212,0.3)] transition-transform active:scale-[0.98] bg-primary text-background"
+                     className="w-full py-4 rounded-xl flex items-center justify-center gap-3 font-black text-lg uppercase tracking-wide shadow-glow transition-transform active:scale-[0.98] bg-primary text-background"
                    >
                      <ShoppingBag size={22} />
                      Adicionar à Sacola
@@ -333,7 +333,7 @@ export default function CatalogClient({
       {/* FLOAT CART BAR */}
       {cartItemsCount > 0 && !cartOpen && !checkoutModalOpen && (
         <div className="fixed bottom-6 left-0 right-0 px-4 z-40 max-w-3xl mx-auto pointer-events-none">
-           <div className="pointer-events-auto bg-gradient-to-r from-primary to-primary-bright p-1 rounded-2xl shadow-[0_10px_30px_rgba(6,182,212,0.3)]">
+           <div className="pointer-events-auto bg-gradient-to-r from-primary to-primary-bright p-1 rounded-2xl shadow-glow">
               <button 
                 onClick={() => setCartOpen(true)}
                 className="w-full bg-background rounded-xl py-3 px-5 flex items-center justify-between active:scale-[0.98] transition-transform"
@@ -341,7 +341,7 @@ export default function CatalogClient({
                  <div className="flex items-center gap-3">
                    <div className="relative">
                      <ShoppingBag size={20} className="text-white" />
-                     <div className="absolute -top-2 -right-2 w-5 h-5 bg-primary-bright rounded-full flex items-center justify-center text-background font-black text-[10px]">
+                     <div className="absolute -top-2 -right-2 w-5 h-5 bg-primary-bright rounded-full flex items-center justify-center text-background font-bold text-[10px]">
                        {cartItemsCount}
                      </div>
                    </div>
@@ -359,7 +359,7 @@ export default function CatalogClient({
       {/* CART OVERLAY SLIDE UP */}
       {cartOpen && !checkoutModalOpen && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-           <div className="bg-background rounded-t-3xl h-[85vh] flex flex-col border-t border-border/30 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom-full duration-300 max-w-3xl mx-auto w-full relative">
+           <div className="bg-background rounded-t-3xl h-[85vh] flex flex-col border-t border-border/30 shadow-overlay animate-in slide-in-from-bottom-full duration-300 max-w-3xl mx-auto w-full relative">
               <div className="p-5 flex justify-between items-center border-b border-border/30">
                 <h2 className="text-white font-black text-xl flex items-center gap-2 tracking-tight">
                   <ShoppingBag className="text-primary-bright" />
@@ -399,7 +399,7 @@ export default function CatalogClient({
                  </div>
                  <button 
                    onClick={() => setCheckoutModalOpen(true)}
-                   className="w-full py-4 rounded-xl flex items-center justify-center font-black text-lg uppercase tracking-wide shadow-[0_5px_20px_rgba(6,182,212,0.3)] transition-transform active:scale-[0.98] bg-primary text-background"
+                   className="w-full py-4 rounded-xl flex items-center justify-center font-black text-lg uppercase tracking-wide shadow-glow transition-transform active:scale-[0.98] bg-primary text-background"
                  >
                    Prosseguir
                  </button>
@@ -411,7 +411,7 @@ export default function CatalogClient({
       {/* FINAL CHECKOUT MODAL NOVO */}
       {checkoutModalOpen && !orderDoneId && (
          <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-           <div className="bg-background rounded-t-3xl p-6 flex flex-col border-t border-border/30 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] animate-in slide-in-from-bottom max-w-3xl mx-auto w-full relative">
+           <div className="bg-background rounded-t-3xl p-6 flex flex-col border-t border-border/30 shadow-overlay animate-in slide-in-from-bottom max-w-3xl mx-auto w-full relative">
               
               <div className="flex justify-between items-center mb-6">
                  <div>
@@ -455,7 +455,7 @@ export default function CatalogClient({
       {orderDoneId && (
         <div className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center p-6 animate-in zoom-in-95">
            <div className="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center mb-6 animate-pulse">
-             <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(6,182,212,0.6)]">
+             <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center shadow-glow">
                 <ShoppingBag size={32} className="text-background" />
              </div>
            </div>
@@ -467,7 +467,7 @@ export default function CatalogClient({
              <a 
                href={getPoszapLink()}
                target="_blank"
-               className="w-full bg-[#25D366] text-white py-4 rounded-xl flex items-center justify-center font-black uppercase tracking-wide gap-2 shadow-[0_5px_20px_rgba(37,211,102,0.2)]"
+               className="w-full bg-[#25D366] text-white py-4 rounded-xl flex items-center justify-center font-black uppercase tracking-wide gap-2 shadow-lg"
              >
                Avisar Vendedor no WhatsApp
              </a>

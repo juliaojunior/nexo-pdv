@@ -105,7 +105,7 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
         {/* THE ACTUAL RECEIPT TO BE CAPTURED (Canvas Target) */}
         <div 
           ref={receiptRef} 
-          className="bg-surface w-full max-w-[340px] rounded-t-lg border-t-8 border-primary shadow-[0_20px_60px_rgba(0,0,0,0.8)] flex flex-col items-center text-center pb-8 pt-8 px-6 relative overflow-hidden shrink-0"
+          className="bg-surface w-full max-w-[340px] rounded-t-lg border-t-8 border-primary shadow-xl flex flex-col items-center text-center pb-8 pt-8 px-6 relative overflow-hidden shrink-0"
           style={{ fontFamily: "'Inter', sans-serif" }} // Force font for canvas
         >
            {/* Subtle watermark or pattern could go here */}
@@ -115,7 +115,7 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
               {storeDoc && <p className="text-muted text-[10px] uppercase tracking-widest font-bold">Doc: {storeDoc}</p>}
               <p className="text-border text-[10px] mt-2 font-bold">{new Date(receiptData.date).toLocaleString('pt-BR')}</p>
               {receiptData.customerName && (
-                <p className="text-primary bg-primary/10 border border-primary/30 px-2 py-0.5 rounded text-[10px] uppercase mt-2 font-black tracking-widest">
+                <p className="text-primary bg-primary/10 border border-primary/30 px-2 py-0.5 rounded text-[10px] uppercase mt-2 font-bold tracking-widest">
                   Cli: {receiptData.customerName}
                 </p>
               )}
@@ -144,7 +144,7 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
               </div>
               <div className="flex justify-between items-center mt-2">
                  <span className="text-muted text-[10px] font-bold uppercase tracking-widest">Meio</span>
-                 <span className={`${receiptData.paymentMethod === 'Fiado' ? 'text-surface bg-danger' : 'text-white bg-surface'} text-[10px] font-black px-2 py-0.5 uppercase tracking-widest rounded`}>
+                 <span className={`${receiptData.paymentMethod === 'Fiado' ? 'text-surface bg-danger' : 'text-white bg-surface'} text-[10px] font-bold px-2 py-0.5 uppercase tracking-widest rounded`}>
                    {receiptData.paymentMethod}
                  </span>
               </div>
@@ -165,7 +165,7 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
 
            <div className="mt-8 pt-4 border-t border-dashed border-border/50 w-full flex flex-col items-center">
               <span className="text-muted text-[10px] font-bold uppercase tracking-widest text-center">Nexo PDV Digital</span>
-              <span className="text-border text-[8px] mt-1">Obrigado pela preferência!</span>
+              <span className="text-border text-[10px] mt-1">Obrigado pela preferência!</span>
            </div>
            
            {/* Zigzag bottom styling */}
@@ -177,7 +177,7 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
            <button 
              onClick={handleShare}
              disabled={isGenerating}
-             className="w-full h-14 bg-gradient-to-tr from-primary to-primary-bright text-primary-deep font-black text-lg rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-[0_4px_24px_rgba(6,182,212,0.4)] disabled:opacity-50 disabled:scale-100"
+             className="w-full h-14 bg-gradient-to-tr from-primary to-primary-bright text-primary-deep font-black text-lg rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-glow disabled:opacity-50 disabled:scale-100"
            >
              {isGenerating ? <Download className="animate-bounce" /> : <Share2 />}
              {isGenerating ? 'Preparando...' : 'Enviar Recibo'}

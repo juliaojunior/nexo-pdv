@@ -227,7 +227,7 @@ export default function ProductsPage() {
                      {product.image ? (
                        <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                      ) : (
-                       <span className="font-bold text-[8px] text-muted tracking-widest uppercase">Foto</span>
+                       <span className="font-bold text-[10px] text-muted tracking-widest uppercase">Foto</span>
                      )}
                    </div>
                    
@@ -239,7 +239,7 @@ export default function ProductsPage() {
                          {promoActive ? (
                            <>
                              <span className="text-[10px] text-danger line-through font-normal">{formatCurrency(product.price)}</span>
-                             <span className="flex items-center gap-1.5 align-middle">{formatCurrency(activePrice)} <span className="text-[8px] bg-primary-bright text-primary-deep px-1 py-[1px] rounded font-black tracking-widest uppercase mb-0.5">Promo</span></span>
+                             <span className="flex items-center gap-1.5 align-middle">{formatCurrency(activePrice)} <span className="text-[10px] bg-primary-bright text-primary-deep px-1 py-[1px] rounded font-bold tracking-widest uppercase mb-0.5">Promo</span></span>
                            </>
                          ) : (
                             formatCurrency(product.price)
@@ -252,7 +252,7 @@ export default function ProductsPage() {
                  <div className="flex flex-col items-end gap-1.5 shrink-0 border-l border-border/20 pl-3 z-10 w-[100px]">
                    <div className="bg-surface-raised text-white px-2 py-1.5 rounded-lg flex items-center justify-center gap-1 shadow-inner border border-border/10 w-full mb-0.5 shrink-0">
                      <span className="font-black text-sm leading-none">{product.stock}</span>
-                     <span className="text-muted text-[9px] font-black uppercase tracking-widest leading-none mt-0.5 truncate">est.</span>
+                     <span className="text-muted text-[10px] font-bold uppercase tracking-widest leading-none mt-0.5 truncate">est.</span>
                    </div>
                    
                    <div className="flex items-center justify-between w-full">
@@ -310,7 +310,7 @@ export default function ProductsPage() {
       {/* Componente FAB - Anchor Inferior */}
       <button 
         onClick={handleCreateNew}
-        className="fixed bottom-[96px] right-2/4 translate-x-[9rem] bg-primary text-primary-deep p-4 rounded-full shadow-[0_8px_32px_rgba(6,182,212,0.4)] active:scale-90 hover:scale-105 transition-all z-30 flex items-center justify-center"
+        className="fixed bottom-[96px] right-2/4 translate-x-[9rem] bg-primary text-primary-deep p-4 rounded-full shadow-glow active:scale-90 hover:scale-105 transition-all z-30 flex items-center justify-center"
       >
         <Plus size={28} strokeWidth={3} />
       </button>
@@ -344,9 +344,8 @@ export default function ProductsPage() {
       {promoProduct && (
         <div className="fixed inset-0 z-[60] bg-background/80 flex flex-col justify-end backdrop-blur-md p-0 pb-16 animate-in slide-in-from-bottom-full duration-200">
            {/* ... UI idêntica ao original ... */}
-          <div className="bg-surface w-full max-w-md mx-auto rounded-t-3xl border-t border-primary/30 shadow-[0_-10px_40px_rgba(6,182,212,0.1)] flex flex-col p-6 z-10 relative overflow-hidden">
+          <div className="bg-surface w-full max-w-md mx-auto rounded-t-3xl border-t border-primary/30 shadow-glow flex flex-col p-6 z-10 relative overflow-hidden">
              
-             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[100px] bg-primary/20 blur-[60px] rounded-t-full pointer-events-none" />
 
              <div className="flex justify-between items-center mb-6 relative z-10">
                <div className="flex items-center gap-3 text-white">
@@ -407,7 +406,7 @@ export default function ProductsPage() {
                )}
                <button 
                  onClick={handleSavePromo}
-                 className="flex-[1.5] bg-primary text-primary-deep font-black text-sm uppercase tracking-wider py-4 rounded-xl shadow-[0_4px_24px_rgba(6,182,212,0.3)] hover:bg-primary-bright active:scale-95 transition-all text-center"
+                 className="flex-[1.5] bg-primary text-primary-deep font-black text-sm uppercase tracking-wider py-4 rounded-xl shadow-glow hover:bg-primary-bright active:scale-95 transition-all text-center"
                >
                  Ativar
                </button>
@@ -419,7 +418,7 @@ export default function ProductsPage() {
       {/* Modal Customizado de Exclusão */}
       {deleteCandidate && (
         <div className="fixed inset-0 z-[70] bg-background/90 flex flex-col justify-center items-center backdrop-blur-sm p-4 animate-in fade-in duration-200">
-           <div className="bg-surface w-full max-w-sm rounded-3xl border border-danger/30 shadow-[0_10px_40px_rgba(255,113,108,0.1)] flex flex-col p-6 items-center text-center relative overflow-hidden">
+           <div className="bg-surface w-full max-w-sm rounded-3xl border border-danger/30 flex flex-col p-6 items-center text-center relative overflow-hidden">
              
              <div className="bg-surface-raised p-4 rounded-full text-danger mb-4 shadow-inner border border-danger/20">
                <Trash2 size={32} />
@@ -440,7 +439,7 @@ export default function ProductsPage() {
                 </button>
                 <button 
                   onClick={confirmDelete}
-                  className="flex-1 bg-danger text-surface font-black text-sm uppercase tracking-wider py-4 rounded-xl shadow-[0_4px_24px_rgba(255,113,108,0.3)] hover:bg-danger/90 active:scale-95 transition-all text-center"
+                  className="flex-1 bg-danger text-surface font-black text-sm uppercase tracking-wider py-4 rounded-xl hover:bg-danger/90 active:scale-95 transition-all text-center"
                 >
                   Excluir
                 </button>

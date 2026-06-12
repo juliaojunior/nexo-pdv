@@ -100,8 +100,7 @@ function ProcessOrderContent() {
          </div>
       </header>
 
-      <div className="bg-surface p-5 rounded-3xl border border-primary/30 shadow-[0_8px_32px_rgba(6,182,212,0.1)] mb-6 relative overflow-hidden">
-         <div className="absolute top-0 right-0 w-32 h-32 bg-primary-bright/10 rounded-full blur-[40px] pointer-events-none" />
+      <div className="bg-surface p-5 rounded-3xl border border-primary/30 shadow-glow mb-6 relative overflow-hidden">
          
          <div className="flex flex-col mb-6 relative z-10">
            <span className="text-[10px] font-bold uppercase tracking-widest text-muted mb-1">Cliente Solicitante</span>
@@ -119,7 +118,7 @@ function ProcessOrderContent() {
                   <div className="flex flex-col items-end">
                      <span className="font-black text-primary-bright">{formatCurrency(getEffectivePrice(item.product) * item.quantity)}</span>
                      {item.quantity > item.product.stock && (
-                        <span className="text-[9px] text-danger font-black uppercase tracking-widest mt-0.5">Estoque Insuficiente!</span>
+                        <span className="text-[10px] text-danger font-bold uppercase tracking-widest mt-0.5">Estoque Insuficiente!</span>
                      )}
                   </div>
                </div>
@@ -135,7 +134,7 @@ function ProcessOrderContent() {
       <div className="flex flex-col gap-3 mt-auto pt-4">
          <button 
            onClick={handleApprove}
-           className="w-full bg-primary text-primary-deep font-black text-lg uppercase tracking-wider py-4 rounded-xl shadow-[0_4px_24px_rgba(6,182,212,0.3)] hover:bg-primary-bright active:scale-95 transition-all text-center flex justify-center items-center gap-2"
+           className="w-full bg-primary text-primary-deep font-black text-lg uppercase tracking-wider py-4 rounded-xl shadow-glow hover:bg-primary-bright active:scale-95 transition-all text-center flex justify-center items-center gap-2"
          >
            <CheckCircle2 size={24} />
            Aprovar e Dar Baixa
