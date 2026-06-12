@@ -5,6 +5,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/db/db";
 import { Plus, Edit2, Trash2, X, Check } from "lucide-react";
 import { toast } from "sonner";
+import { requireOnline } from "@/lib/offline/onlineGuard";
 
 export function CategoryManager() {
   const categories = useLiveQuery(() => db.categories.toArray()) || [];
@@ -16,6 +17,7 @@ export function CategoryManager() {
 
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!requireOnline()) return;
     const name = newCategoryName.trim();
     if (!name) return;
     
@@ -42,6 +44,7 @@ export function CategoryManager() {
   };
 
   const handleSaveEdit = async () => {
+    if (!requireOnline()) return;
     if (!editingId) return;
     const name = editName.trim();
     if (!name) {
@@ -68,6 +71,7 @@ export function CategoryManager() {
   };
 
   const handleDelete = async (cat: { id?: number; name: string }) => {
+    if (!requireOnline()) return;
     if (!cat.id) return;
     
     // Verificação Estrita: Impede que categorias com produtos vinculados sejam excluídas

@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "@/db/db";
+import useSWR from "swr";
+import type { SalePayload } from "@/db/db";
+import { cachedFetcher, ApiError } from "@/lib/offline/cachedFetcher";
+import { submitSale } from "@/lib/offline/submitSale";
+import { mapProductRow } from "@/lib/offline/mappers";
 import { formatCurrency, getEffectivePrice } from "@/lib/utils";
 import { CheckCircle2, XCircle, ArrowLeft, PackageCheck } from "lucide-react";
 import { toast } from "sonner";
@@ -12,7 +15,13 @@ import Link from "next/link";
 function ProcessOrderContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const products = useLiveQuery(() => db.products.toArray());
+  const { data: rawProducts } = useSWR("/api/products", cachedFetcher);
+  // Memo obrigatório: o useEffect abaixo depende de `products`; sem memo, o .map
+  // criaria referência nova a cada render e o setState entraria em loop
+  const products = useMemo(
+    () => (rawProducts ? (rawProducts as unknown[]).map(mapProductRow) : undefined),
+    [rawProducts]
+  );
   
   const orderParam = searchParams.get("order");
   const customerParam = searchParams.get("customer") || "Cliente Web";
@@ -45,27 +54,37 @@ function ProcessOrderContent() {
      if (!orderItems || orderItems.length === 0) return;
 
      try {
-       // Preparamos os Itens para o formato Omit<SaleItem, 'id' | 'saleId'>
-       const saleItems = orderItems.map(item => ({
-           productId: item.product.id!,
-           productName: item.product.name,
-           quantity: item.quantity,
-           unitPrice: getEffectivePrice(item.product),
-           subtotal: getEffectivePrice(item.product) * item.quantity
-       }));
-
-       // Salva a venda rodando a transação atômica
-       const saleId = await db.finalizeSale({
-           total: total,
+       const payload: SalePayload = {
+           clientId: crypto.randomUUID(),
+           total,
            paymentMethod: "PIX",
-           date: new Date().toISOString()
-       }, saleItems);
+           date: new Date().toISOString(),
+           items: orderItems.map(item => ({
+               productId: item.product.id!,
+               productName: item.product.name,
+               quantity: item.quantity,
+               unitPrice: getEffectivePrice(item.product),
+               subtotal: getEffectivePrice(item.product) * item.quantity
+           }))
+       };
 
-       toast.success("Pedido aprovado e estoque abatido!");
+       const result = await submitSale(payload, customerParam);
+
+       if (result.status === 'queued') {
+         toast.warning("Sem conexão. Pedido aprovado no aparelho — será enviado quando a internet voltar.");
+       } else {
+         toast.success("Pedido aprovado e estoque abatido!");
+       }
        router.push("/");
-       
+
      } catch (e) {
-       toast.error("Ocorreu um erro ao processar o pedido.");
+       if (e instanceof ApiError && e.status === 401) {
+         toast.error("Faça login para aprovar pedidos.");
+       } else if (e instanceof ApiError) {
+         toast.error(e.message);
+       } else {
+         toast.error("Ocorreu um erro ao processar o pedido.");
+       }
      }
   };
 
@@ -74,7 +93,7 @@ function ProcessOrderContent() {
   };
 
   if (!products) {
-    return <div className="min-h-screen bg-background flex items-center justify-center"><p className="text-muted animate-pulse">Lendo banco de dados protegido...</p></div>
+    return <div className="min-h-screen bg-background flex items-center justify-center"><p className="text-muted animate-pulse">Carregando produtos...</p></div>
   }
 
   if (!orderItems || orderItems.length === 0) {

@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { ChevronLeft, Search, Package, Plus, Minus, Edit2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { requireOnline } from "@/lib/offline/onlineGuard";
 import { formatCurrency } from "@/lib/utils";
 
 interface Product {
@@ -56,6 +57,7 @@ export default function InventoryPage() {
 
   const handleAdjust = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!requireOnline()) return;
     if (!selectedProduct || !selectedProduct.id) return;
 
     const qty = parseInt(quantityStr, 10);

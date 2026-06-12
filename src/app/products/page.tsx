@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { ProductForm } from "@/components/ProductForm";
 import { Search, Plus, X, Trash2, Tag, PercentCircle, Edit3 } from "lucide-react";
 import { toast } from "sonner";
+import { requireOnline } from "@/lib/offline/onlineGuard";
 import { formatCurrency, isPromotionActive, getEffectivePrice } from "@/lib/utils";
 import { uploadImageToImgBB } from "@/lib/imgbb";
 
@@ -48,6 +49,7 @@ export default function ProductsPage() {
   );
 
   const handleSaveProduct = async (data: any) => {
+    if (!requireOnline()) return;
     try {
       let finalImageUrl = editingProduct ? editingProduct.image : data.image;
 
@@ -116,6 +118,7 @@ export default function ProductsPage() {
   };
 
   const confirmDelete = async () => {
+    if (!requireOnline()) return;
     if (!deleteCandidate) return;
     try {
       mutate(rawDbProducts?.filter((p: any) => p.id !== deleteCandidate.id), false);
@@ -132,6 +135,7 @@ export default function ProductsPage() {
   };
 
   const handleSavePromo = async () => {
+    if (!requireOnline()) return;
     if (!promoProduct) return;
     if (!promoPriceValue || !promoDateValue) {
       toast.error("Preencha o valor promocional e a data limite corretamente.");
@@ -163,6 +167,7 @@ export default function ProductsPage() {
   };
 
   const handleRemovePromo = async () => {
+    if (!requireOnline()) return;
     if (!promoProduct) return;
     try {
        mutate(rawDbProducts?.map((p: any) => p.id === promoProduct.id ? { ...p, promotional_price: null, promotion_end_date: null } : p), false);

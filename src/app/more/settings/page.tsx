@@ -6,6 +6,7 @@ import { useAuth } from "@clerk/nextjs";
 import { ChevronLeft, Store, Tags, Smartphone, Volume2, Trash2, Edit3, Plus, ArrowLeft, X, Link as LinkIcon, Copy } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { requireOnline } from "@/lib/offline/onlineGuard";
 
 interface Category {
   id: number;
@@ -47,6 +48,7 @@ export default function SettingsPage() {
   };
 
   const syncAllStoreSettingsToCloud = () => {
+    if (!requireOnline()) return;
     saveToCloud([
       { key: 'nexo_storeName', value: storeName },
       { key: 'nexo_storeDocument', value: storeDocument },
@@ -85,6 +87,7 @@ export default function SettingsPage() {
 
   const handleSaveCategory = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!requireOnline()) return;
     if (!newCatName.trim()) return toast.error("O nome da categoria é obrigatório.");
 
     try {
@@ -107,6 +110,7 @@ export default function SettingsPage() {
   };
 
   const handleDeleteCategory = async (id?: number) => {
+    if (!requireOnline()) return;
     if (!id) return;
 
     if (confirm("Tem certeza que deseja apagar essa categoria definitivamente?")) {
