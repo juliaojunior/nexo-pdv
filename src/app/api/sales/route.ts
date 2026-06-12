@@ -58,7 +58,7 @@ export async function POST(req: Request) {
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    const { total, paymentMethod, amountReceived, change, customerId, date, items } = body;
+    const { total, paymentMethod, amountReceived, change, customerId, date, items, clientId } = body;
 
     // 0. TRAVA DE ESTOQUE NEGATIVO (Bloqueia Reversing Math e inflação de estoque)
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -70,24 +70,51 @@ export async function POST(req: Request) {
       }
     }
 
+    // 0.1 Chave de idempotência opcional (vendas offline reenviadas pela fila)
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const safeClientId: string | null = typeof clientId === 'string' && UUID_RE.test(clientId) ? clientId : null;
+
     const client = await cloudDb.connect();
 
     // 1. Safety Checks das Colunas
     await client.sql`ALTER TABLE nexo_sales ADD COLUMN IF NOT EXISTS customer_id INTEGER;`;
     await client.sql`ALTER TABLE nexo_sales ADD COLUMN IF NOT EXISTS amount_received NUMERIC(10, 2);`;
     await client.sql`ALTER TABLE nexo_sales ADD COLUMN IF NOT EXISTS change_returned NUMERIC(10, 2);`;
+    await client.sql`ALTER TABLE nexo_sales ADD COLUMN IF NOT EXISTS client_id UUID;`;
+    await client.sql`CREATE UNIQUE INDEX IF NOT EXISTS nexo_sales_client_id_key ON nexo_sales (client_id);`;
     await client.sql`ALTER TABLE nexo_sale_items ADD COLUMN IF NOT EXISTS product_name VARCHAR(255);`;
     await client.sql`ALTER TABLE nexo_sale_items ADD COLUMN IF NOT EXISTS subtotal NUMERIC(10, 2);`;
+
+    // 1.1 Dedupe: se esta venda já chegou antes (retry da fila), confirma sem tocar estoque
+    if (safeClientId) {
+      const dupe = await client.sql`
+        SELECT id FROM nexo_sales WHERE client_id = ${safeClientId} AND user_id = ${userId} LIMIT 1;
+      `;
+      if (dupe.rows.length > 0) {
+        client.release();
+        return NextResponse.json({ success: true, id: dupe.rows[0].id, deduped: true }, { status: 200 });
+      }
+    }
 
     try {
       await client.sql`BEGIN`; // Inicia Transação Atômica
 
-      // 2. Insere a Venda Primária
+      // 2. Insere a Venda Primária (ON CONFLICT cobre corrida entre dois retries simultâneos)
       const saleResult = await client.sql`
-        INSERT INTO nexo_sales (user_id, total_amount, payment_method, customer_id, amount_received, change_returned, created_at)
-        VALUES (${userId}, ${total}, ${paymentMethod}, ${customerId || null}, ${amountReceived || null}, ${change || null}, ${date || new Date().toISOString()})
+        INSERT INTO nexo_sales (user_id, total_amount, payment_method, customer_id, amount_received, change_returned, created_at, client_id)
+        VALUES (${userId}, ${total}, ${paymentMethod}, ${customerId || null}, ${amountReceived || null}, ${change || null}, ${date || new Date().toISOString()}, ${safeClientId})
+        ON CONFLICT (client_id) DO NOTHING
         RETURNING id;
       `;
+      if (saleResult.rows.length === 0) {
+        // Outro retry venceu a corrida: desfaz e devolve a venda já existente
+        await client.sql`ROLLBACK`;
+        const existing = await client.sql`
+          SELECT id FROM nexo_sales WHERE client_id = ${safeClientId} AND user_id = ${userId} LIMIT 1;
+        `;
+        client.release();
+        return NextResponse.json({ success: true, id: existing.rows[0]?.id ?? null, deduped: true }, { status: 200 });
+      }
       const newSaleId = saleResult.rows[0].id;
 
       // 3. Insere os Itens e Subtrai Estoque
@@ -106,7 +133,10 @@ export async function POST(req: Request) {
           `;
           
           if (rowCount === 0) {
-            throw new Error(`Estoque insuficiente no momento do checkout para P. ${item.productName}`);
+            // 409: falha permanente de negócio — a fila offline não deve re-tentar
+            const err = new Error(`Estoque insuficiente para ${item.productName}.`) as Error & { status?: number };
+            err.status = 409;
+            throw err;
           }
         }
       }
@@ -121,7 +151,7 @@ export async function POST(req: Request) {
       throw e;
     }
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: error.status ?? 500 });
   }
 }
 
