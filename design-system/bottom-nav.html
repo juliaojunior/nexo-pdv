@@ -1,0 +1,24 @@
+<!-- @dsCard group="Navegação" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin:0; background:#121212; font-family:Inter,system-ui,sans-serif; padding:40px 16px; }
+  nav { max-width:420px; margin:0 auto; background:rgba(26,26,26,.95); border-top:1px solid rgba(72,72,71,.4); box-shadow:0 -8px 32px rgba(0,0,0,.5); border-radius:16px 16px 0 0; display:flex; justify-content:space-around; align-items:center; height:80px; }
+  a { display:flex; flex-direction:column; align-items:center; gap:5px; text-decoration:none; color:#adaaaa; padding:8px 10px; border-radius:12px; }
+  a.active { color:#53ddfc; background:rgba(0,75,88,.3); }
+  a span { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+  .ic { width:22px; height:22px; border:2px solid currentColor; border-radius:6px; }
+</style>
+</head>
+<body>
+  <nav>
+    <a class="active"><div class="ic"></div><span>Vendas</span></a>
+    <a><div class="ic"></div><span>Produtos</span></a>
+    <a><div class="ic"></div><span>Pedidos</span></a>
+    <a><div class="ic"></div><span>Relatórios</span></a>
+    <a><div class="ic"></div><span>Mais</span></a>
+  </nav>
+</body>
+</html>

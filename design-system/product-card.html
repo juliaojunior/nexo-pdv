@@ -1,0 +1,33 @@
+<!-- @dsCard group="Componentes" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin:0; background:#121212; font-family:Inter,system-ui,sans-serif; color:#f3f4f6; padding:24px; display:flex; gap:16px; }
+  .card { width:170px; background:#1a1a1a; border:1px solid rgba(72,72,71,.3); border-bottom:4px solid rgba(72,72,71,.5); border-radius:16px; padding:10px; }
+  .img { position:relative; aspect-ratio:1; border-radius:12px; background:linear-gradient(160deg,#20201f 0%,#26262a 100%); display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  .img span.ph { color:#adaaaa; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; opacity:.7; }
+  .fab { position:absolute; top:6px; right:6px; width:44px; height:44px; border-radius:9999px; background:rgba(18,18,18,.8); border:1px solid rgba(72,72,71,.5); color:#53ddfc; font-size:20px; display:flex; align-items:center; justify-content:center; }
+  .promo { position:absolute; top:8px; left:8px; background:#ff716c; color:#fff; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; padding:2px 6px; border-radius:4px; }
+  .stock { position:absolute; bottom:8px; left:8px; background:rgba(18,18,18,.8); color:#adaaaa; font-size:10px; font-weight:700; padding:2px 8px; border-radius:4px; }
+  .stock.low { background:rgba(255,113,108,.9); color:#fff; }
+  h3 { font-size:14px; font-weight:700; margin:8px 2px 2px; height:36px; line-height:1.25; overflow:hidden; }
+  .price { font-size:18px; font-weight:900; color:#06b6d4; margin:0 2px; letter-spacing:-.01em; }
+  .price-old { display:block; font-size:11px; color:#ff716c; text-decoration:line-through; font-weight:500; }
+  .price-promo { color:#53ddfc; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="img"><span class="ph">Bebidas</span><div class="fab">+</div><div class="stock">23 em est.</div></div>
+    <h3>Refrigerante Lata 350ml</h3>
+    <div class="price">R$ 6,50</div>
+  </div>
+  <div class="card">
+    <div class="img"><span class="ph">Lanches</span><div class="promo">Promo</div><div class="fab">+</div><div class="stock low">3 em est.</div></div>
+    <h3>X-Salada Duplo Artesanal</h3>
+    <div class="price"><span class="price-old">R$ 28,00</span><span class="price-promo">R$ 22,90</span></div>
+  </div>
+</body>
+</html>

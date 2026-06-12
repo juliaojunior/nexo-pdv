@@ -1,0 +1,25 @@
+<!-- @dsCard group="Componentes" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin:0; background:#121212; font-family:Inter,system-ui,sans-serif; color:#f3f4f6; padding:24px; display:flex; flex-direction:column; gap:14px; max-width:360px; }
+  .spec { color:#adaaaa; font-size:10px; }
+  button { font-family:inherit; border:none; cursor:pointer; }
+  .primary { background:#06b6d4; color:#004b58; font-weight:900; font-size:16px; text-transform:uppercase; letter-spacing:.05em; padding:16px; border-radius:12px; width:100%; box-shadow:0 4px 24px rgba(6,182,212,.25); }
+  .secondary { background:#20201f; color:#adaaaa; font-weight:700; font-size:14px; padding:16px; border-radius:12px; width:100%; border:1px solid rgba(72,72,71,.5); }
+  .danger { background:#ff716c; color:#1a1a1a; font-weight:900; font-size:14px; text-transform:uppercase; letter-spacing:.05em; padding:16px; border-radius:12px; width:100%; }
+  .icon { width:44px; height:44px; border-radius:9999px; background:rgba(18,18,18,.8); border:1px solid rgba(72,72,71,.5); color:#53ddfc; font-size:20px; display:flex; align-items:center; justify-content:center; }
+</style>
+</head>
+<body>
+  <button class="primary">Finalizar venda</button>
+  <span class="spec">Primário · bg-primary text-primary-deep shadow-glow · CTA único por tela</span>
+  <button class="secondary">Cancelar</button>
+  <span class="spec">Secundário · bg-surface-raised border-border/50 · sentence case</span>
+  <button class="danger">Estornar venda</button>
+  <span class="spec">Perigo · bg-danger · sem sombra colorida (removidas no redesign)</span>
+  <div style="display:flex;align-items:center;gap:12px"><button class="icon">+</button><span class="spec">Botão de ícone · 44×44px mínimo (alvo de toque)</span></div>
+</body>
+</html>
