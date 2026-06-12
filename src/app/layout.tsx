@@ -44,7 +44,7 @@ export default function RootLayout({
             rel="stylesheet" 
           />
         </head>
-        <body className="antialiased min-h-screen bg-[#121212] flex flex-col text-[#F3F4F6]">
+        <body className="antialiased min-h-screen bg-background flex flex-col text-foreground">
           {/* Renderiza a view de pagina correspondente */}
           <main className="flex-1 pb-20">
             {children}

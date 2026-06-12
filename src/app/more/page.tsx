@@ -50,10 +50,10 @@ export default function MorePage() {
   ];
 
   return (
-    <div className="bg-[#121212] min-h-screen text-[#F3F4F6] font-['Inter'] px-4 py-8 pb-32 max-w-md mx-auto w-full">
+    <div className="bg-background min-h-screen text-foreground font-['Inter'] px-4 py-8 pb-32 max-w-md mx-auto w-full">
       <header className="mb-8">
-        <h1 className="text-[#53ddfc] font-black tracking-tighter text-2xl">Mais Opções</h1>
-        <p className="text-[#adaaaa] text-sm mt-1">Recursos adicionais e gerência da loja</p>
+        <h1 className="text-primary-bright font-black tracking-tighter text-2xl">Mais Opções</h1>
+        <p className="text-muted text-sm mt-1">Recursos adicionais e gerência da loja</p>
       </header>
 
       <div className="flex flex-col gap-3">
@@ -61,24 +61,24 @@ export default function MorePage() {
         {/* CÉLULA ESPECIAL DE COMPARTILHAMENTO DE CARDÁPIO */}
         <button 
           onClick={handleShareMenu}
-          className="bg-gradient-to-br from-[#06B6D4]/30 via-[#004b58] to-[#121212] p-[1.5px] rounded-2xl mb-4 group active:scale-[0.98] transition-all shadow-[0_4px_32px_rgba(6,182,212,0.15)] w-full text-left"
+          className="bg-gradient-to-br from-primary/30 via-primary-deep to-background p-[1.5px] rounded-2xl mb-4 group active:scale-[0.98] transition-all shadow-[0_4px_32px_rgba(6,182,212,0.15)] w-full text-left"
         >
-          <div className="bg-[#1a1a1a] w-full h-full rounded-[14px] p-4 flex flex-col justify-between overflow-hidden relative">
-             <div className="absolute top-0 right-0 w-32 h-32 bg-[#53ddfc]/10 rounded-full blur-[40px] pointer-events-none group-hover:bg-[#53ddfc]/20 transition-all" />
+          <div className="bg-surface w-full h-full rounded-[14px] p-4 flex flex-col justify-between overflow-hidden relative">
+             <div className="absolute top-0 right-0 w-32 h-32 bg-primary-bright/10 rounded-full blur-[40px] pointer-events-none group-hover:bg-primary-bright/20 transition-all" />
              
              <div className="flex items-center gap-4 z-10 w-full mb-2">
-                 <div className="bg-gradient-to-tr from-[#06B6D4] to-[#53ddfc] p-3.5 rounded-xl shadow-inner group-hover:scale-110 transition-transform">
-                   <QrCode size={24} className="text-[#004b58]" />
+                 <div className="bg-gradient-to-tr from-primary to-primary-bright p-3.5 rounded-xl shadow-inner group-hover:scale-110 transition-transform">
+                   <QrCode size={24} className="text-primary-deep" />
                  </div>
                  <div className="flex flex-col flex-1">
                    <h3 className="font-black text-white text-xl tracking-tight leading-none mb-1">Menu Digital</h3>
-                   <p className="text-[#adaaaa] text-xs font-semibold uppercase tracking-widest leading-tight">{isSharing ? 'Gerando Link Curto...' : 'Link Mágico do Catálogo'}</p>
+                   <p className="text-muted text-xs font-semibold uppercase tracking-widest leading-tight">{isSharing ? 'Gerando Link Curto...' : 'Link Mágico do Catálogo'}</p>
                  </div>
-                 <div className={`bg-[#20201f] p-2 rounded-full border border-[#53ddfc]/20 text-[#53ddfc] transition-all ${isSharing ? 'animate-pulse' : 'group-hover:animate-pulse'}`}>
+                 <div className={`bg-surface-raised p-2 rounded-full border border-primary-bright/20 text-primary-bright transition-all ${isSharing ? 'animate-pulse' : 'group-hover:animate-pulse'}`}>
                    {isSharing ? <Compass size={20} className="animate-spin" /> : <Share2 size={20} />}
                  </div>
              </div>
-             <p className="text-[#adaaaa] text-xs leading-relaxed z-10 pl-1 pb-1 mt-2">Toque para gerar um pequeno Link Profundo com todo o seu estoque vivo e enviar no WhatsApp ou Bio do Insta para seus clientes pedirem online.</p>
+             <p className="text-muted text-xs leading-relaxed z-10 pl-1 pb-1 mt-2">Toque para gerar um pequeno Link Profundo com todo o seu estoque vivo e enviar no WhatsApp ou Bio do Insta para seus clientes pedirem online.</p>
           </div>
         </button>
 
@@ -88,19 +88,19 @@ export default function MorePage() {
           const content = (
             <>
               <div className="flex items-center gap-4">
-                <div className="bg-[#20201f] p-3 rounded-xl border border-[#484847]/20 group-hover:bg-[#004b58]/30 transition-colors">
-                  <Icon size={24} className="text-[#53ddfc]" />
+                <div className="bg-surface-raised p-3 rounded-xl border border-border/20 group-hover:bg-primary-deep/30 transition-colors">
+                  <Icon size={24} className="text-primary-bright" />
                 </div>
                 <div className="flex flex-col">
                   <span className="font-bold text-white text-lg tracking-tight">{item.label}</span>
-                  <span className="text-[#adaaaa] text-xs font-medium">{item.description}</span>
+                  <span className="text-muted text-xs font-medium">{item.description}</span>
                 </div>
               </div>
-              <ChevronRight size={20} className="text-[#adaaaa] group-hover:text-[#53ddfc] transition-colors" />
+              <ChevronRight size={20} className="text-muted group-hover:text-primary-bright transition-colors" />
             </>
           );
 
-          const classNameStr = "bg-[#1a1a1a] p-4 rounded-2xl flex items-center justify-between border border-[#484847]/30 hover:border-[#53ddfc]/50 shadow-sm active:scale-[0.98] transition-all w-full text-left group";
+          const classNameStr = "bg-surface p-4 rounded-2xl flex items-center justify-between border border-border/30 hover:border-primary-bright/50 shadow-sm active:scale-[0.98] transition-all w-full text-left group";
           
           if (item.href) {
             return (
@@ -119,9 +119,9 @@ export default function MorePage() {
       </div>
 
       {/* Danger Zone */}
-      <div className="mt-10 pt-6 border-t border-[#484847]/30">
+      <div className="mt-10 pt-6 border-t border-border/30">
         <SignOutButton>
-          <button className="flex items-center gap-3 text-[#ff716c] hover:bg-[#ff716c]/10 bg-transparent p-4 rounded-2xl font-bold active:scale-95 transition-all w-full text-left">
+          <button className="flex items-center gap-3 text-danger hover:bg-danger/10 bg-transparent p-4 rounded-2xl font-bold active:scale-95 transition-all w-full text-left">
             <LogOut size={22} />
             <span className="text-lg">Desconectar Dispositivo</span>
           </button>

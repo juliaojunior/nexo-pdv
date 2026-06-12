@@ -86,11 +86,11 @@ export function ProductForm({ initialData, onSubmit, categories }: ProductFormPr
         
         {/* Foto do Produto */}
         <div className="flex flex-col items-center gap-3 mb-2">
-          <div className="relative w-32 h-32 rounded-3xl overflow-hidden bg-[#20201f] border border-[#484847]/40 flex flex-col items-center justify-center shadow-sm">
+          <div className="relative w-32 h-32 rounded-3xl overflow-hidden bg-surface-raised border border-border/40 flex flex-col items-center justify-center shadow-sm">
             {previewImage ? (
               <img src={previewImage} alt="Produto" className="w-full h-full object-cover" />
             ) : (
-              <div className="flex flex-col items-center text-[#adaaaa] gap-2">
+              <div className="flex flex-col items-center text-muted gap-2">
                 <ImagePlus size={32} />
                 <span className="text-[10px] font-bold uppercase tracking-widest text-center px-2">Sem Foto</span>
               </div>
@@ -98,14 +98,14 @@ export function ProductForm({ initialData, onSubmit, categories }: ProductFormPr
           </div>
 
           <div className="flex gap-3">
-             <label className="flex items-center gap-2 bg-[#20201f] border border-[#484847]/50 text-white px-4 py-2.5 rounded-xl cursor-pointer active:scale-95 transition-all shadow-sm">
-               <Camera size={18} className="text-[#53ddfc]" />
+             <label className="flex items-center gap-2 bg-surface-raised border border-border/50 text-white px-4 py-2.5 rounded-xl cursor-pointer active:scale-95 transition-all shadow-sm">
+               <Camera size={18} className="text-primary-bright" />
                <span className="text-[10px] font-bold uppercase tracking-widest">Câmera</span>
                <input type="file" accept="image/*" capture="environment" onChange={handleImageCapture} className="hidden" />
              </label>
 
-             <label className="flex items-center gap-2 bg-[#20201f] border border-[#484847]/50 text-white px-4 py-2.5 rounded-xl cursor-pointer active:scale-95 transition-all shadow-sm">
-               <ImagePlus size={18} className="text-[#53ddfc]" />
+             <label className="flex items-center gap-2 bg-surface-raised border border-border/50 text-white px-4 py-2.5 rounded-xl cursor-pointer active:scale-95 transition-all shadow-sm">
+               <ImagePlus size={18} className="text-primary-bright" />
                <span className="text-[10px] font-bold uppercase tracking-widest">Galeria</span>
                <input type="file" accept="image/*" onChange={handleImageCapture} className="hidden" />
              </label>
@@ -114,67 +114,67 @@ export function ProductForm({ initialData, onSubmit, categories }: ProductFormPr
 
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className={`text-xs font-bold uppercase tracking-widest pl-1 transition-colors ${errors.name ? 'text-[#ff716c]' : 'text-[#adaaaa]'}`}>
+            <label className={`text-xs font-bold uppercase tracking-widest pl-1 transition-colors ${errors.name ? 'text-danger' : 'text-muted'}`}>
               Nome do produto
             </label>
             <input 
               {...register("name")}
               type="text"
               placeholder="Ex: Coca-cola 2L"
-              className={`w-full bg-[#20201f] rounded-xl py-3.5 px-4 outline-none text-white font-medium border ${errors.name ? 'border-[#ff716c] focus:ring-1 focus:ring-[#ff716c]' : 'border-[#484847]/50 focus:border-[#06B6D4] focus:ring-1 focus:ring-[#06B6D4]'}`}
+              className={`w-full bg-surface-raised rounded-xl py-3.5 px-4 outline-none text-white font-medium border ${errors.name ? 'border-danger focus:ring-1 focus:ring-danger' : 'border-border/50 focus:border-primary focus:ring-1 focus:ring-primary'}`}
             />
-            {errors.name && <span className="text-[#ff716c] text-xs font-semibold pl-1">{errors.name.message}</span>}
+            {errors.name && <span className="text-danger text-xs font-semibold pl-1">{errors.name.message}</span>}
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className={`text-xs font-bold uppercase tracking-widest pl-1 transition-colors ${errors.description ? 'text-[#ff716c]' : 'text-[#adaaaa]'}`}>
+            <label className={`text-xs font-bold uppercase tracking-widest pl-1 transition-colors ${errors.description ? 'text-danger' : 'text-muted'}`}>
               Descrição / Detalhes (Opcional)
             </label>
             <textarea 
               {...register("description")}
               placeholder="Ex: Refrescante, ideal para almoço..."
               rows={3}
-              className={`w-full bg-[#20201f] rounded-xl py-3.5 px-4 outline-none text-white font-medium border resize-none ${errors.description ? 'border-[#ff716c] focus:ring-1 focus:ring-[#ff716c]' : 'border-[#484847]/50 focus:border-[#06B6D4] focus:ring-1 focus:ring-[#06B6D4]'}`}
+              className={`w-full bg-surface-raised rounded-xl py-3.5 px-4 outline-none text-white font-medium border resize-none ${errors.description ? 'border-danger focus:ring-1 focus:ring-danger' : 'border-border/50 focus:border-primary focus:ring-1 focus:ring-primary'}`}
             />
-            {errors.description && <span className="text-[#ff716c] text-xs font-semibold pl-1">{errors.description.message}</span>}
+            {errors.description && <span className="text-danger text-xs font-semibold pl-1">{errors.description.message}</span>}
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className={`text-xs font-bold uppercase tracking-widest pl-1 transition-colors ${errors.categoryId ? 'text-[#ff716c]' : 'text-[#adaaaa]'}`}>
+            <label className={`text-xs font-bold uppercase tracking-widest pl-1 transition-colors ${errors.categoryId ? 'text-danger' : 'text-muted'}`}>
               Categoria
             </label>
             <select 
               {...register("categoryId", { valueAsNumber: true })}
-              className={`w-full bg-[#20201f] rounded-xl py-3.5 px-4 outline-none text-white font-medium border appearance-none ${errors.categoryId ? 'border-[#ff716c] focus:ring-1 focus:ring-[#ff716c]' : 'border-[#484847]/50 focus:border-[#06B6D4] focus:ring-1 focus:ring-[#06B6D4]'}`}
+              className={`w-full bg-surface-raised rounded-xl py-3.5 px-4 outline-none text-white font-medium border appearance-none ${errors.categoryId ? 'border-danger focus:ring-1 focus:ring-danger' : 'border-border/50 focus:border-primary focus:ring-1 focus:ring-primary'}`}
             >
               <option value={0} disabled>Selecione uma categoria...</option>
               {categories.map(cat => (
                 <option key={cat.id} value={cat.id}>{cat.name}</option>
               ))}
             </select>
-            {errors.categoryId && <span className="text-[#ff716c] text-xs font-semibold pl-1">{errors.categoryId.message}</span>}
+            {errors.categoryId && <span className="text-danger text-xs font-semibold pl-1">{errors.categoryId.message}</span>}
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className={`text-xs font-bold uppercase tracking-widest pl-1 transition-colors ${errors.price ? 'text-[#ff716c]' : 'text-[#adaaaa]'}`}>
+            <label className={`text-xs font-bold uppercase tracking-widest pl-1 transition-colors ${errors.price ? 'text-danger' : 'text-muted'}`}>
               Preço Base
             </label>
             <div className="relative">
-              <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-bold ${errors.price ? 'text-[#ff716c]' : 'text-[#adaaaa]'}`}>R$</span>
+              <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-bold ${errors.price ? 'text-danger' : 'text-muted'}`}>R$</span>
               <input 
                 {...register("price", { valueAsNumber: true })}
                 type="number"
                 step="0.01"
                 placeholder="0.00"
-                className={`w-full bg-[#20201f] rounded-xl py-3.5 pl-12 pr-4 outline-none text-white font-medium border ${errors.price ? 'border-[#ff716c] focus:ring-1 focus:ring-[#ff716c]' : 'border-[#484847]/50 focus:border-[#06B6D4] focus:ring-1 focus:ring-[#06B6D4]'}`}
+                className={`w-full bg-surface-raised rounded-xl py-3.5 pl-12 pr-4 outline-none text-white font-medium border ${errors.price ? 'border-danger focus:ring-1 focus:ring-danger' : 'border-border/50 focus:border-primary focus:ring-1 focus:ring-primary'}`}
               />
             </div>
-            {errors.price && <span className="text-[#ff716c] text-xs font-semibold pl-1">{errors.price.message}</span>}
+            {errors.price && <span className="text-danger text-xs font-semibold pl-1">{errors.price.message}</span>}
           </div>
           
 
           <div className="flex flex-col gap-1.5 mt-2">
-            <label className={`text-xs font-bold uppercase tracking-widest pl-1 transition-colors ${errors.barcode ? 'text-[#ff716c]' : 'text-[#adaaaa]'}`}>
+            <label className={`text-xs font-bold uppercase tracking-widest pl-1 transition-colors ${errors.barcode ? 'text-danger' : 'text-muted'}`}>
               Código de Barras
             </label>
             <div className="flex gap-2">
@@ -182,37 +182,37 @@ export function ProductForm({ initialData, onSubmit, categories }: ProductFormPr
                 {...register("barcode")}
                 type="text"
                 placeholder="Ex: 78910"
-                className={`w-full bg-[#20201f] rounded-xl py-3.5 pl-4 pr-3 outline-none text-white font-medium border ${errors.barcode ? 'border-[#ff716c] focus:ring-1 focus:ring-[#ff716c]' : 'border-[#484847]/50 focus:border-[#06B6D4] focus:ring-1 focus:ring-[#06B6D4]'}`}
+                className={`w-full bg-surface-raised rounded-xl py-3.5 pl-4 pr-3 outline-none text-white font-medium border ${errors.barcode ? 'border-danger focus:ring-1 focus:ring-danger' : 'border-border/50 focus:border-primary focus:ring-1 focus:ring-primary'}`}
               />
               <button 
                 type="button" 
                 onClick={() => setScannerOpen(true)}
-                className="bg-[#20201f] text-[#53ddfc] p-4 rounded-xl border border-[#484847]/50 hover:bg-[#004b58] active:scale-95 transition-all shadow-sm"
+                className="bg-surface-raised text-primary-bright p-4 rounded-xl border border-border/50 hover:bg-primary-deep active:scale-95 transition-all shadow-sm"
               >
                 <Camera size={20} />
               </button>
             </div>
-            {errors.barcode && <span className="text-[#ff716c] text-xs font-semibold pl-1">{errors.barcode.message}</span>}
+            {errors.barcode && <span className="text-danger text-xs font-semibold pl-1">{errors.barcode.message}</span>}
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className={`text-xs font-bold uppercase tracking-widest pl-1 transition-colors ${errors.stock ? 'text-[#ff716c]' : 'text-[#adaaaa]'}`}>
+            <label className={`text-xs font-bold uppercase tracking-widest pl-1 transition-colors ${errors.stock ? 'text-danger' : 'text-muted'}`}>
               Estoque da Vitrine
             </label>
             <input 
               {...register("stock", { valueAsNumber: true })}
               type="number"
               placeholder="0"
-              className={`w-full bg-[#20201f] rounded-xl py-3.5 px-4 outline-none text-white font-medium border ${errors.stock ? 'border-[#ff716c] focus:ring-1 focus:ring-[#ff716c]' : 'border-[#484847]/50 focus:border-[#06B6D4] focus:ring-1 focus:ring-[#06B6D4]'}`}
+              className={`w-full bg-surface-raised rounded-xl py-3.5 px-4 outline-none text-white font-medium border ${errors.stock ? 'border-danger focus:ring-1 focus:ring-danger' : 'border-border/50 focus:border-primary focus:ring-1 focus:ring-primary'}`}
             />
-            {errors.stock && <span className="text-[#ff716c] text-xs font-semibold pl-1">{errors.stock.message}</span>}
+            {errors.stock && <span className="text-danger text-xs font-semibold pl-1">{errors.stock.message}</span>}
           </div>
         </div>
 
         <button 
           type="submit" 
           disabled={isSubmitting}
-          className="w-full fixed bottom-5 left-1/2 -translate-x-1/2 max-w-[calc(100%-2rem)] sm:relative sm:left-auto sm:translate-x-0 sm:max-w-none bg-[#06B6D4] hover:bg-[#53ddfc] text-[#004b58] font-black text-lg uppercase tracking-wider py-4 rounded-xl mt-4 sm:mt-0 active:scale-[0.98] transition-transform disabled:opacity-50 z-50 shadow-[0_4px_32px_rgba(6,182,212,0.4)]"
+          className="w-full fixed bottom-5 left-1/2 -translate-x-1/2 max-w-[calc(100%-2rem)] sm:relative sm:left-auto sm:translate-x-0 sm:max-w-none bg-primary hover:bg-primary-bright text-primary-deep font-black text-lg uppercase tracking-wider py-4 rounded-xl mt-4 sm:mt-0 active:scale-[0.98] transition-transform disabled:opacity-50 z-50 shadow-[0_4px_32px_rgba(6,182,212,0.4)]"
         >
           {isSubmitting ? "Finalizando..." : "Salvar Produto"}
         </button>

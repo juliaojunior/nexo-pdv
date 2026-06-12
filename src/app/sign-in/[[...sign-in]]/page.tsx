@@ -18,30 +18,30 @@ export default function Page() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen selection:bg-[#53ddfc] selection:text-[#004b58] overflow-hidden bg-[#0e0e0e] font-['Inter']">
+    <div className="flex flex-col min-h-screen selection:bg-primary-bright selection:text-primary-deep overflow-hidden bg-background font-['Inter']">
       <main className="flex-grow flex items-center justify-center relative p-6 pb-20">
         
         {/* Background Ambient Glow */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-[#53ddfc]/10 blur-[120px] rounded-full"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-[#74a2ff]/10 blur-[100px] rounded-full"></div>
+          <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-primary-bright/10 blur-[120px] rounded-full"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-primary-bright/10 blur-[100px] rounded-full"></div>
         </div>
         
         <section className="z-10 w-full max-w-md">
-          <div className="bg-[#131313] rounded-xl p-6 sm:p-10 flex flex-col items-center space-y-8 sm:space-y-10 shadow-[0_32px_32px_rgba(83,221,252,0.08)]">
+          <div className="bg-background rounded-xl p-6 sm:p-10 flex flex-col items-center space-y-8 sm:space-y-10 shadow-[0_32px_32px_rgba(83,221,252,0.08)]">
             
             {/* Brand Anchor */}
             <div className="flex flex-col items-center space-y-4">
-              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#53ddfc] to-[#21bedc] rounded-xl flex items-center justify-center shadow-lg shadow-[#53ddfc]/20">
-                <span className="material-symbols-outlined text-[#004b58] text-3xl sm:text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>terminal</span>
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-primary-bright to-primary-bright rounded-xl flex items-center justify-center shadow-lg shadow-primary-bright/20">
+                <span className="material-symbols-outlined text-primary-deep text-3xl sm:text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>terminal</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tighter text-[#53ddfc]">Nexo PDV</h1>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tighter text-primary-bright">Nexo PDV</h1>
             </div>
 
             {/* Welcome Text */}
             <div className="text-center space-y-2">
               <h2 className="text-lg sm:text-xl font-semibold text-white leading-tight">Simplifique sua gestão.</h2>
-              <p className="text-[#adaaaa] text-xs sm:text-sm tracking-wide">Faça login para continuar.</p>
+              <p className="text-muted text-xs sm:text-sm tracking-wide">Faça login para continuar.</p>
             </div>
 
             {/* DIRECT GOOGLE OAUTH BUTTON (No Clerk Default UI) */}
@@ -49,9 +49,9 @@ export default function Page() {
               <ClerkLoading>
                  <button 
                   disabled
-                  className="w-full h-12 sm:h-14 bg-white/20 text-[#adaaaa] flex items-center justify-center gap-3 sm:gap-4 rounded-lg font-bold text-sm sm:text-base cursor-not-allowed opacity-50 px-2"
+                  className="w-full h-12 sm:h-14 bg-white/20 text-muted flex items-center justify-center gap-3 sm:gap-4 rounded-lg font-bold text-sm sm:text-base cursor-not-allowed opacity-50 px-2"
                  >
-                   <svg className="w-5 h-5 sm:w-6 sm:h-6 animate-spin text-[#adaaaa]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                   <svg className="w-5 h-5 sm:w-6 sm:h-6 animate-spin text-muted" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                    </svg>
                    <span className="whitespace-nowrap">Carregando...</span>
@@ -60,7 +60,7 @@ export default function Page() {
               <ClerkLoaded>
                 <button 
                   onClick={handleGoogleSignIn}
-                  className="w-full h-12 sm:h-14 bg-white text-[#121212] flex items-center justify-center gap-3 sm:gap-4 rounded-lg font-bold text-[13px] sm:text-base transition-[all_0.2s_ease-out] active:scale-95 hover:bg-gray-200 shadow-md transform-gpu px-2"
+                  className="w-full h-12 sm:h-14 bg-white text-background flex items-center justify-center gap-3 sm:gap-4 rounded-lg font-bold text-[13px] sm:text-base transition-[all_0.2s_ease-out] active:scale-95 hover:bg-gray-200 shadow-md transform-gpu px-2"
                 >
                   <svg className="w-6 h-6" viewBox="0 0 24 24">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
@@ -75,12 +75,12 @@ export default function Page() {
 
             {/* App Statistics / Bento Style Sub-component */}
             <div className="grid grid-cols-2 gap-4 w-full mt-2">
-              <div className="bg-[#20201f] p-4 rounded-xl border border-[#484847]/20">
-                <div className="text-[#53ddfc] text-[10px] font-black uppercase tracking-widest mb-1">Agilidade</div>
+              <div className="bg-surface-raised p-4 rounded-xl border border-border/20">
+                <div className="text-primary-bright text-[10px] font-black uppercase tracking-widest mb-1">Agilidade</div>
                 <div className="text-white font-bold text-sm">Vendas em 1-tap</div>
               </div>
-              <div className="bg-[#20201f] p-4 rounded-xl border border-[#484847]/20">
-                <div className="text-[#01cbff] text-[10px] font-black uppercase tracking-widest mb-1">Estoque</div>
+              <div className="bg-surface-raised p-4 rounded-xl border border-border/20">
+                <div className="text-primary-bright text-[10px] font-black uppercase tracking-widest mb-1">Estoque</div>
                 <div className="text-white font-bold text-sm">Gestão Smart</div>
               </div>
             </div>
@@ -92,19 +92,19 @@ export default function Page() {
       {/* Footer Content */}
       <footer className="fixed bottom-6 w-full flex flex-col items-center gap-3 px-4 z-20">
         <div className="flex items-center gap-5">
-          <a className="font-['Inter'] text-[10px] uppercase tracking-widest text-[#adaaaa] hover:text-[#53ddfc] transition-colors cursor-pointer" href="#">Termos de Uso</a>
-          <div className="w-[3px] h-[3px] rounded-full bg-[#484847]"></div>
-          <a className="font-['Inter'] text-[10px] uppercase tracking-widest text-[#adaaaa] hover:text-[#53ddfc] transition-colors cursor-pointer" href="#">Privacidade</a>
+          <a className="font-['Inter'] text-[10px] uppercase tracking-widest text-muted hover:text-primary-bright transition-colors cursor-pointer" href="#">Termos de Uso</a>
+          <div className="w-[3px] h-[3px] rounded-full bg-border"></div>
+          <a className="font-['Inter'] text-[10px] uppercase tracking-widest text-muted hover:text-primary-bright transition-colors cursor-pointer" href="#">Privacidade</a>
         </div>
-        <p className="font-['Inter'] text-[9px] uppercase tracking-widest text-[#adaaaa] opacity-40">© 2026 Nexo PDV. All rights reserved.</p>
+        <p className="font-['Inter'] text-[9px] uppercase tracking-widest text-muted opacity-40">© 2026 Nexo PDV. All rights reserved.</p>
       </footer>
 
       {/* Background Layer (The Canvas) */}
-      <div className="fixed inset-0 -z-20 bg-[#0e0e0e]"></div>
+      <div className="fixed inset-0 -z-20 bg-background"></div>
       
       {/* Abstract Texture */}
       <div className="fixed top-0 right-0 w-[40%] md:w-1/3 h-full -z-10 opacity-10 pointer-events-none mix-blend-color-dodge">
-        <div className="absolute inset-0 bg-gradient-to-l from-[#53ddfc]/10 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-l from-primary-bright/10 to-transparent"></div>
         <img 
           alt="tech texture overlay" 
           className="w-full h-full object-cover grayscale" 

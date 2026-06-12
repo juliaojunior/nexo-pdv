@@ -93,27 +93,27 @@ export default function CustomersPage() {
   };
 
   return (
-    <div className="bg-[#121212] min-h-screen text-[#F3F4F6] font-['Inter'] relative w-full pb-32">
+    <div className="bg-background min-h-screen text-foreground font-['Inter'] relative w-full pb-32">
       
       {/* HEADER */}
-      <header className="sticky top-0 z-30 bg-[#121212]/90 backdrop-blur-md border-b border-[#484847]/30 px-4 pt-6 pb-4">
+      <header className="sticky top-0 z-30 bg-background/90 backdrop-blur-md border-b border-border/30 px-4 pt-6 pb-4">
         <div className="flex items-center gap-4 max-w-md mx-auto">
-          <button onClick={() => router.back()} className="p-2 -ml-2 rounded-full active:scale-90 transition-transform bg-[#20201f] text-[#adaaaa] hover:text-[#53ddfc]">
+          <button onClick={() => router.back()} className="p-2 -ml-2 rounded-full active:scale-90 transition-transform bg-surface-raised text-muted hover:text-primary-bright">
             <ChevronLeft size={24} />
           </button>
-          <h1 className="text-[#53ddfc] font-black tracking-tighter text-2xl">Clientes</h1>
+          <h1 className="text-primary-bright font-black tracking-tighter text-2xl">Clientes</h1>
         </div>
         
         {/* BUSCA */}
         <div className="mt-4 max-w-md mx-auto">
           <div className="relative group">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#adaaaa] group-focus-within:text-[#53ddfc] transition-colors" />
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-primary-bright transition-colors" />
             <input 
               type="text" 
               placeholder="Buscar por nome ou CPF..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-[#1a1a1a] border border-[#484847]/50 focus:border-[#06B6D4] rounded-xl h-12 pl-12 pr-4 text-sm font-medium outline-none transition-all placeholder:text-[#484847] shadow-inner"
+              className="w-full bg-surface border border-border/50 focus:border-primary rounded-xl h-12 pl-12 pr-4 text-sm font-medium outline-none transition-all placeholder:text-border shadow-inner"
             />
           </div>
         </div>
@@ -123,7 +123,7 @@ export default function CustomersPage() {
       <main className="px-4 pt-6 max-w-md mx-auto">
         {filteredCustomers.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 opacity-40 text-center">
-            <div className="w-20 h-20 rounded-full border border-dashed border-[#adaaaa]/50 flex items-center justify-center mb-4 text-[#adaaaa]">
+            <div className="w-20 h-20 rounded-full border border-dashed border-muted/50 flex items-center justify-center mb-4 text-muted">
               <User size={32} />
             </div>
             <p className="font-bold text-lg text-white">Nenhum Cliente</p>
@@ -135,24 +135,24 @@ export default function CustomersPage() {
               <div 
                 key={customer.id}
                 onClick={() => openForm(customer)}
-                className="bg-[#1a1a1a] border border-[#484847]/30 rounded-2xl p-4 flex items-center justify-between shadow-sm active:scale-[0.98] transition-transform cursor-pointer hover:border-[#53ddfc]/30 group"
+                className="bg-surface border border-border/30 rounded-2xl p-4 flex items-center justify-between shadow-sm active:scale-[0.98] transition-transform cursor-pointer hover:border-primary-bright/30 group"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#004b58] to-[#121212] border border-[#06B6D4]/30 flex items-center justify-center font-black text-lg text-[#53ddfc] shadow-inner group-hover:from-[#06B6D4] group-hover:text-[#121212] transition-colors">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-primary-deep to-background border border-primary/30 flex items-center justify-center font-black text-lg text-primary-bright shadow-inner group-hover:from-primary group-hover:text-background transition-colors">
                     {customer.name.substring(0, 2).toUpperCase()}
                   </div>
                   <div className="flex flex-col">
                     <span className="font-bold text-white text-base tracking-tight truncate max-w-[180px]">{customer.name}</span>
                     {customer.phone ? (
-                      <span className="text-[#adaaaa] text-xs font-medium mt-0.5 flex items-center gap-1">
+                      <span className="text-muted text-xs font-medium mt-0.5 flex items-center gap-1">
                         <Phone size={10} /> {customer.phone}
                       </span>
                     ) : (
-                      <span className="text-[#484847] text-xs font-medium mt-0.5">Sem contatos</span>
+                      <span className="text-border text-xs font-medium mt-0.5">Sem contatos</span>
                     )}
                   </div>
                 </div>
-                <Edit3 size={18} className="text-[#484847] group-hover:text-[#53ddfc] transition-colors" />
+                <Edit3 size={18} className="text-border group-hover:text-primary-bright transition-colors" />
               </div>
             ))}
           </div>
@@ -162,7 +162,7 @@ export default function CustomersPage() {
       {/* FAB (Floating Action Button) */}
       <button 
         onClick={() => openForm()}
-        className="fixed bottom-24 right-4 sm:right-auto sm:left-1/2 sm:ml-[150px] w-14 h-14 bg-[#06B6D4] text-[#004b58] rounded-full flex items-center justify-center shadow-[0_8px_32px_rgba(6,182,212,0.4)] hover:bg-[#53ddfc] active:scale-90 transition-all z-20"
+        className="fixed bottom-24 right-4 sm:right-auto sm:left-1/2 sm:ml-[150px] w-14 h-14 bg-primary text-primary-deep rounded-full flex items-center justify-center shadow-[0_8px_32px_rgba(6,182,212,0.4)] hover:bg-primary-bright active:scale-90 transition-all z-20"
       >
         <Plus size={28} strokeWidth={2.5} />
       </button>
@@ -177,18 +177,18 @@ export default function CustomersPage() {
           ></div>
           
           {/* Sheet */}
-          <div className="relative w-full sm:max-w-md bg-[#131313] sm:rounded-3xl rounded-t-3xl border-t sm:border border-[#484847]/50 shadow-[0_-24px_48px_rgba(0,0,0,0.8)] flex flex-col max-h-[90vh] animate-in slide-in-from-bottom-full duration-300">
+          <div className="relative w-full sm:max-w-md bg-background sm:rounded-3xl rounded-t-3xl border-t sm:border border-border/50 shadow-[0_-24px_48px_rgba(0,0,0,0.8)] flex flex-col max-h-[90vh] animate-in slide-in-from-bottom-full duration-300">
             {/* Grabber */}
             <div className="w-full flex justify-center py-3 sm:hidden" onClick={closeForm}>
-              <div className="w-12 h-1.5 bg-[#484847] rounded-full"></div>
+              <div className="w-12 h-1.5 bg-border rounded-full"></div>
             </div>
 
-            <div className="px-6 pb-4 pt-2 sm:pt-6 flex justify-between items-center border-b border-[#484847]/30">
+            <div className="px-6 pb-4 pt-2 sm:pt-6 flex justify-between items-center border-b border-border/30">
               <h2 className="text-xl font-black text-white tracking-tight">
                 {editingCustomer ? 'Editar Perfil' : 'Novo Cliente'}
               </h2>
               {editingCustomer && (
-                <button type="button" onClick={handleDelete} className="p-2 text-[#ff716c] bg-[#ff716c]/10 rounded-full active:scale-95 transition-transform">
+                <button type="button" onClick={handleDelete} className="p-2 text-danger bg-danger/10 rounded-full active:scale-95 transition-transform">
                   <Trash2 size={18} />
                 </button>
               )}
@@ -196,47 +196,47 @@ export default function CustomersPage() {
 
             <form onSubmit={handleSave} className="p-6 overflow-y-auto flex-1 flex flex-col gap-4">
               <div className="space-y-2">
-                <label className="text-xs font-bold text-[#adaaaa] uppercase tracking-widest pl-1">Nome Completo *</label>
+                <label className="text-xs font-bold text-muted uppercase tracking-widest pl-1">Nome Completo *</label>
                 <input 
                   type="text" 
                   autoFocus
                   required
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  className="w-full bg-[#1a1a1a] border border-[#484847] focus:border-[#53ddfc] rounded-xl h-14 px-4 text-white font-semibold outline-none transition-all placeholder:text-[#484847] placeholder:font-normal"
+                  className="w-full bg-surface border border-border focus:border-primary-bright rounded-xl h-14 px-4 text-white font-semibold outline-none transition-all placeholder:text-border placeholder:font-normal"
                   placeholder="Ex: João Silva"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-[#adaaaa] uppercase tracking-widest pl-1">WhatsApp / Celular</label>
+                <label className="text-xs font-bold text-muted uppercase tracking-widest pl-1">WhatsApp / Celular</label>
                 <input 
                   type="tel" 
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
-                  className="w-full bg-[#1a1a1a] border border-[#484847] focus:border-[#53ddfc] rounded-xl h-14 px-4 text-white font-semibold outline-none transition-all placeholder:text-[#484847] placeholder:font-normal"
+                  className="w-full bg-surface border border-border focus:border-primary-bright rounded-xl h-14 px-4 text-white font-semibold outline-none transition-all placeholder:text-border placeholder:font-normal"
                   placeholder="(11) 99999-9999"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-[#adaaaa] uppercase tracking-widest pl-1">Documento (CPF / CNPJ)</label>
+                <label className="text-xs font-bold text-muted uppercase tracking-widest pl-1">Documento (CPF / CNPJ)</label>
                 <input 
                   type="text" 
                   value={document}
                   onChange={e => setDocument(e.target.value)}
-                  className="w-full bg-[#1a1a1a] border border-[#484847] focus:border-[#53ddfc] rounded-xl h-14 px-4 text-white font-semibold outline-none transition-all placeholder:text-[#484847] placeholder:font-normal"
+                  className="w-full bg-surface border border-border focus:border-primary-bright rounded-xl h-14 px-4 text-white font-semibold outline-none transition-all placeholder:text-border placeholder:font-normal"
                   placeholder="000.000.000-00"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-[#adaaaa] uppercase tracking-widest pl-1">E-mail</label>
+                <label className="text-xs font-bold text-muted uppercase tracking-widest pl-1">E-mail</label>
                 <input 
                   type="email" 
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="w-full bg-[#1a1a1a] border border-[#484847] focus:border-[#53ddfc] rounded-xl h-14 px-4 text-white font-semibold outline-none transition-all placeholder:text-[#484847] placeholder:font-normal"
+                  className="w-full bg-surface border border-border focus:border-primary-bright rounded-xl h-14 px-4 text-white font-semibold outline-none transition-all placeholder:text-border placeholder:font-normal"
                   placeholder="contato@empresa.com"
                 />
               </div>
@@ -245,7 +245,7 @@ export default function CustomersPage() {
                 <button 
                   type="submit"
                   disabled={!name.trim()}
-                  className="w-full h-14 bg-[#06B6D4] text-[#004b58] font-black text-lg rounded-xl flex items-center justify-center shadow-lg active:scale-95 transition-transform disabled:opacity-50 disabled:bg-[#484847] disabled:text-[#adaaaa] disabled:shadow-none"
+                  className="w-full h-14 bg-primary text-primary-deep font-black text-lg rounded-xl flex items-center justify-center shadow-lg active:scale-95 transition-transform disabled:opacity-50 disabled:bg-border disabled:text-muted disabled:shadow-none"
                 >
                   {editingCustomer ? 'Salvar Edições' : 'Registrar'}
                 </button>

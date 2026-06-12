@@ -4,11 +4,37 @@
   --font-sans: "Inter", sans-serif;
 }
 
+@theme {
+  /* Superfícies (do mais profundo ao mais elevado) */
+  --color-background: #121212;
+  --color-surface: #1a1a1a;
+  --color-surface-raised: #20201f;
+  --color-border: #484847;
+
+  /* Texto */
+  --color-foreground: #f3f4f6;
+  --color-muted: #adaaaa;
+
+  /* Marca */
+  --color-primary: #06b6d4;
+  --color-primary-bright: #53ddfc;
+  --color-primary-deep: #004b58;
+
+  /* Feedback */
+  --color-danger: #ff716c;
+  --color-warning: #ffcc00;
+  --color-success: #22c55e;
+
+  /* Sombras padronizadas */
+  --shadow-glow: 0 4px 24px rgb(6 182 212 / 0.25);
+  --shadow-overlay: 0 -8px 32px rgb(0 0 0 / 0.5);
+}
+
 body {
   margin: 0;
   padding: 0;
-  background-color: #0e0e0e;
-  color: #ffffff;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
 }
 
 /* Material Symbols Adjustments */

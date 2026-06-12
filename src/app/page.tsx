@@ -82,30 +82,30 @@ export default function Home() {
   };
 
   return (
-    <div className="bg-[#121212] min-h-screen text-[#F3F4F6] font-['Inter'] flex flex-col relative w-full pb-20">
+    <div className="bg-background min-h-screen text-foreground font-['Inter'] flex flex-col relative w-full pb-20">
       
       {/* TopAppBar com Scanner Rápido */}
-      <header className="fixed top-0 w-full z-30 bg-[#121212]/80 backdrop-blur-xl shadow-[0_8px_32px_rgba(83,221,252,0.08)]">
+      <header className="fixed top-0 w-full z-30 bg-background/80 backdrop-blur-xl shadow-[0_8px_32px_rgba(83,221,252,0.08)]">
         <div className="flex justify-between items-center px-4 h-16 w-full max-w-md mx-auto">
           <div className="flex items-center gap-3">
-            <h1 className="text-[#53ddfc] font-black tracking-tighter text-xl truncate max-w-[180px]">{storeName}</h1>
+            <h1 className="text-primary-bright font-black tracking-tighter text-xl truncate max-w-[180px]">{storeName}</h1>
           </div>
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setScannerOpen(true)}
-              className="p-2 -mr-1 text-[#06B6D4] bg-[#20201f] border border-[#484847]/40 rounded-full active:scale-90 transition-transform shadow-[0_2px_12px_rgba(6,182,212,0.2)]"
+              className="p-2 -mr-1 text-primary bg-surface-raised border border-border/40 rounded-full active:scale-90 transition-transform shadow-[0_2px_12px_rgba(6,182,212,0.2)]"
             >
               <Camera size={18} strokeWidth={2.5} />
             </button>
-            <div className="w-8 h-8 rounded-full border border-[#484847]/50 flex items-center justify-center overflow-hidden shadow-sm transition-transform active:scale-95">
+            <div className="w-8 h-8 rounded-full border border-border/50 flex items-center justify-center overflow-hidden shadow-sm transition-transform active:scale-95">
               <UserButton 
                 appearance={{
                   elements: {
                     userButtonAvatarBox: "w-8 h-8",
-                    userButtonPopoverCard: "bg-[#1a1a1a] border border-[#484847]/50 py-2",
+                    userButtonPopoverCard: "bg-surface border border-border/50 py-2",
                     userPreviewMainIdentifier: "text-white font-bold",
-                    userPreviewSecondaryIdentifier: "text-[#adaaaa]",
-                    userButtonPopoverActionButton: "hover:bg-[#20201f] text-white",
+                    userPreviewSecondaryIdentifier: "text-muted",
+                    userButtonPopoverActionButton: "hover:bg-surface-raised text-white",
                     userButtonPopoverActionButtonText: "text-white",
                     userButtonPopoverFooter: "hidden"
                   }
@@ -117,16 +117,16 @@ export default function Home() {
       </header>
 
       {/* Category Tabs */}
-      <nav className="fixed top-16 w-full z-30 bg-[#121212]/95 backdrop-blur-md pt-2 pb-0 border-b border-[#484847]/30">
+      <nav className="fixed top-16 w-full z-30 bg-background/95 backdrop-blur-md pt-2 pb-0 border-b border-border/30">
         <div className="flex overflow-x-auto whitespace-nowrap px-4 gap-6 scroll-smooth hide-scrollbar max-w-md mx-auto">
           <div className="flex flex-col items-center cursor-pointer" onClick={() => setActiveCategory(null)}>
-            <span className={`font-bold text-sm py-2 transition-colors ${activeCategory === null ? 'text-[#53ddfc]' : 'text-[#adaaaa] hover:text-[#53ddfc]'}`}>Todos</span>
-            <div className={`h-0.5 w-full rounded-full transition-colors ${activeCategory === null ? 'bg-[#53ddfc]' : 'bg-transparent'}`}></div>
+            <span className={`font-bold text-sm py-2 transition-colors ${activeCategory === null ? 'text-primary-bright' : 'text-muted hover:text-primary-bright'}`}>Todos</span>
+            <div className={`h-0.5 w-full rounded-full transition-colors ${activeCategory === null ? 'bg-primary-bright' : 'bg-transparent'}`}></div>
           </div>
           {categories.map((cat: any) => (
             <div key={cat.id!} className="flex flex-col items-center cursor-pointer" onClick={() => setActiveCategory(cat.id!)}>
-              <span className={`font-bold text-sm py-2 transition-colors ${activeCategory === cat.id ? 'text-[#53ddfc]' : 'text-[#adaaaa] hover:text-[#53ddfc]'}`}>{cat.name}</span>
-              <div className={`h-0.5 w-full rounded-full transition-colors ${activeCategory === cat.id ? 'bg-[#53ddfc]' : 'bg-transparent'}`}></div>
+              <span className={`font-bold text-sm py-2 transition-colors ${activeCategory === cat.id ? 'text-primary-bright' : 'text-muted hover:text-primary-bright'}`}>{cat.name}</span>
+              <div className={`h-0.5 w-full rounded-full transition-colors ${activeCategory === cat.id ? 'bg-primary-bright' : 'bg-transparent'}`}></div>
             </div>
           ))}
         </div>
@@ -136,7 +136,7 @@ export default function Home() {
       <main className="pt-32 pb-24 px-4 overflow-y-auto relative flex-1 max-w-md mx-auto w-full">
         {isLoading ? (
            <div className="flex flex-col items-center justify-center p-8 text-center mt-10 opacity-50">
-               <div className="w-10 h-10 border-4 border-[#484847] border-t-[#06B6D4] animate-spin rounded-full mb-4"></div>
+               <div className="w-10 h-10 border-4 border-border border-t-primary animate-spin rounded-full mb-4"></div>
                <p className="font-bold text-white uppercase tracking-widest text-xs">Conectando Vitrine Nuvem...</p>
            </div>
         ) : filteredProducts.length > 0 ? (
@@ -146,10 +146,10 @@ export default function Home() {
               const activePrice = getEffectivePrice(product);
 
               return (
-              <div key={product.id} className="bg-[#1a1a1a] rounded-2xl p-2.5 flex flex-col gap-2 active:scale-[0.98] transition-transform shadow-sm border border-[#484847]/30 border-b-4 border-b-[#484847]/50 relative overflow-hidden group">
+              <div key={product.id} className="bg-surface rounded-2xl p-2.5 flex flex-col gap-2 active:scale-[0.98] transition-transform shadow-sm border border-border/30 border-b-4 border-b-border/50 relative overflow-hidden group">
                 
                 {/* Visual Image Render Overlay com Proteção Textual (Gradientes) */}
-                <div className="aspect-square w-full rounded-xl bg-[#20201f] overflow-hidden relative flex flex-col items-center justify-center border border-[#484847]/10 group z-10">
+                <div className="aspect-square w-full rounded-xl bg-surface-raised overflow-hidden relative flex flex-col items-center justify-center border border-border/10 group z-10">
                    
                    {product.image ? (
                      <>
@@ -158,14 +158,14 @@ export default function Home() {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
                      </>
                    ) : (
-                     <span className="text-[#adaaaa] text-[10px] font-bold uppercase tracking-widest text-center px-2 z-10 opacity-70">
+                     <span className="text-muted text-[10px] font-bold uppercase tracking-widest text-center px-2 z-10 opacity-70">
                        {categories.find((c: any) => c.id === product.categoryId)?.name || "Produto"}
                      </span>
                    )}
 
                    {/* Indicador Micro-Badge Promo Dentro Card */}
                    {promoActive && (
-                     <div className="absolute top-2 left-2 bg-[#ff716c] text-white px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest shadow z-20">
+                     <div className="absolute top-2 left-2 bg-danger text-white px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest shadow z-20">
                        Promo
                      </div>
                    )}
@@ -173,11 +173,11 @@ export default function Home() {
                    {/* Add To Cart FAB Layer */}
                    <button 
                      onClick={() => addItem({...product, price: activePrice}, 1)}
-                     className="absolute top-2 right-2 bg-[#121212]/80 backdrop-blur-md p-1.5 rounded-full active:scale-90 transition-all border border-[#484847]/50 hover:bg-[#004b58] group-hover:border-[#06B6D4] z-20 shadow-md"
+                     className="absolute top-2 right-2 bg-background/80 backdrop-blur-md p-1.5 rounded-full active:scale-90 transition-all border border-border/50 hover:bg-primary-deep group-hover:border-primary z-20 shadow-md"
                    >
-                    <Plus size={18} className="text-[#53ddfc]" />
+                    <Plus size={18} className="text-primary-bright" />
                   </button>
-                  <div className={`absolute bottom-2 left-2 px-2 py-0.5 rounded text-[9px] font-bold z-20 ${product.stock <= 5 ? 'bg-[#ff716c]/90 text-white' : 'bg-[#0e0e0e]/80 text-[#adaaaa]'}`}>
+                  <div className={`absolute bottom-2 left-2 px-2 py-0.5 rounded text-[9px] font-bold z-20 ${product.stock <= 5 ? 'bg-danger/90 text-white' : 'bg-background/80 text-muted'}`}>
                     {product.stock} em est.
                   </div>
                 </div>
@@ -187,24 +187,24 @@ export default function Home() {
                   <div className="flex flex-col mt-0.5 font-black text-lg tracking-tight truncate">
                     {promoActive ? (
                       <div>
-                        <span className="text-[11px] text-[#ff716c] line-through font-medium block leading-none">{formatCurrency(product.price)}</span>
-                        <span className="text-[#53ddfc]">{formatCurrency(activePrice)}</span>
+                        <span className="text-[11px] text-danger line-through font-medium block leading-none">{formatCurrency(product.price)}</span>
+                        <span className="text-primary-bright">{formatCurrency(activePrice)}</span>
                       </div>
                     ) : (
-                      <span className="text-[#06B6D4]">{formatCurrency(product.price)}</span>
+                      <span className="text-primary">{formatCurrency(product.price)}</span>
                     )}
                   </div>
                 </div>
 
                 {/* Efeito Glow Promocional Fundo */}
-                {promoActive && <div className="absolute -inset-10 bg-gradient-to-tr from-[#ff716c]/5 to-[#53ddfc]/5 pointer-events-none" />}
+                {promoActive && <div className="absolute -inset-10 bg-gradient-to-tr from-danger/5 to-primary-bright/5 pointer-events-none" />}
               </div>
             )})}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center h-[50vh] text-[#adaaaa] text-center border-2 border-dashed border-[#484847]/30 rounded-3xl p-6 shadow-sm">
-             <div className="bg-[#20201f] p-4 rounded-full mb-4">
-                <Search size={28} className="text-[#53ddfc]" />
+          <div className="flex flex-col items-center justify-center h-[50vh] text-muted text-center border-2 border-dashed border-border/30 rounded-3xl p-6 shadow-sm">
+             <div className="bg-surface-raised p-4 rounded-full mb-4">
+                <Search size={28} className="text-primary-bright" />
              </div>
              <p className="font-bold text-white mb-2 text-lg">Catálogo em branco</p>
              <p className="text-sm">Abra a aba <strong>Mais - Configurações - Departamentos</strong> para validar se está na nuvem e o Catálogo ali embaixo.</p>
@@ -216,11 +216,11 @@ export default function Home() {
       {cartTotalItems > 0 && (
         <section className="fixed bottom-24 left-0 w-full z-40 px-4 animate-in slide-in-from-bottom-5 duration-300 pointer-events-none">
           <div className="max-w-md mx-auto pointer-events-auto">
-            <div className="bg-[#1a1a1a]/95 backdrop-blur-2xl rounded-2xl h-16 flex items-center justify-between px-5 shadow-[0_-8px_32px_rgba(0,0,0,0.6)] border border-[#06B6D4]/30 hover:border-[#06B6D4]/60 transition-colors cursor-pointer"
+            <div className="bg-surface/95 backdrop-blur-2xl rounded-2xl h-16 flex items-center justify-between px-5 shadow-[0_-8px_32px_rgba(0,0,0,0.6)] border border-primary/30 hover:border-primary/60 transition-colors cursor-pointer"
                  onClick={() => setCheckoutOpen(true)}
             >
               <div className="flex flex-col relative top-0.5">
-                <span className="text-[10px] text-[#adaaaa] uppercase font-bold tracking-widest leading-none mb-1">
+                <span className="text-[10px] text-muted uppercase font-bold tracking-widest leading-none mb-1">
                   Carrinho ({cartTotalItems})
                 </span>
                 <span className="text-white font-extrabold text-lg tracking-tight leading-none drop-shadow-sm">
@@ -228,7 +228,7 @@ export default function Home() {
                 </span>
               </div>
               
-              <div className="bg-[#06B6D4] text-[#004b58] font-black px-6 py-2.5 rounded-xl hover:bg-[#53ddfc] transition-colors flex items-center gap-2 active:scale-95 shadow-md">
+              <div className="bg-primary text-primary-deep font-black px-6 py-2.5 rounded-xl hover:bg-primary-bright transition-colors flex items-center gap-2 active:scale-95 shadow-md">
                 <span className="text-sm uppercase tracking-wide">Finalizar</span>
               </div>
             </div>

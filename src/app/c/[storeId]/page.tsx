@@ -50,10 +50,10 @@ export default async function StoreCatalogPage(props: { params: Promise<{ storeI
     // Oculta a vitrine se o usuário não tem tabela gerada / não existe
     if (sResult.rowCount === 0 && pResult.rowCount === 0) {
        return (
-         <div className="min-h-screen bg-[#121212] flex items-center justify-center font-[Inter] text-white p-4 text-center">
-            <div className="bg-[#1a1a1a] border border-[#484847]/30 p-8 rounded-3xl w-full max-w-sm flex flex-col gap-4">
-              <h1 className="text-2xl font-black text-[#ff716c]">Loja Fechada</h1>
-              <p className="text-[#adaaaa] text-sm font-medium">Não encontramos nenhum catálogo associado a este Link. Verifique a ortografia do link com o seu vendedor.</p>
+         <div className="min-h-screen bg-background flex items-center justify-center font-[Inter] text-white p-4 text-center">
+            <div className="bg-surface border border-border/30 p-8 rounded-3xl w-full max-w-sm flex flex-col gap-4">
+              <h1 className="text-2xl font-black text-danger">Loja Fechada</h1>
+              <p className="text-muted text-sm font-medium">Não encontramos nenhum catálogo associado a este Link. Verifique a ortografia do link com o seu vendedor.</p>
             </div>
          </div>
        );
