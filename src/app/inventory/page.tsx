@@ -19,7 +19,7 @@ interface Product {
 type AdjustmentMode = 'add' | 'subtract' | 'overwrite';
 
 // Fetcher padrão para o SWR (comunicação com a nossa nova API REST)
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+import { cachedFetcher as fetcher } from "@/lib/offline/cachedFetcher";
 
 export default function InventoryPage() {
   const router = useRouter();

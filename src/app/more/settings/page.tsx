@@ -12,7 +12,7 @@ interface Category {
   name: string;
 }
 
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+import { cachedFetcher as fetcher } from "@/lib/offline/cachedFetcher";
 
 export default function SettingsPage() {
   const router = useRouter();

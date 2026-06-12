@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { formatCurrency, isPromotionActive, getEffectivePrice } from "@/lib/utils";
 import { uploadImageToImgBB } from "@/lib/imgbb";
 
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+import { cachedFetcher as fetcher } from "@/lib/offline/cachedFetcher";
 
 export default function ProductsPage() {
   const [isModalOpen, setModalOpen] = useState(false);

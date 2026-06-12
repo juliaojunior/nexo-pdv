@@ -12,7 +12,7 @@ import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
 import { Plus, Camera, Search, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+import { cachedFetcher as fetcher } from "@/lib/offline/cachedFetcher";
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState<number | null>(null);

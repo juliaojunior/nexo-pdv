@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Product } from '@/db/db';
 
 export interface CartItem extends Product {
@@ -13,7 +14,7 @@ interface CartState {
   clearCart: () => void;
 }
 
-export const useCartStore = create<CartState>((set) => ({
+export const useCartStore = create<CartState>()(persist((set) => ({
   items: [],
 
   addItem: (product: Product, quantity: number = 1) => {
@@ -68,4 +69,10 @@ export const useCartStore = create<CartState>((set) => ({
   clearCart: () => {
     set({ items: [] });
   },
+}), {
+  name: 'nexo-cart',
+  storage: createJSONStorage(() => localStorage),
+  partialize: (state) => ({ items: state.items }),
+  // Hidratação manual no SyncProvider para evitar mismatch SSR
+  skipHydration: true,
 }));
