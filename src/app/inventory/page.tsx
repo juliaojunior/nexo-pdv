@@ -167,7 +167,7 @@ export default function InventoryPage() {
               <div 
                 key={product.id}
                 onClick={() => openAdjustmentModal(product)}
-                className="bg-surface border border-border/30 rounded-2xl p-3 flex items-center justify-between shadow-sm active:scale-[0.98] transition-transform cursor-pointer hover:border-primary-bright/30 group"
+                className="bg-surface rounded-2xl p-3 flex items-center justify-between shadow-card active:scale-[0.98] transition-transform cursor-pointer group"
               >
                 <div className="flex items-center gap-4 overflow-hidden">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-tr flex-shrink-0 from-primary-deep to-surface border border-primary/20 flex items-center justify-center overflow-hidden relative">
@@ -319,7 +319,7 @@ export default function InventoryPage() {
                  <button 
                   type="submit"
                   disabled={!quantityStr || parseInt(quantityStr, 10) === 0 || isUpdating}
-                  className="flex-[1.2] h-12 sm:h-14 bg-gradient-to-tr from-primary to-primary-bright text-primary-deep font-black text-sm sm:text-base rounded-xl flex items-center justify-center active:scale-95 transition-all disabled:opacity-50 disabled:from-border disabled:to-border disabled:text-muted"
+                  className="flex-[1.2] h-12 sm:h-14 bg-primary text-primary-deep font-black text-sm sm:text-base rounded-xl flex items-center justify-center active:scale-95 transition-all disabled:opacity-50 disabled:bg-border disabled:text-muted"
                  >
                    {isUpdating ? "Salvando..." : "Confirmar via Web"}
                  </button>

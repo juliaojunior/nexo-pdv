@@ -98,14 +98,14 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
         
         <div className="flex flex-col items-center mb-6 animate-pulse shrink-0">
           <CheckCircle size={48} className="text-primary mb-2 shadow-2xl" />
-          <h2 className="text-foreground font-black text-2xl tracking-tight">Venda Sucesso!</h2>
-          <p className="text-muted text-sm mt-1">Pronto para despachar ao cliente.</p>
+          <h2 className="text-white font-black text-2xl tracking-tight">Venda Sucesso!</h2>
+          <p className="text-white/60 text-sm mt-1">Pronto para despachar ao cliente.</p>
         </div>
 
         {/* THE ACTUAL RECEIPT TO BE CAPTURED (Canvas Target) */}
         <div 
           ref={receiptRef} 
-          className="bg-surface w-full max-w-[340px] rounded-t-lg border-t-8 border-primary shadow-xl flex flex-col items-center text-center pb-8 pt-8 px-6 relative overflow-hidden shrink-0"
+          className="dark bg-surface w-full max-w-[340px] rounded-t-lg border-t-8 border-primary shadow-xl flex flex-col items-center text-center pb-8 pt-8 px-6 relative overflow-hidden shrink-0"
           style={{ fontFamily: "'Inter', sans-serif" }} // Force font for canvas
         >
            {/* Subtle watermark or pattern could go here */}
@@ -177,7 +177,7 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
            <button 
              onClick={handleShare}
              disabled={isGenerating}
-             className="w-full h-14 bg-gradient-to-tr from-primary to-primary-bright text-primary-deep font-black text-lg rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-glow disabled:opacity-50 disabled:scale-100"
+             className="w-full h-14 bg-primary text-primary-deep font-black text-lg rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-glow disabled:opacity-50 disabled:scale-100"
            >
              {isGenerating ? <Download className="animate-bounce" /> : <Share2 />}
              {isGenerating ? 'Preparando...' : 'Enviar Recibo'}
@@ -186,7 +186,7 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
            <button 
              onClick={onClose}
              disabled={isGenerating}
-             className="w-full h-12 bg-transparent border border-border hover:bg-surface text-foreground font-bold rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
+             className="w-full h-12 bg-transparent border border-white/30 hover:bg-white/10 text-white font-bold rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
            >
              <X size={18} /> Dispensar
            </button>

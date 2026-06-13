@@ -154,7 +154,7 @@ export default function SettingsPage() {
             <h2 className="text-foreground font-bold text-lg tracking-tight">Dados da Loja</h2>
           </div>
           
-          <div className="bg-surface border border-border/30 rounded-2xl p-4 flex flex-col gap-4 shadow-sm">
+          <div className="bg-surface rounded-2xl p-4 flex flex-col gap-4 shadow-card">
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold text-muted uppercase tracking-widest pl-1">Nome Fantasia do Empório / Loja</label>
               <input 
@@ -247,7 +247,7 @@ export default function SettingsPage() {
             <h2 className="text-foreground font-bold text-lg tracking-tight">Preferências do Caixa</h2>
           </div>
           
-          <div className="bg-surface border border-border/30 rounded-2xl flex flex-col shadow-sm overflow-hidden">
+          <div className="bg-surface rounded-2xl flex flex-col shadow-card overflow-hidden">
             
             {/* Toggle Recibo Automático */}
             <div className="p-4 border-b border-border/30 flex items-center justify-between bg-surface transition-colors relative overflow-hidden">
@@ -310,7 +310,7 @@ export default function SettingsPage() {
                  </div>
               ) : (
                 allCategories.map(cat => (
-                  <div key={cat.id} className="bg-surface border border-border/30 p-3 rounded-2xl flex items-center justify-between group hover:border-primary-bright/30 transition-colors">
+                  <div key={cat.id} className="bg-surface p-3 rounded-2xl flex items-center justify-between group shadow-card transition-colors">
                     <span className="font-bold text-foreground truncate pr-4 text-[15px]">{cat.name}</span>
                     <div className="flex items-center gap-1 shrink-0">
                        <button onClick={() => handleDeleteCategory(cat.id)} className="w-10 h-10 flex items-center justify-center text-muted hover:text-danger rounded-full bg-surface-raised transition-colors">

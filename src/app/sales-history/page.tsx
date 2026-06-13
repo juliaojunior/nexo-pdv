@@ -101,7 +101,7 @@ export default function SalesHistoryPage() {
               const itemsCount = sale.items.reduce((acc: number, curr: any) => acc + curr.quantity, 0);
 
               return (
-                <div key={sale.id} className="bg-surface border border-border/30 rounded-2xl flex flex-col shadow-sm overflow-hidden active:scale-[0.98] transition-transform">
+                <div key={sale.id} className="bg-surface rounded-2xl flex flex-col shadow-card overflow-hidden active:scale-[0.98] transition-transform">
                   
                   {/* Topo do Recibo Item */}
                   <div className="flex justify-between items-center p-4 border-b border-border/30 bg-surface">
