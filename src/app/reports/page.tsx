@@ -138,18 +138,18 @@ export default function ReportsPage() {
 
       {/* Cards de Métricas Estritos ao Design */}
       <div className="grid grid-cols-2 gap-4 mb-8">
-        <div className="bg-surface rounded-2xl p-5 border border-border/30 shadow-xl">
+        <div className="bg-surface rounded-2xl p-5 shadow-card">
           <p className="text-muted text-xs font-bold uppercase tracking-widest mb-2">Total Vendido</p>
           <p className="text-primary font-black text-2xl lg:text-3xl tracking-tighter truncate">{formatCurrency(totalVendido)}</p>
         </div>
-        <div className="bg-surface rounded-2xl p-5 border border-border/30 shadow-xl">
+        <div className="bg-surface rounded-2xl p-5 shadow-card">
           <p className="text-muted text-xs font-bold uppercase tracking-widest mb-2">Nº de Vendas</p>
           <p className="text-foreground font-black text-2xl lg:text-3xl tracking-tighter">{numeroVendas}</p>
         </div>
       </div>
 
       {/* Gráfico de Volume Dinâmico */}
-      <div className="bg-surface rounded-2xl p-5 border border-border/30 shadow-sm mb-8">
+      <div className="bg-surface rounded-2xl p-5 shadow-card mb-8">
         <h2 className="text-muted text-xs font-bold uppercase tracking-widest mb-5">Volume de Vendas</h2>
         <div className="flex items-end justify-between h-32 gap-3 px-1">
           {chartData.map((data, i) => {
@@ -174,7 +174,7 @@ export default function ReportsPage() {
       {/* Seção Top 5 Rankings de Vendas Numéricas */}
       <div className="flex flex-col gap-3">
         <h2 className="text-muted text-xs font-bold uppercase tracking-widest mb-2 px-1">Top 5 Produtos Mais Vendidos</h2>
-        <div className="flex flex-col bg-surface rounded-2xl overflow-hidden border border-border/30">
+        <div className="flex flex-col bg-surface rounded-2xl overflow-hidden shadow-card">
           {top5Products.length > 0 ? (
             top5Products.map((product: any, index: number) => (
               <div key={product.id} className="flex items-center justify-between p-4 border-b border-border/20 last:border-0 hover:bg-surface-raised transition-colors">

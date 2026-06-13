@@ -94,7 +94,7 @@ export function CategoryManager() {
   };
 
   return (
-    <div className="bg-surface rounded-2xl border border-border/30 p-4 shadow-sm">
+    <div className="bg-surface rounded-2xl p-4 shadow-card">
       <h3 className="font-black text-lg text-foreground mb-4 tracking-tight">Gerenciar Categorias</h3>
       
       {/* Bloco Rápido de Inserção */}

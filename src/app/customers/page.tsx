@@ -135,7 +135,7 @@ export default function CustomersPage() {
               <div 
                 key={customer.id}
                 onClick={() => openForm(customer)}
-                className="bg-surface border border-border/30 rounded-2xl p-4 flex items-center justify-between shadow-sm active:scale-[0.98] transition-transform cursor-pointer hover:border-primary-bright/30 group"
+                className="bg-surface rounded-2xl p-4 flex items-center justify-between shadow-card active:scale-[0.98] transition-transform cursor-pointer group"
               >
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-primary-deep to-background border border-primary/30 flex items-center justify-center font-black text-lg text-primary-bright shadow-inner group-hover:from-primary group-hover:text-background transition-colors">

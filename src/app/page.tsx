@@ -149,7 +149,7 @@ export default function Home() {
               const activePrice = getEffectivePrice(product);
 
               return (
-              <div key={product.id} className="bg-surface rounded-2xl p-2.5 flex flex-col gap-2 active:scale-[0.98] transition-transform shadow-sm border border-border/30 border-b-4 border-b-border/50 relative overflow-hidden group">
+              <div key={product.id} className="bg-surface rounded-2xl p-2.5 flex flex-col gap-2 active:scale-[0.98] transition-transform shadow-card relative overflow-hidden group">
                 
                 {/* Visual Image Render Overlay com Proteção Textual (Gradientes) */}
                 <div className="aspect-square w-full rounded-xl bg-surface-raised overflow-hidden relative flex flex-col items-center justify-center border border-border/10 group z-10">

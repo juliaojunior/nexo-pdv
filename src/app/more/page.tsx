@@ -99,7 +99,7 @@ export default function MorePage() {
             </>
           );
 
-          const classNameStr = "bg-surface p-4 rounded-2xl flex items-center justify-between border border-border/30 hover:border-primary-bright/50 shadow-sm active:scale-[0.98] transition-all w-full text-left group";
+          const classNameStr = "bg-surface p-4 rounded-2xl flex items-center justify-between shadow-card active:scale-[0.98] transition-all w-full text-left group";
           
           if (item.href) {
             return (

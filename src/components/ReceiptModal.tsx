@@ -177,7 +177,7 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
            <button 
              onClick={handleShare}
              disabled={isGenerating}
-             className="w-full h-14 bg-gradient-to-tr from-primary to-primary-bright text-primary-deep font-black text-lg rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-glow disabled:opacity-50 disabled:scale-100"
+             className="w-full h-14 bg-primary text-primary-deep font-black text-lg rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-glow disabled:opacity-50 disabled:scale-100"
            >
              {isGenerating ? <Download className="animate-bounce" /> : <Share2 />}
              {isGenerating ? 'Preparando...' : 'Enviar Recibo'}

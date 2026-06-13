@@ -224,7 +224,7 @@ export default function ProductsPage() {
              const activePrice = getEffectivePrice(product);
 
              return (
-               <div key={product.id} className="bg-surface p-3 rounded-2xl flex justify-between items-center border border-border/30 shadow-sm transition-transform hover:bg-surface-raised group relative overflow-hidden">
+               <div key={product.id} className="bg-surface p-3 rounded-2xl flex justify-between items-center shadow-card transition-colors hover:bg-surface-raised group relative overflow-hidden">
                  
                  <div className="flex items-center gap-3 flex-1 pr-2 z-10 min-w-0">
                    {/* Mini Thumbnail */}
