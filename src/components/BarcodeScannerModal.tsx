@@ -60,14 +60,14 @@ export function BarcodeScannerModal({ onDetected, onClose }: BarcodeScannerModal
       {/* Botão Superior para fechar Visor */}
       <button 
         onClick={onClose} 
-        className="absolute top-10 right-6 bg-surface-raised text-muted hover:text-white p-3 rounded-full transition-colors z-10 border border-border/30"
+        className="absolute top-10 right-6 bg-surface-raised text-muted hover:text-foreground p-3 rounded-full transition-colors z-10 border border-border/30"
       >
         <X size={24} />
       </button>
 
       <div className="w-full max-w-sm flex flex-col gap-6">
         <div className="text-center">
-          <h2 className="text-2xl font-black tracking-tighter text-white">Escanear Código</h2>
+          <h2 className="text-2xl font-black tracking-tighter text-foreground">Escanear Código</h2>
           <p className="text-muted text-sm mt-1">Aponte a câmera traseira para o produto</p>
         </div>
 

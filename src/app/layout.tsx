@@ -10,7 +10,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const viewport: Viewport = {
-  themeColor: "#121212",
+  themeColor: "#f4f4f5",
   width: "device-width",
   initialScale: 1,
 };
@@ -36,7 +36,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider localization={ptBR}>
-      <html lang="pt-BR" className={`${inter.className} dark`}>
+      <html lang="pt-BR" className={inter.className}>
         <head>
           <link 
             href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" 
@@ -52,7 +52,7 @@ export default function RootLayout({
           {/* Componentes Globais Injetados */}
           <SyncProvider />
           <BottomNav />
-          <Toaster position="top-center" theme="dark" richColors />
+          <Toaster position="top-center" theme="light" richColors />
         </body>
       </html>
     </ClerkProvider>

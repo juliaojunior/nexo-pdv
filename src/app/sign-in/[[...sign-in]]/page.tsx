@@ -38,7 +38,7 @@ export default function Page() {
 
             {/* Welcome Text */}
             <div className="text-center space-y-2">
-              <h2 className="text-lg sm:text-xl font-semibold text-white leading-tight">Simplifique sua gestão.</h2>
+              <h2 className="text-lg sm:text-xl font-semibold text-foreground leading-tight">Simplifique sua gestão.</h2>
               <p className="text-muted text-xs sm:text-sm tracking-wide">Faça login para continuar.</p>
             </div>
 
@@ -75,11 +75,11 @@ export default function Page() {
             <div className="grid grid-cols-2 gap-4 w-full mt-2">
               <div className="bg-surface-raised p-4 rounded-xl border border-border/20">
                 <div className="text-primary-bright text-[10px] font-bold uppercase tracking-widest mb-1">Agilidade</div>
-                <div className="text-white font-bold text-sm">Vendas em 1-tap</div>
+                <div className="text-foreground font-bold text-sm">Vendas em 1-tap</div>
               </div>
               <div className="bg-surface-raised p-4 rounded-xl border border-border/20">
                 <div className="text-primary-bright text-[10px] font-bold uppercase tracking-widest mb-1">Estoque</div>
-                <div className="text-white font-bold text-sm">Gestão Smart</div>
+                <div className="text-foreground font-bold text-sm">Gestão Smart</div>
               </div>
             </div>
 

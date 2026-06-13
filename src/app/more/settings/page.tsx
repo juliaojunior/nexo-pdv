@@ -151,7 +151,7 @@ export default function SettingsPage() {
         <section className="flex flex-col gap-4">
           <div className="flex items-center gap-3 mb-1">
             <Store size={20} className="text-primary" />
-            <h2 className="text-white font-bold text-lg tracking-tight">Dados da Loja</h2>
+            <h2 className="text-foreground font-bold text-lg tracking-tight">Dados da Loja</h2>
           </div>
           
           <div className="bg-surface border border-border/30 rounded-2xl p-4 flex flex-col gap-4 shadow-sm">
@@ -162,7 +162,7 @@ export default function SettingsPage() {
                 value={storeName}
                 onChange={e => handleStoreUpdate('name', e.target.value)}
                 onBlur={syncAllStoreSettingsToCloud}
-                className="w-full bg-background border border-border/60 focus:border-primary-bright rounded-xl h-12 px-4 text-white text-sm font-semibold outline-none transition-all placeholder:text-border shadow-inner"
+                className="w-full bg-background border border-border/60 focus:border-primary-bright rounded-xl h-12 px-4 text-foreground text-sm font-semibold outline-none transition-all placeholder:text-border shadow-inner"
                 placeholder="Ex Ateliê da Maria"
               />
             </div>
@@ -174,7 +174,7 @@ export default function SettingsPage() {
                 value={storeDocument}
                 onChange={e => handleStoreUpdate('doc', e.target.value)}
                 onBlur={syncAllStoreSettingsToCloud}
-                className="w-full bg-background border border-border/60 focus:border-primary-bright rounded-xl h-12 px-4 text-white text-sm font-semibold outline-none transition-all placeholder:text-border shadow-inner"
+                className="w-full bg-background border border-border/60 focus:border-primary-bright rounded-xl h-12 px-4 text-foreground text-sm font-semibold outline-none transition-all placeholder:text-border shadow-inner"
                 placeholder="00.000.000/0001-00"
               />
             </div>
@@ -186,7 +186,7 @@ export default function SettingsPage() {
                 value={storePhone}
                 onChange={e => handleStoreUpdate('phone', e.target.value)}
                 onBlur={syncAllStoreSettingsToCloud}
-                className="w-full bg-background border border-border/60 focus:border-primary-bright rounded-xl h-12 px-4 text-white text-sm font-semibold outline-none transition-all placeholder:text-border shadow-inner"
+                className="w-full bg-background border border-border/60 focus:border-primary-bright rounded-xl h-12 px-4 text-foreground text-sm font-semibold outline-none transition-all placeholder:text-border shadow-inner"
                 placeholder="(00) 90000-0000"
               />
             </div>
@@ -198,7 +198,7 @@ export default function SettingsPage() {
             <div className="mt-2 pt-4 border-t border-border/30">
               <label className="text-[11px] font-bold text-muted uppercase tracking-widest pl-1 mb-2 block">Seu Link Público Exclusivo</label>
               <div className="flex items-center gap-2">
-                <div className="flex-1 bg-background border border-danger/30 rounded-xl h-12 px-3 text-white text-xs font-medium flex items-center shadow-inner overflow-hidden relative group">
+                <div className="flex-1 bg-background border border-danger/30 rounded-xl h-12 px-3 text-foreground text-xs font-medium flex items-center shadow-inner overflow-hidden relative group">
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent to-background w-full h-full pointer-events-none" />
                   <span className="truncate w-[85%]">{userId ? `${origin}/c/${userId}` : "Carregando Link Seguro..."}</span>
                 </div>
@@ -222,7 +222,7 @@ export default function SettingsPage() {
         <section className="flex flex-col gap-4">
           <div className="flex items-center gap-3 mb-1">
             <Tags size={20} className="text-primary" />
-            <h2 className="text-white font-bold text-lg tracking-tight">Gestão de Categorias</h2>
+            <h2 className="text-foreground font-bold text-lg tracking-tight">Gestão de Categorias</h2>
           </div>
           
           <button 
@@ -230,7 +230,7 @@ export default function SettingsPage() {
             className="bg-gradient-to-br from-surface to-surface-raised overflow-hidden border border-border/30 hover:border-primary-bright/50 rounded-2xl p-4 flex items-center justify-between shadow-xl active:scale-[0.98] transition-all group"
           >
             <div className="flex flex-col text-left">
-              <span className="font-bold text-white text-base tracking-tight mb-0.5">Gerenciar Departamentos</span>
+              <span className="font-bold text-foreground text-base tracking-tight mb-0.5">Gerenciar Departamentos</span>
               <span className="text-muted text-xs font-medium">Você possui {allCategories.length} categorias</span>
             </div>
             <div className="w-10 h-10 rounded-full bg-surface-raised group-hover:bg-primary-deep/40 border border-border flex items-center justify-center transition-colors">
@@ -244,7 +244,7 @@ export default function SettingsPage() {
         <section className="flex flex-col gap-4">
           <div className="flex items-center gap-3 mb-1">
             <Smartphone size={20} className="text-primary" />
-            <h2 className="text-white font-bold text-lg tracking-tight">Preferências do Caixa</h2>
+            <h2 className="text-foreground font-bold text-lg tracking-tight">Preferências do Caixa</h2>
           </div>
           
           <div className="bg-surface border border-border/30 rounded-2xl flex flex-col shadow-sm overflow-hidden">
@@ -252,7 +252,7 @@ export default function SettingsPage() {
             {/* Toggle Recibo Automático */}
             <div className="p-4 border-b border-border/30 flex items-center justify-between bg-surface transition-colors relative overflow-hidden">
               <div className="flex flex-col z-10 pr-4">
-                <span className="font-bold text-white text-[15px] mb-1">Recibo Digital Automático</span>
+                <span className="font-bold text-foreground text-[15px] mb-1">Recibo Digital Automático</span>
                 <span className="text-muted text-[11px] leading-tight font-medium">Renderiza instantaneamente um cupom visual na tela no fim da venda, pronto para ser enviado no WhatsApp do cliente via WebShare. Eliminando papel.</span>
               </div>
               <label className="relative inline-flex items-center cursor-pointer z-10 flex-shrink-0">
@@ -264,7 +264,7 @@ export default function SettingsPage() {
             {/* Toggle Sons */}
             <div className="p-4 flex items-center justify-between bg-surface transition-colors">
               <div className="flex flex-col pr-4">
-                <span className="font-bold text-white text-[15px] mb-1 flex items-center gap-2">Sons do PDV <Volume2 size={16} className="text-muted" /></span>
+                <span className="font-bold text-foreground text-[15px] mb-1 flex items-center gap-2">Sons do PDV <Volume2 size={16} className="text-muted" /></span>
                 <span className="text-muted text-[11px] leading-tight font-medium">Toca o famoso bipe "blip" e sons de sucesso quando registrar produtos em alta velocidade no Checkout.</span>
               </div>
               <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
@@ -292,11 +292,11 @@ export default function SettingsPage() {
             </div>
 
             <div className="px-5 pb-4 pt-1 flex justify-between items-center border-b border-border/30 shrink-0">
-              <h2 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
+              <h2 className="text-xl font-black text-foreground tracking-tight flex items-center gap-2">
                 <Tags size={22} className="text-primary-bright" />
                 Departamentos
               </h2>
-              <button onClick={() => setIsCatModalOpen(false)} className="w-10 h-10 bg-surface-raised text-muted rounded-full flex items-center justify-center hover:text-white active:scale-95 transition-all">
+              <button onClick={() => setIsCatModalOpen(false)} className="w-10 h-10 bg-surface-raised text-muted rounded-full flex items-center justify-center hover:text-foreground active:scale-95 transition-all">
                 <X size={20} />
               </button>
             </div>
@@ -306,12 +306,12 @@ export default function SettingsPage() {
               {allCategories.length === 0 ? (
                  <div className="flex flex-col items-center justify-center h-40 opacity-40 text-center">
                     <Tags size={32} className="text-muted mb-2" />
-                    <p className="font-bold text-white">Nenhuma categoria criada</p>
+                    <p className="font-bold text-foreground">Nenhuma categoria criada</p>
                  </div>
               ) : (
                 allCategories.map(cat => (
                   <div key={cat.id} className="bg-surface border border-border/30 p-3 rounded-2xl flex items-center justify-between group hover:border-primary-bright/30 transition-colors">
-                    <span className="font-bold text-white truncate pr-4 text-[15px]">{cat.name}</span>
+                    <span className="font-bold text-foreground truncate pr-4 text-[15px]">{cat.name}</span>
                     <div className="flex items-center gap-1 shrink-0">
                        <button onClick={() => handleDeleteCategory(cat.id)} className="w-10 h-10 flex items-center justify-center text-muted hover:text-danger rounded-full bg-surface-raised transition-colors">
                          <Trash2 size={16} />
@@ -334,7 +334,7 @@ export default function SettingsPage() {
                    type="text"
                    value={newCatName}
                    onChange={e => setNewCatName(e.target.value)}
-                   className="flex-1 bg-background border border-border focus:border-primary-bright rounded-xl h-14 px-4 text-white text-sm font-semibold outline-none transition-all placeholder:text-border shadow-inner"
+                   className="flex-1 bg-background border border-border focus:border-primary-bright rounded-xl h-14 px-4 text-foreground text-sm font-semibold outline-none transition-all placeholder:text-border shadow-inner"
                    placeholder="Ex: Roupas Femininas"
                  />
                  <button 

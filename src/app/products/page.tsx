@@ -206,7 +206,7 @@ export default function ProductsPage() {
           placeholder="Buscar produtos..." 
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full bg-surface-raised border border-border/40 rounded-xl py-3.5 pl-12 pr-4 outline-none text-white font-medium focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm shadow-background/50 placeholder:text-muted/50"
+          className="w-full bg-surface-raised border border-border/40 rounded-xl py-3.5 pl-12 pr-4 outline-none text-foreground font-medium focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm shadow-background/50 placeholder:text-muted/50"
         />
       </div>
 
@@ -215,7 +215,7 @@ export default function ProductsPage() {
         {isLoading ? (
            <div className="flex flex-col items-center justify-center p-8 text-center mt-4 opacity-50">
                <div className="w-10 h-10 border-4 border-border border-t-primary animate-spin rounded-full mb-4"></div>
-               <p className="font-bold text-white uppercase tracking-widest text-xs">Puxando Inventário...</p>
+               <p className="font-bold text-foreground uppercase tracking-widest text-xs">Puxando Inventário...</p>
            </div>
         ) : products.length > 0 ? (
           products.map((product: any) => {
@@ -237,7 +237,7 @@ export default function ProductsPage() {
                    </div>
                    
                    <div className="flex flex-col gap-0.5 flex-1 justify-center min-w-0">
-                     <span className="text-white font-bold leading-tight line-clamp-1 pr-2">{product.name}</span>
+                     <span className="text-foreground font-bold leading-tight line-clamp-1 pr-2">{product.name}</span>
                      <div className="flex items-center gap-2 w-full mt-0.5">
                        <span className="text-muted text-[10px] font-bold uppercase tracking-widest bg-surface-raised px-2 py-0.5 rounded-md border border-border/20 shrink-0">{catName}</span>
                        <span className="text-primary-bright font-black tracking-tight text-sm px-1 truncate line-clamp-1 flex flex-col items-start leading-none gap-0.5">
@@ -255,7 +255,7 @@ export default function ProductsPage() {
                  </div>
                  
                  <div className="flex flex-col items-end gap-1.5 shrink-0 border-l border-border/20 pl-3 z-10 w-[100px]">
-                   <div className="bg-surface-raised text-white px-2 py-1.5 rounded-lg flex items-center justify-center gap-1 shadow-inner border border-border/10 w-full mb-0.5 shrink-0">
+                   <div className="bg-surface-raised text-foreground px-2 py-1.5 rounded-lg flex items-center justify-center gap-1 shadow-inner border border-border/10 w-full mb-0.5 shrink-0">
                      <span className="font-black text-sm leading-none">{product.stock}</span>
                      <span className="text-muted text-[10px] font-bold uppercase tracking-widest leading-none mt-0.5 truncate">est.</span>
                    </div>
@@ -302,7 +302,7 @@ export default function ProductsPage() {
              <div className="bg-surface-raised p-4 rounded-full mb-4">
                 <Search size={28} className="text-muted" />
              </div>
-             <p className="font-bold text-white tracking-wide">
+             <p className="font-bold text-foreground tracking-wide">
                 Nenhum vínculo detectado.
              </p>
              <p className="text-muted text-sm mt-1 mb-4 leading-relaxed max-w-[250px]">
@@ -325,7 +325,7 @@ export default function ProductsPage() {
         <div className="fixed inset-0 z-[150] bg-background/95 flex flex-col justify-end sm:items-center sm:justify-center backdrop-blur-xl p-0 sm:p-4 animate-in slide-in-from-bottom-full duration-300">
           <div className="bg-background w-full max-w-md sm:rounded-2xl border-t sm:border border-border/50 shadow-2xl flex flex-col h-[95vh] sm:h-auto sm:max-h-[95vh]">
             <div className="flex justify-between items-center p-6 border-b border-border/20 shrink-0">
-              <h2 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
+              <h2 className="text-xl font-black text-foreground tracking-tight flex items-center gap-2">
                  {editingProduct ? <><Edit3 size={20} className="text-primary-bright" /> Editar Produto</> : <><Tag size={20} className="text-primary-bright" /> Novo Produto</>}
               </h2>
               <button onClick={() => { setModalOpen(false); setEditingProduct(null); }} className="text-muted hover:text-danger transition-colors p-2 rounded-full bg-surface-raised">
@@ -353,7 +353,7 @@ export default function ProductsPage() {
              
 
              <div className="flex justify-between items-center mb-6 relative z-10">
-               <div className="flex items-center gap-3 text-white">
+               <div className="flex items-center gap-3 text-foreground">
                  <div className="bg-surface-raised p-2.5 rounded-full text-primary-bright border border-primary/20 shadow-inner">
                    <PercentCircle size={22} />
                  </div>
@@ -388,7 +388,7 @@ export default function ProductsPage() {
                    type="datetime-local"
                    value={promoDateValue}
                    onChange={(e) => setPromoDateValue(e.target.value)}
-                   className="w-full bg-background rounded-xl py-3 px-3 outline-none text-white font-medium border border-border/50 focus:border-primary text-sm shadow-inner"
+                   className="w-full bg-background rounded-xl py-3 px-3 outline-none text-foreground font-medium border border-border/50 focus:border-primary text-sm shadow-inner"
                  />
                </div>
              </div>
@@ -404,7 +404,7 @@ export default function ProductsPage() {
                ) : (
                   <button 
                     onClick={() => setPromoProduct(null)}
-                    className="flex-1 bg-surface-raised text-muted font-black text-sm uppercase tracking-wider py-4 rounded-xl border border-border/50 active:scale-95 transition-all text-center hover:text-white"
+                    className="flex-1 bg-surface-raised text-muted font-black text-sm uppercase tracking-wider py-4 rounded-xl border border-border/50 active:scale-95 transition-all text-center hover:text-foreground"
                   >
                     Cancelar
                   </button>
@@ -429,16 +429,16 @@ export default function ProductsPage() {
                <Trash2 size={32} />
              </div>
              
-             <h2 className="text-xl font-black text-white tracking-tight mb-2">Excluir Produto?</h2>
+             <h2 className="text-xl font-black text-foreground tracking-tight mb-2">Excluir Produto?</h2>
              <p className="text-muted text-sm leading-relaxed mb-6">
                 Tem certeza que deseja apagar <br/>
-                <strong className="text-white text-base">"{deleteCandidate.name}"</strong> <br/>? Ele sairá do catálogo público.
+                <strong className="text-foreground text-base">"{deleteCandidate.name}"</strong> <br/>? Ele sairá do catálogo público.
              </p>
 
              <div className="flex gap-3 w-full">
                 <button 
                   onClick={() => setDeleteCandidate(null)}
-                  className="flex-1 bg-surface-raised text-muted font-bold text-sm uppercase tracking-wider py-4 rounded-xl border border-border/50 active:scale-95 transition-all text-center hover:text-white"
+                  className="flex-1 bg-surface-raised text-muted font-bold text-sm uppercase tracking-wider py-4 rounded-xl border border-border/50 active:scale-95 transition-all text-center hover:text-foreground"
                 >
                   Cancelar
                 </button>

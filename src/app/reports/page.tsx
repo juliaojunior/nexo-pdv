@@ -115,19 +115,19 @@ export default function ReportsPage() {
             <div className="absolute top-12 left-0 w-40 bg-surface border border-border/50 rounded-xl shadow-xl z-50 overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
               <button 
                 onClick={() => { setTimeFilter('month'); setIsFilterOpen(false); }}
-                className={`text-left px-4 py-3 text-sm font-bold transition-colors hover:bg-surface-raised ${timeFilter === 'month' ? 'text-primary-bright' : 'text-white'}`}
+                className={`text-left px-4 py-3 text-sm font-bold transition-colors hover:bg-surface-raised ${timeFilter === 'month' ? 'text-primary-bright' : 'text-foreground'}`}
               >
                 Este mês
               </button>
               <button 
                 onClick={() => { setTimeFilter('year'); setIsFilterOpen(false); }}
-                className={`text-left px-4 py-3 text-sm font-bold transition-colors hover:bg-surface-raised border-t border-border/30 ${timeFilter === 'year' ? 'text-primary-bright' : 'text-white'}`}
+                className={`text-left px-4 py-3 text-sm font-bold transition-colors hover:bg-surface-raised border-t border-border/30 ${timeFilter === 'year' ? 'text-primary-bright' : 'text-foreground'}`}
               >
                 Este ano
               </button>
               <button 
                 onClick={() => { setTimeFilter('all'); setIsFilterOpen(false); }}
-                className={`text-left px-4 py-3 text-sm font-bold transition-colors hover:bg-surface-raised border-t border-border/30 ${timeFilter === 'all' ? 'text-primary-bright' : 'text-white'}`}
+                className={`text-left px-4 py-3 text-sm font-bold transition-colors hover:bg-surface-raised border-t border-border/30 ${timeFilter === 'all' ? 'text-primary-bright' : 'text-foreground'}`}
               >
                 Sempre
               </button>
@@ -144,7 +144,7 @@ export default function ReportsPage() {
         </div>
         <div className="bg-surface rounded-2xl p-5 border border-border/30 shadow-xl">
           <p className="text-muted text-xs font-bold uppercase tracking-widest mb-2">Nº de Vendas</p>
-          <p className="text-white font-black text-2xl lg:text-3xl tracking-tighter">{numeroVendas}</p>
+          <p className="text-foreground font-black text-2xl lg:text-3xl tracking-tighter">{numeroVendas}</p>
         </div>
       </div>
 
@@ -179,11 +179,11 @@ export default function ReportsPage() {
             top5Products.map((product: any, index: number) => (
               <div key={product.id} className="flex items-center justify-between p-4 border-b border-border/20 last:border-0 hover:bg-surface-raised transition-colors">
                 <div className="flex items-center gap-4">
-                  <span className={`font-black text-xl w-4 text-center ${index === 0 ? 'text-primary' : index === 1 ? 'text-primary-bright' : index === 2 ? 'text-white' : 'text-muted'}`}>{index + 1}</span>
-                  <span className="font-semibold text-white tracking-tight">{product.name}</span>
+                  <span className={`font-black text-xl w-4 text-center ${index === 0 ? 'text-primary' : index === 1 ? 'text-primary-bright' : index === 2 ? 'text-foreground' : 'text-muted'}`}>{index + 1}</span>
+                  <span className="font-semibold text-foreground tracking-tight">{product.name}</span>
                 </div>
                 <div className="flex flex-col items-end">
-                  <span className="text-white font-bold">{product.quantity}</span>
+                  <span className="text-foreground font-bold">{product.quantity}</span>
                   <span className="text-[10px] text-muted uppercase font-bold tracking-widest">vendas</span>
                 </div>
               </div>

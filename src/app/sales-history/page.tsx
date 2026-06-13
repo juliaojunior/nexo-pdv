@@ -70,13 +70,13 @@ export default function SalesHistoryPage() {
             <div className="flex bg-surface rounded-lg border border-border/30 overflow-hidden">
                <button 
                   onClick={() => setFilterMode('all')}
-                  className={`px-3 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-colors ${filterMode === 'all' ? 'bg-primary text-primary-deep' : 'text-muted hover:text-white'}`}
+                  className={`px-3 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-colors ${filterMode === 'all' ? 'bg-primary text-primary-deep' : 'text-muted hover:text-foreground'}`}
                >
                   Tudo
                </button>
                <button 
                   onClick={() => setFilterMode('fiado')}
-                  className={`px-3 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-colors border-l border-border/30 ${filterMode === 'fiado' ? 'bg-warning text-surface' : 'text-muted hover:text-white'}`}
+                  className={`px-3 py-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-colors border-l border-border/30 ${filterMode === 'fiado' ? 'bg-warning text-surface' : 'text-muted hover:text-foreground'}`}
                >
                   Fiados
                </button>
@@ -86,14 +86,14 @@ export default function SalesHistoryPage() {
          {isLoading ? (
             <div className="flex flex-col items-center justify-center p-8 text-center mt-10 opacity-50">
                 <div className="w-10 h-10 border-4 border-border border-t-primary animate-spin rounded-full mb-4"></div>
-                <p className="font-bold text-white uppercase tracking-widest text-xs">Baixando Transações...</p>
+                <p className="font-bold text-foreground uppercase tracking-widest text-xs">Baixando Transações...</p>
             </div>
          ) : filteredSales.length === 0 ? (
            <div className="flex flex-col items-center justify-center h-[40vh] text-muted text-center border-2 border-dashed border-border/30 rounded-3xl p-6 shadow-sm bg-surface">
               <div className="bg-surface-raised p-4 rounded-full mb-4 shadow-inner">
                  <Receipt size={28} className="text-border" />
               </div>
-              <p className="font-bold text-white mb-2 text-lg tracking-tight">Nenhuma venda ainda</p>
+              <p className="font-bold text-foreground mb-2 text-lg tracking-tight">Nenhuma venda ainda</p>
               <p className="text-xs leading-relaxed max-w-[200px]">Suas vendas aparecerão aqui.</p>
            </div>
          ) : (
@@ -110,7 +110,7 @@ export default function SalesHistoryPage() {
                          <Receipt size={18} />
                        </div>
                        <div className="flex flex-col">
-                         <span className="text-white font-black text-lg leading-tight tracking-tight">{formatCurrency(Number(sale.total))}</span>
+                         <span className="text-foreground font-black text-lg leading-tight tracking-tight">{formatCurrency(Number(sale.total))}</span>
                          <span className="text-muted text-[10px] font-bold uppercase tracking-widest">
                            {sale.customerId ? customers.find(c => c.id === sale.customerId)?.name || 'Cliente Oculto' : new Date(sale.date).toLocaleString('pt-BR')}
                          </span>
@@ -165,16 +165,16 @@ export default function SalesHistoryPage() {
                <div className="absolute top-0 right-0 w-3 h-3 bg-danger animate-ping rounded-full" />
              </div>
              
-             <h2 className="text-xl font-black text-white tracking-tight mb-2">Atenção Risco Alto</h2>
+             <h2 className="text-xl font-black text-foreground tracking-tight mb-2">Atenção Risco Alto</h2>
              <p className="text-muted text-sm leading-relaxed mb-6">
-                Você está prestes a <strong className="text-white">estornar esta venda</strong>.<br/><br/>
+                Você está prestes a <strong className="text-foreground">estornar esta venda</strong>.<br/><br/>
                 O valor sairá dos relatórios e os produtos voltarão ao estoque.
              </p>
 
              <div className="flex gap-3 w-full">
                 <button 
                   onClick={() => setRevertCandidate(null)}
-                  className="flex-1 bg-surface-raised text-muted font-bold text-sm uppercase tracking-wider py-4 rounded-xl border border-border/50 active:scale-95 transition-all text-center hover:text-white"
+                  className="flex-1 bg-surface-raised text-muted font-bold text-sm uppercase tracking-wider py-4 rounded-xl border border-border/50 active:scale-95 transition-all text-center hover:text-foreground"
                 >
                   Cancelar
                 </button>

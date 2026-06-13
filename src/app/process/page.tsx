@@ -98,7 +98,7 @@ function ProcessOrderContent() {
 
   if (!orderItems || orderItems.length === 0) {
      return (
-       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center text-white">
+       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center text-foreground">
           <XCircle size={64} className="text-danger mb-4" />
           <h2 className="text-xl font-black mb-2">Pedido Inválido ou Já Processado</h2>
           <p className="text-muted mb-8">Não conseguimos encontrar os produtos deste link no seu banco atual.</p>
@@ -114,7 +114,7 @@ function ProcessOrderContent() {
            <PackageCheck size={24} />
          </div>
          <div className="flex flex-col">
-           <h1 className="text-white font-black tracking-tight text-2xl leading-none">Aprovar Pedido</h1>
+           <h1 className="text-foreground font-black tracking-tight text-2xl leading-none">Aprovar Pedido</h1>
            <span className="text-muted text-xs font-semibold uppercase tracking-widest mt-1">Via Cardápio Digital</span>
          </div>
       </header>
@@ -123,7 +123,7 @@ function ProcessOrderContent() {
          
          <div className="flex flex-col mb-6 relative z-10">
            <span className="text-[10px] font-bold uppercase tracking-widest text-muted mb-1">Cliente Solicitante</span>
-           <span className="text-xl font-black text-white">{customerParam}</span>
+           <span className="text-xl font-black text-foreground">{customerParam}</span>
          </div>
 
          <div className="flex flex-col gap-3 relative z-10 border-t border-border/30 pt-5">
@@ -146,7 +146,7 @@ function ProcessOrderContent() {
 
          <div className="flex justify-between items-center mt-6 pt-5 border-t border-border/30 relative z-10">
             <span className="font-bold text-muted uppercase tracking-widest text-sm">Total da Venda</span>
-            <span className="font-black text-3xl text-white">{formatCurrency(total)}</span>
+            <span className="font-black text-3xl text-foreground">{formatCurrency(total)}</span>
          </div>
       </div>
 
@@ -160,7 +160,7 @@ function ProcessOrderContent() {
          </button>
          <button 
            onClick={handleErrorOrCancel}
-           className="w-full bg-surface-raised text-muted font-bold text-sm uppercase tracking-wider py-4 rounded-xl border border-border/50 active:scale-95 transition-all text-center hover:text-white"
+           className="w-full bg-surface-raised text-muted font-bold text-sm uppercase tracking-wider py-4 rounded-xl border border-border/50 active:scale-95 transition-all text-center hover:text-foreground"
          >
            Cancelar / Ignorar
          </button>

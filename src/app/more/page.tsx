@@ -70,7 +70,7 @@ export default function MorePage() {
                    <QrCode size={24} className="text-primary-deep" />
                  </div>
                  <div className="flex flex-col flex-1">
-                   <h3 className="font-black text-white text-xl tracking-tight leading-none mb-1">Menu Digital</h3>
+                   <h3 className="font-black text-foreground text-xl tracking-tight leading-none mb-1">Menu Digital</h3>
                    <p className="text-muted text-xs font-semibold uppercase tracking-widest leading-tight">{isSharing ? 'Gerando Link Curto...' : 'Link Mágico do Catálogo'}</p>
                  </div>
                  <div className={`bg-surface-raised p-2 rounded-full border border-primary-bright/20 text-primary-bright transition-all ${isSharing ? 'animate-pulse' : 'group-hover:animate-pulse'}`}>
@@ -91,7 +91,7 @@ export default function MorePage() {
                   <Icon size={24} className="text-primary-bright" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-bold text-white text-lg tracking-tight">{item.label}</span>
+                  <span className="font-bold text-foreground text-lg tracking-tight">{item.label}</span>
                   <span className="text-muted text-xs font-medium">{item.description}</span>
                 </div>
               </div>

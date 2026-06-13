@@ -154,7 +154,7 @@ export default function CatalogClient({
                  <Store size={24} strokeWidth={2.5} />
              </div>
              <div className="flex flex-col">
-               <h1 className="text-2xl font-black text-white tracking-tighter">{storeName}</h1>
+               <h1 className="text-2xl font-black text-foreground tracking-tighter">{storeName}</h1>
                <span className="text-primary text-xs font-bold uppercase tracking-widest flex items-center gap-1">
                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                  Catálogo Online
@@ -169,7 +169,7 @@ export default function CatalogClient({
                placeholder="Buscar por produtos..."
                value={searchQuery}
                onChange={e => setSearchQuery(e.target.value)}
-               className="w-full bg-surface border border-border/50 rounded-2xl py-3.5 pl-12 pr-4 text-sm font-medium text-white placeholder-muted focus:outline-none focus:border-primary-bright transition-colors"
+               className="w-full bg-surface border border-border/50 rounded-2xl py-3.5 pl-12 pr-4 text-sm font-medium text-foreground placeholder-muted focus:outline-none focus:border-primary-bright transition-colors"
              />
            </div>
         </div>
@@ -213,8 +213,8 @@ export default function CatalogClient({
                      {!isEsgotado && inCartItem && (
                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[2px]">
                           <div className="flex items-center gap-3 bg-background/90 border border-border/50 rounded-full p-1.5 shadow-xl" onClick={e => e.stopPropagation()}>
-                            <button onClick={() => handleUpdateQty(product.local_id, -1)} className="w-8 h-8 rounded-full bg-surface-raised text-white flex items-center justify-center active:scale-95"><Minus size={14} /></button>
-                            <span className="text-white font-black w-4 text-center">{inCartItem.quantity}</span>
+                            <button onClick={() => handleUpdateQty(product.local_id, -1)} className="w-8 h-8 rounded-full bg-surface-raised text-foreground flex items-center justify-center active:scale-95"><Minus size={14} /></button>
+                            <span className="text-foreground font-black w-4 text-center">{inCartItem.quantity}</span>
                             <button disabled={inCartItem.quantity >= product.stock} onClick={() => handleUpdateQty(product.local_id, 1)} className="w-8 h-8 rounded-full bg-primary text-background flex items-center justify-center active:scale-95 disabled:opacity-50"><Plus size={14} strokeWidth={3} /></button>
                           </div>
                        </div>
@@ -222,7 +222,7 @@ export default function CatalogClient({
                   </div>
 
                   <div className="flex flex-col mt-auto">
-                    <span className="text-white font-bold leading-tight mb-1 line-clamp-2">{product.name}</span>
+                    <span className="text-foreground font-bold leading-tight mb-1 line-clamp-2">{product.name}</span>
                     <span className="text-primary-bright font-black text-lg">
                       {calcActivePrice(product) < Number(product.price) ? (
                          <div className="flex flex-col mt-1">
@@ -254,7 +254,7 @@ export default function CatalogClient({
          {displayedProducts.length === 0 && (
            <div className="w-full py-12 flex flex-col items-center text-center">
              <div className="w-16 h-16 bg-surface-raised rounded-full mb-4 flex justify-center items-center"><Search size={24} className="text-border" /></div>
-             <p className="text-white font-bold text-lg">Nada encontrado</p>
+             <p className="text-foreground font-bold text-lg">Nada encontrado</p>
              <p className="text-muted text-sm mt-1">Tente pesquisar outro termo.</p>
            </div>
          )}
@@ -267,7 +267,7 @@ export default function CatalogClient({
              
              {/* Thumbnail gigante do produto */}
              <div className="relative w-full h-[35vh] bg-surface-raised flex items-center justify-center shrink-0">
-               <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-background/80 text-muted flex items-center justify-center hover:text-white active:scale-95 z-10"><X size={20} /></button>
+               <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-background/80 text-muted flex items-center justify-center hover:text-foreground active:scale-95 z-10"><X size={20} /></button>
                {selectedProduct.imageurl ? (
                   <img src={selectedProduct.imageurl} alt={selectedProduct.name} className="w-full h-full object-cover" />
                ) : (
@@ -277,8 +277,8 @@ export default function CatalogClient({
 
              <div className="p-6 flex flex-col gap-3 overflow-y-auto max-h-[45vh] hide-scrollbar border-t border-border/30">
                <div className="flex justify-between items-start gap-4">
-                 <h2 className="text-white font-black text-2xl tracking-tight leading-tight">{selectedProduct.name}</h2>
-                 <div className="bg-surface-raised text-white px-2.5 py-1.5 rounded-lg flex flex-col items-center justify-center border border-border/10 shrink-0 min-w-[50px]">
+                 <h2 className="text-foreground font-black text-2xl tracking-tight leading-tight">{selectedProduct.name}</h2>
+                 <div className="bg-surface-raised text-foreground px-2.5 py-1.5 rounded-lg flex flex-col items-center justify-center border border-border/10 shrink-0 min-w-[50px]">
                    <span className="font-black text-sm leading-none">{selectedProduct.stock}</span>
                    <span className="text-muted text-[10px] font-bold uppercase tracking-widest leading-none mt-1">est.</span>
                  </div>
@@ -305,8 +305,8 @@ export default function CatalogClient({
                    <div className="flex items-center justify-between bg-surface-raised rounded-xl p-2.5 border border-border/30 shadow-inner">
                       <span className="text-muted ml-4 font-bold uppercase tracking-widest text-xs">Na Sacola:</span>
                       <div className="flex items-center gap-4 bg-background rounded-lg p-1.5">
-                        <button onClick={() => handleUpdateQty(selectedProduct.local_id, -1)} className="w-10 h-10 rounded-lg bg-surface-raised text-white flex items-center justify-center active:scale-95"><Minus size={18} /></button>
-                        <span className="text-white font-black w-6 text-center text-xl">{cart.find(i => i.local_id === selectedProduct.local_id)?.quantity}</span>
+                        <button onClick={() => handleUpdateQty(selectedProduct.local_id, -1)} className="w-10 h-10 rounded-lg bg-surface-raised text-foreground flex items-center justify-center active:scale-95"><Minus size={18} /></button>
+                        <span className="text-foreground font-black w-6 text-center text-xl">{cart.find(i => i.local_id === selectedProduct.local_id)?.quantity}</span>
                         <button disabled={cart.find(i => i.local_id === selectedProduct.local_id)!.quantity >= selectedProduct.stock} onClick={() => handleUpdateQty(selectedProduct.local_id, 1)} className="w-10 h-10 rounded-lg bg-primary text-background flex items-center justify-center active:scale-95 disabled:opacity-50"><Plus size={18} strokeWidth={3} /></button>
                       </div>
                    </div>
@@ -340,14 +340,14 @@ export default function CatalogClient({
               >
                  <div className="flex items-center gap-3">
                    <div className="relative">
-                     <ShoppingBag size={20} className="text-white" />
+                     <ShoppingBag size={20} className="text-foreground" />
                      <div className="absolute -top-2 -right-2 w-5 h-5 bg-primary-bright rounded-full flex items-center justify-center text-background font-bold text-[10px]">
                        {cartItemsCount}
                      </div>
                    </div>
-                   <span className="text-white font-black uppercase tracking-widest text-xs">Ver Sacola</span>
+                   <span className="text-foreground font-black uppercase tracking-widest text-xs">Ver Sacola</span>
                  </div>
-                 <div className="flex items-center gap-2 text-white font-black">
+                 <div className="flex items-center gap-2 text-foreground font-black">
                    R$ {cartTotal.toFixed(2).replace('.',',')}
                    <ChevronRight size={18} className="text-primary-bright" />
                  </div>
@@ -361,11 +361,11 @@ export default function CatalogClient({
         <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
            <div className="bg-background rounded-t-3xl h-[85vh] flex flex-col border-t border-border/30 shadow-overlay animate-in slide-in-from-bottom-full duration-300 max-w-3xl mx-auto w-full relative">
               <div className="p-5 flex justify-between items-center border-b border-border/30">
-                <h2 className="text-white font-black text-xl flex items-center gap-2 tracking-tight">
+                <h2 className="text-foreground font-black text-xl flex items-center gap-2 tracking-tight">
                   <ShoppingBag className="text-primary-bright" />
                   Sua Sacola
                 </h2>
-                <button onClick={() => setCartOpen(false)} className="w-10 h-10 rounded-full bg-surface-raised text-muted flex items-center justify-center hover:text-white active:scale-95"><X size={20} /></button>
+                <button onClick={() => setCartOpen(false)} className="w-10 h-10 rounded-full bg-surface-raised text-muted flex items-center justify-center hover:text-foreground active:scale-95"><X size={20} /></button>
               </div>
 
               <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-4">
@@ -376,15 +376,15 @@ export default function CatalogClient({
                            {item.imageurl ? <img src={item.imageurl} className="w-full h-full object-cover" /> : null}
                          </div>
                          <div className="flex flex-col">
-                           <span className="text-white font-bold text-sm leading-tight line-clamp-1">{item.name}</span>
+                           <span className="text-foreground font-bold text-sm leading-tight line-clamp-1">{item.name}</span>
                            <span className="text-primary-bright font-black">R$ {calcActivePrice(item).toFixed(2).replace('.', ',')}</span>
                          </div>
                       </div>
                       <div className="flex flex-col items-end gap-2">
                         <span className="text-muted text-[10px] font-bold uppercase tracking-widest">Total R$ {(calcActivePrice(item)*item.quantity).toFixed(2).replace('.',',')}</span>
                         <div className="flex items-center gap-3 bg-surface-raised rounded-full p-1 border border-border/30">
-                            <button onClick={() => handleUpdateQty(item.local_id, -1)} className="w-6 h-6 rounded-full bg-background text-white flex items-center justify-center active:scale-95"><Minus size={12} /></button>
-                            <span className="text-white font-black w-3 text-center text-xs">{item.quantity}</span>
+                            <button onClick={() => handleUpdateQty(item.local_id, -1)} className="w-6 h-6 rounded-full bg-background text-foreground flex items-center justify-center active:scale-95"><Minus size={12} /></button>
+                            <span className="text-foreground font-black w-3 text-center text-xs">{item.quantity}</span>
                             <button disabled={item.quantity >= item.stock} onClick={() => handleUpdateQty(item.local_id, 1)} className="w-6 h-6 rounded-full bg-primary text-background flex items-center justify-center active:scale-95 disabled:opacity-50"><Plus size={12} strokeWidth={3} /></button>
                           </div>
                       </div>
@@ -395,7 +395,7 @@ export default function CatalogClient({
               <div className="p-6 bg-surface border-t border-border/50 flex flex-col gap-4 pb-8 rounded-t-3xl">
                  <div className="flex justify-between items-center px-2">
                     <span className="text-muted font-bold uppercase tracking-widest text-sm">Total do Pedido</span>
-                    <span className="text-white font-black text-2xl">R$ {cartTotal.toFixed(2).replace('.', ',')}</span>
+                    <span className="text-foreground font-black text-2xl">R$ {cartTotal.toFixed(2).replace('.', ',')}</span>
                  </div>
                  <button 
                    onClick={() => setCheckoutModalOpen(true)}
@@ -415,20 +415,20 @@ export default function CatalogClient({
               
               <div className="flex justify-between items-center mb-6">
                  <div>
-                   <h2 className="text-white font-black text-2xl tracking-tight leading-none">Dados Finais</h2>
+                   <h2 className="text-foreground font-black text-2xl tracking-tight leading-none">Dados Finais</h2>
                    <span className="text-primary uppercase tracking-widest text-xs font-bold mt-1">Passo Final</span>
                  </div>
-                 <button onClick={() => setCheckoutModalOpen(false)} className="w-10 h-10 rounded-full bg-surface-raised text-muted hover:text-white"><X size={20} className="mx-auto" /></button>
+                 <button onClick={() => setCheckoutModalOpen(false)} className="w-10 h-10 rounded-full bg-surface-raised text-muted hover:text-foreground"><X size={20} className="mx-auto" /></button>
               </div>
 
               <div className="flex flex-col gap-4 mb-6">
                  <div className="flex flex-col gap-1.5">
                    <label className="text-muted font-bold text-xs uppercase tracking-widest pl-1">Seu Nome</label>
-                   <input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="João Silva" className="bg-surface border border-border/50 rounded-xl px-4 py-3.5 text-white" />
+                   <input type="text" value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="João Silva" className="bg-surface border border-border/50 rounded-xl px-4 py-3.5 text-foreground" />
                  </div>
                  <div className="flex flex-col gap-1.5">
                    <label className="text-muted font-bold text-xs uppercase tracking-widest pl-1">Seu WhatsApp</label>
-                   <input type="tel" value={customerWpp} onChange={e => setCustomerWpp(e.target.value)} placeholder="(11) 99999-9999" className="bg-surface border border-border/50 rounded-xl px-4 py-3.5 text-white" />
+                   <input type="tel" value={customerWpp} onChange={e => setCustomerWpp(e.target.value)} placeholder="(11) 99999-9999" className="bg-surface border border-border/50 rounded-xl px-4 py-3.5 text-foreground" />
                  </div>
                  
                  <div className="flex flex-col gap-1.5 mt-2">
@@ -460,8 +460,8 @@ export default function CatalogClient({
              </div>
            </div>
            
-           <h2 className="text-3xl font-black text-white text-center mb-2 tracking-tighter">Pedido Nº {orderDoneId} Recebido!</h2>
-           <p className="text-muted text-center mb-8">Sua ordem foi disparada com sucesso para os painéis da loja <strong className="text-white">{storeName}</strong>.</p>
+           <h2 className="text-3xl font-black text-foreground text-center mb-2 tracking-tighter">Pedido Nº {orderDoneId} Recebido!</h2>
+           <p className="text-muted text-center mb-8">Sua ordem foi disparada com sucesso para os painéis da loja <strong className="text-foreground">{storeName}</strong>.</p>
 
            <div className="flex flex-col gap-3 w-full max-w-sm">
              <a 
@@ -473,7 +473,7 @@ export default function CatalogClient({
              </a>
              <button 
                onClick={() => { setOrderDoneId(null); setCheckoutModalOpen(false); setCartOpen(false); }}
-               className="w-full bg-surface text-white border border-border/50 py-4 rounded-xl font-bold uppercase tracking-widest text-xs"
+               className="w-full bg-surface text-foreground border border-border/50 py-4 rounded-xl font-bold uppercase tracking-widest text-xs"
              >
                Continuar Navegando
              </button>

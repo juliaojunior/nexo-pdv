@@ -148,14 +148,14 @@ export default function InventoryPage() {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 opacity-40">
             <div className="w-10 h-10 border-4 border-t-primary border-border rounded-full animate-spin mb-4" />
-            <p className="font-bold text-sm text-white uppercase tracking-widest">Carregando estoque...</p>
+            <p className="font-bold text-sm text-foreground uppercase tracking-widest">Carregando estoque...</p>
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 opacity-40 text-center">
             <div className="w-20 h-20 rounded-full border border-dashed border-muted/50 flex items-center justify-center mb-4 text-muted">
               <Package size={32} />
             </div>
-            <p className="font-bold text-lg text-white">Prateleira vazia</p>
+            <p className="font-bold text-lg text-foreground">Prateleira vazia</p>
             <p className="text-sm mt-1">Nenhum produto encontrado para essa busca.</p>
           </div>
         ) : (
@@ -178,7 +178,7 @@ export default function InventoryPage() {
                     )}
                   </div>
                   <div className="flex flex-col truncate">
-                    <span className="font-bold text-white text-base tracking-tight truncate max-w-[180px]">{product.name}</span>
+                    <span className="font-bold text-foreground text-base tracking-tight truncate max-w-[180px]">{product.name}</span>
                     <span className="text-muted text-xs font-bold uppercase tracking-widest mt-0.5 max-w-full">
                        {formatCurrency(Number(product.price))}
                     </span>
@@ -193,7 +193,7 @@ export default function InventoryPage() {
                          : 'bg-surface-raised border border-border/30'
                      }`}
                    >
-                     <span className={`font-black text-lg leading-none ${isCritical ? 'text-danger' : 'text-white'}`}>{product.stock}</span>
+                     <span className={`font-black text-lg leading-none ${isCritical ? 'text-danger' : 'text-foreground'}`}>{product.stock}</span>
                      <span className={`text-[10px] uppercase tracking-widest leading-none mt-1 ${isCritical ? 'text-danger/70' : 'text-muted'}`}>un</span>
                    </div>
                 </div>
@@ -229,7 +229,7 @@ export default function InventoryPage() {
                 )}
               </div>
               
-              <h2 className="text-lg font-black text-white tracking-tight text-center truncate w-full px-4">
+              <h2 className="text-lg font-black text-foreground tracking-tight text-center truncate w-full px-4">
                 {selectedProduct.name}
               </h2>
               <div className="bg-surface px-4 py-1.5 mt-2 rounded-full border border-border flex items-center gap-2">
@@ -247,7 +247,7 @@ export default function InventoryPage() {
                     type="button" 
                     onClick={() => { setMode('add'); setQuantityStr(""); }}
                     disabled={isUpdating}
-                    className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg transition-all ${mode === 'add' ? 'bg-surface-raised border border-border text-white shadow-sm' : 'text-muted hover:text-white'}`}
+                    className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg transition-all ${mode === 'add' ? 'bg-surface-raised border border-border text-foreground shadow-sm' : 'text-muted hover:text-foreground'}`}
                   >
                      <Plus size={20} className={mode === 'add' ? 'text-primary' : ''} />
                      <span className="font-bold text-[10px] uppercase tracking-widest mt-1">Soma</span>
@@ -256,7 +256,7 @@ export default function InventoryPage() {
                     type="button" 
                     onClick={() => { setMode('subtract'); setQuantityStr(""); }}
                     disabled={isUpdating}
-                    className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg transition-all ${mode === 'subtract' ? 'bg-surface-raised border border-border text-white shadow-sm' : 'text-muted hover:text-white'}`}
+                    className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg transition-all ${mode === 'subtract' ? 'bg-surface-raised border border-border text-foreground shadow-sm' : 'text-muted hover:text-foreground'}`}
                   >
                      <Minus size={20} className={mode === 'subtract' ? 'text-danger' : ''} />
                      <span className="font-bold text-[10px] uppercase tracking-widest mt-1">Perda</span>
@@ -265,9 +265,9 @@ export default function InventoryPage() {
                     type="button" 
                     onClick={() => { setMode('overwrite'); setQuantityStr(""); }}
                     disabled={isUpdating}
-                    className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg transition-all ${mode === 'overwrite' ? 'bg-surface-raised border border-border text-white shadow-sm' : 'text-muted hover:text-white'}`}
+                    className={`flex-1 flex flex-col items-center justify-center py-2.5 rounded-lg transition-all ${mode === 'overwrite' ? 'bg-surface-raised border border-border text-foreground shadow-sm' : 'text-muted hover:text-foreground'}`}
                   >
-                     <Edit2 size={18} className={mode === 'overwrite' ? 'text-white' : ''} />
+                     <Edit2 size={18} className={mode === 'overwrite' ? 'text-foreground' : ''} />
                      <span className="font-bold text-[10px] uppercase tracking-widest mt-1">Exato</span>
                   </button>
                 </div>
@@ -276,7 +276,7 @@ export default function InventoryPage() {
                 <div className="flex flex-col items-center space-y-4">
                    
                    <div className="flex items-center gap-6">
-                     <button type="button" onClick={() => handleQuickAddQty(-1)} disabled={isUpdating} className="w-14 h-14 bg-surface border border-border/50 rounded-2xl flex items-center justify-center text-white active:scale-95 shadow-sm hover:border-primary-bright transition-colors disabled:opacity-50">
+                     <button type="button" onClick={() => handleQuickAddQty(-1)} disabled={isUpdating} className="w-14 h-14 bg-surface border border-border/50 rounded-2xl flex items-center justify-center text-foreground active:scale-95 shadow-sm hover:border-primary-bright transition-colors disabled:opacity-50">
                         <Minus size={24} strokeWidth={3} />
                      </button>
                      
@@ -289,11 +289,11 @@ export default function InventoryPage() {
                           onChange={(e) => setQuantityStr(e.target.value)}
                           placeholder="0"
                           disabled={isUpdating}
-                          className="w-24 h-16 bg-transparent border-b-2 border-border focus:border-primary-bright text-center text-4xl font-black text-white tracking-tighter outline-none transition-colors disabled:opacity-50"
+                          className="w-24 h-16 bg-transparent border-b-2 border-border focus:border-primary-bright text-center text-4xl font-black text-foreground tracking-tighter outline-none transition-colors disabled:opacity-50"
                         />
                      </div>
 
-                     <button type="button" onClick={() => handleQuickAddQty(1)} disabled={isUpdating} className="w-14 h-14 bg-surface border border-border/50 rounded-2xl flex items-center justify-center text-white active:scale-95 shadow-sm hover:border-primary-bright transition-colors disabled:opacity-50">
+                     <button type="button" onClick={() => handleQuickAddQty(1)} disabled={isUpdating} className="w-14 h-14 bg-surface border border-border/50 rounded-2xl flex items-center justify-center text-foreground active:scale-95 shadow-sm hover:border-primary-bright transition-colors disabled:opacity-50">
                         <Plus size={24} strokeWidth={3} />
                      </button>
                    </div>
@@ -312,7 +312,7 @@ export default function InventoryPage() {
                   type="button" 
                   onClick={closeModal}
                   disabled={isUpdating}
-                  className="flex-[0.8] h-12 sm:h-14 bg-surface border border-border/50 hover:bg-surface-raised text-white font-bold text-sm sm:text-base rounded-xl flex items-center justify-center active:scale-95 transition-all outline-none disabled:opacity-50"
+                  className="flex-[0.8] h-12 sm:h-14 bg-surface border border-border/50 hover:bg-surface-raised text-foreground font-bold text-sm sm:text-base rounded-xl flex items-center justify-center active:scale-95 transition-all outline-none disabled:opacity-50"
                  >
                    Cancelar
                  </button>

@@ -126,7 +126,7 @@ export default function CustomersPage() {
             <div className="w-20 h-20 rounded-full border border-dashed border-muted/50 flex items-center justify-center mb-4 text-muted">
               <User size={32} />
             </div>
-            <p className="font-bold text-lg text-white">Nenhum Cliente</p>
+            <p className="font-bold text-lg text-foreground">Nenhum Cliente</p>
             <p className="text-sm mt-1">Busque ou cadastre novos registros.</p>
           </div>
         ) : (
@@ -142,7 +142,7 @@ export default function CustomersPage() {
                     {customer.name.substring(0, 2).toUpperCase()}
                   </div>
                   <div className="flex flex-col">
-                    <span className="font-bold text-white text-base tracking-tight truncate max-w-[180px]">{customer.name}</span>
+                    <span className="font-bold text-foreground text-base tracking-tight truncate max-w-[180px]">{customer.name}</span>
                     {customer.phone ? (
                       <span className="text-muted text-xs font-medium mt-0.5 flex items-center gap-1">
                         <Phone size={10} /> {customer.phone}
@@ -184,7 +184,7 @@ export default function CustomersPage() {
             </div>
 
             <div className="px-6 pb-4 pt-2 sm:pt-6 flex justify-between items-center border-b border-border/30">
-              <h2 className="text-xl font-black text-white tracking-tight">
+              <h2 className="text-xl font-black text-foreground tracking-tight">
                 {editingCustomer ? 'Editar Perfil' : 'Novo Cliente'}
               </h2>
               {editingCustomer && (
@@ -203,7 +203,7 @@ export default function CustomersPage() {
                   required
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  className="w-full bg-surface border border-border focus:border-primary-bright rounded-xl h-14 px-4 text-white font-semibold outline-none transition-all placeholder:text-border placeholder:font-normal"
+                  className="w-full bg-surface border border-border focus:border-primary-bright rounded-xl h-14 px-4 text-foreground font-semibold outline-none transition-all placeholder:text-border placeholder:font-normal"
                   placeholder="Ex: João Silva"
                 />
               </div>
@@ -214,7 +214,7 @@ export default function CustomersPage() {
                   type="tel" 
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
-                  className="w-full bg-surface border border-border focus:border-primary-bright rounded-xl h-14 px-4 text-white font-semibold outline-none transition-all placeholder:text-border placeholder:font-normal"
+                  className="w-full bg-surface border border-border focus:border-primary-bright rounded-xl h-14 px-4 text-foreground font-semibold outline-none transition-all placeholder:text-border placeholder:font-normal"
                   placeholder="(11) 99999-9999"
                 />
               </div>
@@ -225,7 +225,7 @@ export default function CustomersPage() {
                   type="text" 
                   value={document}
                   onChange={e => setDocument(e.target.value)}
-                  className="w-full bg-surface border border-border focus:border-primary-bright rounded-xl h-14 px-4 text-white font-semibold outline-none transition-all placeholder:text-border placeholder:font-normal"
+                  className="w-full bg-surface border border-border focus:border-primary-bright rounded-xl h-14 px-4 text-foreground font-semibold outline-none transition-all placeholder:text-border placeholder:font-normal"
                   placeholder="000.000.000-00"
                 />
               </div>
@@ -236,7 +236,7 @@ export default function CustomersPage() {
                   type="email" 
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="w-full bg-surface border border-border focus:border-primary-bright rounded-xl h-14 px-4 text-white font-semibold outline-none transition-all placeholder:text-border placeholder:font-normal"
+                  className="w-full bg-surface border border-border focus:border-primary-bright rounded-xl h-14 px-4 text-foreground font-semibold outline-none transition-all placeholder:text-border placeholder:font-normal"
                   placeholder="contato@empresa.com"
                 />
               </div>

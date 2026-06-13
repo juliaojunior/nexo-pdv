@@ -98,7 +98,7 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
         
         <div className="flex flex-col items-center mb-6 animate-pulse shrink-0">
           <CheckCircle size={48} className="text-primary mb-2 shadow-2xl" />
-          <h2 className="text-white font-black text-2xl tracking-tight">Venda Sucesso!</h2>
+          <h2 className="text-foreground font-black text-2xl tracking-tight">Venda Sucesso!</h2>
           <p className="text-muted text-sm mt-1">Pronto para despachar ao cliente.</p>
         </div>
 
@@ -111,7 +111,7 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
            {/* Subtle watermark or pattern could go here */}
            
            <div className="flex flex-col items-center mb-6 w-full border-b border-dashed border-border/70 pb-6">
-              <h1 className="text-white font-black text-2xl uppercase tracking-tighter leading-tight mb-1 break-words max-w-full px-2">{storeName}</h1>
+              <h1 className="text-foreground font-black text-2xl uppercase tracking-tighter leading-tight mb-1 break-words max-w-full px-2">{storeName}</h1>
               {storeDoc && <p className="text-muted text-[10px] uppercase tracking-widest font-bold">Doc: {storeDoc}</p>}
               <p className="text-border text-[10px] mt-2 font-bold">{new Date(receiptData.date).toLocaleString('pt-BR')}</p>
               {receiptData.customerName && (
@@ -132,7 +132,7 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
                     <span className="text-gray-300 break-words text-left leading-tight">
                        {item.quantity}x {item.productName}
                     </span>
-                    <span className="text-white shrink-0 pt-0.5">{formatCurrency(item.subtotal)}</span>
+                    <span className="text-foreground shrink-0 pt-0.5">{formatCurrency(item.subtotal)}</span>
                  </div>
               ))}
            </div>
@@ -144,7 +144,7 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
               </div>
               <div className="flex justify-between items-center mt-2">
                  <span className="text-muted text-[10px] font-bold uppercase tracking-widest">Meio</span>
-                 <span className={`${receiptData.paymentMethod === 'Fiado' ? 'text-surface bg-danger' : 'text-white bg-surface'} text-[10px] font-bold px-2 py-0.5 uppercase tracking-widest rounded`}>
+                 <span className={`${receiptData.paymentMethod === 'Fiado' ? 'text-surface bg-danger' : 'text-foreground bg-surface'} text-[10px] font-bold px-2 py-0.5 uppercase tracking-widest rounded`}>
                    {receiptData.paymentMethod}
                  </span>
               </div>
@@ -153,7 +153,7 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
                  <>
                    <div className="flex justify-between items-center mt-1">
                      <span className="text-muted text-[10px] font-bold uppercase tracking-widest">Recebido</span>
-                     <span className="text-white text-[11px] font-bold">{formatCurrency(receiptData.amountReceived)}</span>
+                     <span className="text-foreground text-[11px] font-bold">{formatCurrency(receiptData.amountReceived)}</span>
                    </div>
                    <div className="flex justify-between items-center mt-1">
                      <span className="text-muted text-[10px] font-bold uppercase tracking-widest">Troco</span>
@@ -186,7 +186,7 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
            <button 
              onClick={onClose}
              disabled={isGenerating}
-             className="w-full h-12 bg-transparent border border-border hover:bg-surface text-white font-bold rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
+             className="w-full h-12 bg-transparent border border-border hover:bg-surface text-foreground font-bold rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
            >
              <X size={18} /> Dispensar
            </button>

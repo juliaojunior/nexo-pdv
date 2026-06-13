@@ -116,7 +116,7 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
         
         {/* Topo do Modal */}
         <div className="flex justify-between items-center p-5 border-b border-border/30">
-          <h2 className="text-xl font-bold text-white tracking-tight">Finalizar Venda</h2>
+          <h2 className="text-xl font-bold text-foreground tracking-tight">Finalizar Venda</h2>
           <button onClick={onClose} className="text-muted hover:text-danger transition-colors p-1 rounded-full bg-surface-raised">
             <X size={20} />
           </button>
@@ -141,7 +141,7 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
                     <CheckCircle2 size={18} className="text-primary-bright" />
                     <span className="font-bold tracking-tight">{selectedCustomer.name}</span>
                   </div>
-                  <button onClick={() => setSelectedCustomer(null)} className="p-1 hover:text-white transition-colors bg-primary/20 rounded-full">
+                  <button onClick={() => setSelectedCustomer(null)} className="p-1 hover:text-foreground transition-colors bg-primary/20 rounded-full">
                      <X size={16} />
                   </button>
                 </div>
@@ -152,7 +152,7 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
                    type="text"
                    value={customerSearch}
                    onChange={(e) => setCustomerSearch(e.target.value)}
-                   className="w-full bg-surface border border-border/30 rounded-xl py-3 pl-10 pr-3 focus:border-primary outline-none text-white transition-all font-medium placeholder:text-muted/50"
+                   className="w-full bg-surface border border-border/30 rounded-xl py-3 pl-10 pr-3 focus:border-primary outline-none text-foreground transition-all font-medium placeholder:text-muted/50"
                    placeholder="Buscar Maria, João..."
                  />
                  
@@ -166,7 +166,7 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
                              setSelectedCustomer(customer);
                              setCustomerSearch('');
                            }}
-                           className="text-left px-4 py-3 border-b border-border/20 text-white font-medium hover:bg-primary/10 hover:text-primary-bright transition-colors flex flex-col"
+                           className="text-left px-4 py-3 border-b border-border/20 text-foreground font-medium hover:bg-primary/10 hover:text-primary-bright transition-colors flex flex-col"
                          >
                            {customer.name}
                            {customer.phone && <span className="text-muted text-xs px-1">{customer.phone}</span>}
@@ -211,14 +211,14 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
                     type="number"
                     value={amountReceivedInput}
                     onChange={(e) => setAmountReceivedInput(e.target.value)}
-                    className="w-full bg-surface-raised border border-border/50 rounded-xl py-3 pl-10 pr-3 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-white transition-all font-medium"
+                    className="w-full bg-surface-raised border border-border/50 rounded-xl py-3 pl-10 pr-3 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-foreground transition-all font-medium"
                     placeholder="0,00"
                   />
                 </div>
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-muted text-xs font-bold uppercase tracking-widest pl-1">Troco</label>
-                <div className="w-full bg-surface border border-border/30 rounded-xl py-3 px-4 text-white font-medium opacity-80">
+                <div className="w-full bg-surface border border-border/30 rounded-xl py-3 px-4 text-foreground font-medium opacity-80">
                   {formatCurrency(change)}
                 </div>
               </div>
@@ -230,14 +230,14 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
              <span className="text-muted text-xs font-bold uppercase tracking-widest mb-1">Itens do Pedido</span>
             {items.map((item) => (
               <div key={item.id} className="flex justify-between items-center bg-surface p-2 rounded-xl border border-border/20 shadow-sm">
-                <span className="text-white font-medium text-sm line-clamp-1 flex-1 px-2">{item.name}</span>
+                <span className="text-foreground font-medium text-sm line-clamp-1 flex-1 px-2">{item.name}</span>
                 
                 <div className="flex items-center gap-2">
                    <div className="flex items-center bg-surface-raised rounded-lg border border-border/40 shadow-inner overflow-hidden">
                      <button type="button" onClick={() => updateQuantity(item.id!, item.quantity - 1)} className="min-w-11 min-h-11 flex items-center justify-center text-danger hover:bg-danger/10 active:opacity-50 transition-colors">
                        <Minus size={14} strokeWidth={3} />
                      </button>
-                     <span className="text-white font-black w-6 text-center text-sm">{item.quantity}</span>
+                     <span className="text-foreground font-black w-6 text-center text-sm">{item.quantity}</span>
                      <button type="button" onClick={() => updateQuantity(item.id!, item.quantity + 1)} className="min-w-11 min-h-11 flex items-center justify-center text-primary-bright hover:bg-primary-bright/10 active:opacity-50 transition-colors border-l border-border/40">
                        <Plus size={14} strokeWidth={3} />
                      </button>

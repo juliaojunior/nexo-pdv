@@ -95,7 +95,7 @@ export function CategoryManager() {
 
   return (
     <div className="bg-surface rounded-2xl border border-border/30 p-4 shadow-sm">
-      <h3 className="font-black text-lg text-white mb-4 tracking-tight">Gerenciar Categorias</h3>
+      <h3 className="font-black text-lg text-foreground mb-4 tracking-tight">Gerenciar Categorias</h3>
       
       {/* Bloco Rápido de Inserção */}
       <form onSubmit={handleAddCategory} className="flex gap-2 mb-6">
@@ -104,7 +104,7 @@ export function CategoryManager() {
           value={newCategoryName}
           onChange={(e) => setNewCategoryName(e.target.value)}
           placeholder="Ex: Bebidas"
-          className="flex-1 bg-surface-raised rounded-xl px-4 py-3 outline-none text-white border border-border/50 focus:border-primary font-medium placeholder:text-muted/50"
+          className="flex-1 bg-surface-raised rounded-xl px-4 py-3 outline-none text-foreground border border-border/50 focus:border-primary font-medium placeholder:text-muted/50"
         />
         <button 
           type="submit"
@@ -138,7 +138,7 @@ export function CategoryManager() {
                     }}
                     className="flex-1 bg-transparent text-primary font-bold text-sm w-full outline-none border-b-2 border-primary pb-0.5"
                   />
-                  <div className="flex shrink-0 gap-1 ml-1 text-white">
+                  <div className="flex shrink-0 gap-1 ml-1 text-foreground">
                      <button onClick={handleSaveEdit} className="text-primary-bright p-2 bg-primary-deep/50 rounded-lg hover:bg-primary/30">
                        <Check size={16} strokeWidth={3} />
                      </button>
@@ -150,7 +150,7 @@ export function CategoryManager() {
               ) : (
                 // Modo Visualização
                 <>
-                  <span className="font-bold text-white text-sm truncate pr-2 flex-1">{cat.name}</span>
+                  <span className="font-bold text-foreground text-sm truncate pr-2 flex-1">{cat.name}</span>
                   <div className="flex shrink-0 gap-1.5 ml-2">
                     <button 
                       onClick={() => handleStartEdit(cat as any)} 

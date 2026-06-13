@@ -106,10 +106,10 @@ export default function Home() {
                   elements: {
                     userButtonAvatarBox: "w-8 h-8",
                     userButtonPopoverCard: "bg-surface border border-border/50 py-2",
-                    userPreviewMainIdentifier: "text-white font-bold",
+                    userPreviewMainIdentifier: "text-foreground font-bold",
                     userPreviewSecondaryIdentifier: "text-muted",
-                    userButtonPopoverActionButton: "hover:bg-surface-raised text-white",
-                    userButtonPopoverActionButtonText: "text-white",
+                    userButtonPopoverActionButton: "hover:bg-surface-raised text-foreground",
+                    userButtonPopoverActionButtonText: "text-foreground",
                     userButtonPopoverFooter: "hidden"
                   }
                 }} 
@@ -140,7 +140,7 @@ export default function Home() {
         {isLoading ? (
            <div className="flex flex-col items-center justify-center p-8 text-center mt-10 opacity-50">
                <div className="w-10 h-10 border-4 border-border border-t-primary animate-spin rounded-full mb-4"></div>
-               <p className="font-bold text-white text-sm">Carregando produtos...</p>
+               <p className="font-bold text-foreground text-sm">Carregando produtos...</p>
            </div>
         ) : filteredProducts.length > 0 ? (
           <div className="grid grid-cols-2 gap-4 pb-10">
@@ -187,7 +187,7 @@ export default function Home() {
                 </div>
 
                 <div className="px-1 pb-1 z-10">
-                  <h3 className="text-sm font-bold text-white leading-tight h-10 line-clamp-2 mt-1">{product.name}</h3>
+                  <h3 className="text-sm font-bold text-foreground leading-tight h-10 line-clamp-2 mt-1">{product.name}</h3>
                   <div className="flex flex-col mt-0.5 font-black text-lg tracking-tight truncate">
                     {promoActive ? (
                       <div>
@@ -209,7 +209,7 @@ export default function Home() {
              <div className="bg-surface-raised p-4 rounded-full mb-4">
                 <Search size={28} className="text-primary-bright" />
              </div>
-             <p className="font-bold text-white mb-2 text-lg">Nenhum produto ainda</p>
+             <p className="font-bold text-foreground mb-2 text-lg">Nenhum produto ainda</p>
              <p className="text-sm mb-5">Seus produtos aparecerão aqui, prontos para vender.</p>
              <Link href="/products" className="bg-primary text-primary-deep font-bold px-6 py-3 rounded-xl active:scale-95 transition-transform shadow-glow">
                Cadastrar primeiro produto
@@ -229,7 +229,7 @@ export default function Home() {
                 <span className="text-[10px] text-muted uppercase font-bold tracking-widest leading-none mb-1">
                   Carrinho ({cartTotalItems})
                 </span>
-                <span className="text-white font-extrabold text-lg tracking-tight leading-none drop-shadow-sm">
+                <span className="text-foreground font-extrabold text-lg tracking-tight leading-none drop-shadow-sm">
                   {formatCurrency(cartTotalValue)}
                 </span>
               </div>

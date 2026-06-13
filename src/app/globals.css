@@ -5,27 +5,56 @@
 }
 
 @theme {
-  /* Superfícies (do mais profundo ao mais elevado) */
+  /* Tema CLARO é o padrão do app. Valores puxados do Claude Design
+     (Nexo PDV Design System → tokens/theme-light.css). O escuro vive
+     sob .dark (ver abaixo). */
+
+  /* Superfícies (do canvas ao mais elevado) */
+  --color-background: #f5f6f8;
+  --color-surface: #ffffff;
+  --color-surface-raised: #f0f2f5;
+  --color-border: #d3d7dd;
+
+  /* Texto */
+  --color-foreground: #1f2328;
+  --color-muted: #687181;
+
+  /* Marca (cyan). No claro, "bright" fica mais PROFUNDO porque o app o usa
+     como TEXTO (preços, abas ativas, text-primary-bright) sobre branco. */
+  --color-primary: #06b6d4;
+  --color-primary-bright: #0e7490;
+  --color-primary-deep: #00343d;
+
+  /* Feedback (aprofundado para fundos claros) */
+  --color-danger: #e2433d;
+  --color-warning: #c98a00;
+  --color-success: #15a34a;
+
+  /* Sombras padronizadas (frias e suaves no claro) */
+  --shadow-glow: 0 6px 18px rgb(6 182 212 / 0.28);
+  --shadow-overlay: 0 -14px 44px rgb(15 23 42 / 0.16);
+}
+
+/* Tema ESCURO — aplicado quando <html class="dark">. Sobrescreve os
+   mesmos tokens; as utilities (bg-background, text-foreground...) seguem
+   o var() e trocam automaticamente. Valores = :root do design system. */
+.dark {
   --color-background: #121212;
   --color-surface: #1a1a1a;
   --color-surface-raised: #20201f;
   --color-border: #484847;
 
-  /* Texto */
   --color-foreground: #f3f4f6;
   --color-muted: #adaaaa;
 
-  /* Marca */
   --color-primary: #06b6d4;
   --color-primary-bright: #53ddfc;
   --color-primary-deep: #004b58;
 
-  /* Feedback */
   --color-danger: #ff716c;
   --color-warning: #ffcc00;
   --color-success: #22c55e;
 
-  /* Sombras padronizadas */
   --shadow-glow: 0 4px 24px rgb(6 182 212 / 0.25);
   --shadow-overlay: 0 -8px 32px rgb(0 0 0 / 0.5);
 }

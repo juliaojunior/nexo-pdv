@@ -118,7 +118,7 @@ export default function OrdersPage() {
            <div className="w-16 h-16 bg-surface-raised rounded-full flex items-center justify-center mb-4">
              <ShoppingBag size={24} className="text-border" />
            </div>
-           <h3 className="font-black text-white text-lg">Nenhum Pedido</h3>
+           <h3 className="font-black text-foreground text-lg">Nenhum Pedido</h3>
            <p className="text-muted text-sm mt-1">Sua prateleira está limpa. Divulgue seu link para receber novos pedidos.</p>
         </div>
       )}
@@ -129,7 +129,7 @@ export default function OrdersPage() {
                
                <div className="flex justify-between items-start mb-3 border-b border-border/30 pb-3">
                   <div>
-                     <h2 className="font-black text-white text-lg leading-tight uppercase tracking-wide">{order.customer_name}</h2>
+                     <h2 className="font-black text-foreground text-lg leading-tight uppercase tracking-wide">{order.customer_name}</h2>
                      <span className="text-muted text-xs flex items-center gap-1 mt-0.5"><Clock size={12}/> {new Date(order.created_at).toLocaleTimeString('pt-BR')}</span>
                   </div>
                   <span className="bg-primary-deep text-primary-bright px-2 py-1 flex items-center gap-1 rounded font-black text-xs">
@@ -140,7 +140,7 @@ export default function OrdersPage() {
                <div className="flex flex-col gap-2 mb-4">
                   {order.cart_items.map((item, idx) => (
                     <div key={idx} className="flex justify-between text-sm">
-                       <span className="text-white/90 font-medium"><span className="text-primary-bright font-black mr-2">{item.quantity}x</span>{item.name}</span>
+                       <span className="text-foreground/90 font-medium"><span className="text-primary-bright font-black mr-2">{item.quantity}x</span>{item.name}</span>
                        <span className="text-muted">R$ {(item.price * item.quantity).toFixed(2).replace('.', ',')}</span>
                     </div>
                   ))}
@@ -148,7 +148,7 @@ export default function OrdersPage() {
 
                <div className="flex justify-between items-center bg-surface-raised p-3 rounded-xl mb-4 border border-border/30">
                   <span className="text-muted font-bold text-xs uppercase tracking-widest">Total a Receber</span>
-                  <span className="text-white font-black text-xl">R$ {Number(order.total_price).toFixed(2).replace('.', ',')}</span>
+                  <span className="text-foreground font-black text-xl">R$ {Number(order.total_price).toFixed(2).replace('.', ',')}</span>
                </div>
 
                <button 
@@ -164,7 +164,7 @@ export default function OrdersPage() {
       {modalOrder && (
          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex flex-col justify-end">
             <div className="bg-background p-6 rounded-t-3xl border-t border-border/50 max-w-md mx-auto w-full animate-in slide-in-from-bottom-5">
-               <h3 className="text-xl font-black text-white mb-2 flex flex-col">
+               <h3 className="text-xl font-black text-foreground mb-2 flex flex-col">
                  <span>Muralha de Verificação</span>
                  <span className="text-primary text-sm uppercase tracking-widest">{modalOrder.customer_name}</span>
                </h3>
@@ -172,8 +172,8 @@ export default function OrdersPage() {
                <div className="bg-surface p-4 rounded-xl border border-border/50 mb-6 flex items-start gap-4 shadow-inner">
                   <AlertTriangle className="text-danger shrink-0 mt-1" />
                   <p className="text-muted text-sm leading-relaxed">
-                     O cliente declarou que o método de pagamento será <strong className="text-white">{modalOrder.payment_method}</strong>.
-                     Você verificou se o valor de <strong className="text-white">R$ {Number(modalOrder.total_price).toFixed(2).replace('.',',')}</strong> foi recebido ou será recebido em segurança?
+                     O cliente declarou que o método de pagamento será <strong className="text-foreground">{modalOrder.payment_method}</strong>.
+                     Você verificou se o valor de <strong className="text-foreground">R$ {Number(modalOrder.total_price).toFixed(2).replace('.',',')}</strong> foi recebido ou será recebido em segurança?
                   </p>
                </div>
 
