@@ -48,16 +48,58 @@ export interface SaleItem {
   subtotal: number;
 }
 
+// ===== Offline-first (v2) =====
+
+// Payload espelha exatamente o body aceito pelo POST /api/sales
+export interface SalePayloadItem {
+  productId: number;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+}
+
+export interface SalePayload {
+  clientId: string; // UUID gerado no aparelho — chave de idempotência no servidor
+  total: number;
+  paymentMethod: 'Dinheiro' | 'PIX' | 'Crédito' | 'Débito' | 'Fiado';
+  amountReceived?: number;
+  change?: number;
+  customerId?: number;
+  date: string;
+  items: SalePayloadItem[];
+}
+
+// Venda feita sem conexão, aguardando envio ao servidor
+export interface PendingSale {
+  clientId: string;
+  payload: SalePayload;
+  customerName?: string;
+  createdAt: string;
+  attempts: number;
+  lastError?: string;
+  status: 'pending' | 'failed'; // failed = rejeitada pelo servidor, exige revisão
+}
+
+// Última resposta boa de um GET de API, para servir leituras offline
+export interface ApiCacheEntry {
+  url: string;
+  data: unknown;
+  updatedAt: number;
+}
+
 export class NexoPDVDexie extends Dexie {
   categories!: Table<Category, number>;
   products!: Table<Product, number>;
   customers!: Table<Customer, number>;
   sales!: Table<Sale, number>;
   saleItems!: Table<SaleItem, number>;
+  pendingSales!: Table<PendingSale, string>;
+  apiCache!: Table<ApiCacheEntry, string>;
 
   constructor() {
     super('NexoPDVDatabase');
-    
+
     // Define the schema and primary keys/indexes for the database
     this.version(1).stores({
       categories: '++id, name',
@@ -65,6 +107,12 @@ export class NexoPDVDexie extends Dexie {
       customers: '++id, name, document',
       sales: '++id, date, customerId',
       saleItems: '++id, saleId, productId'
+    });
+
+    // v2: fila de vendas offline + cache de leituras da API
+    this.version(2).stores({
+      pendingSales: 'clientId, createdAt, status',
+      apiCache: 'url'
     });
   }
 

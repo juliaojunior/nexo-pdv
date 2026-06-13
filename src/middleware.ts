@@ -24,7 +24,10 @@ export default clerkMiddleware(async (auth, request) => {
 export const config = {
   matcher: [
     // Skip Next.js internals and all static files, unless found in search params
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // json e mp3 incluídos: manifest.json (instalação do PWA por visitantes) e
+    // sons de /public precisam ser servidos sem sessão. /api/* segue protegido
+    // pela entrada de matcher abaixo.
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|json|mp3|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
     // Always run for API routes
     '/(api|trpc)(.*)',
   ],

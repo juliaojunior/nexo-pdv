@@ -1,0 +1,27 @@
+<!-- @dsCard group="Componentes" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin:0; background:#121212; font-family:Inter,system-ui,sans-serif; color:#f3f4f6; padding:24px; display:flex; flex-direction:column; gap:14px; }
+  .row { display:flex; align-items:center; gap:12px; }
+  .spec { color:#adaaaa; font-size:10px; }
+  .b { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; padding:2px 8px; border-radius:4px; }
+  .promo { background:#ff716c; color:#fff; }
+  .fiado { background:#ffcc00; color:#1a1a1a; }
+  .stock-ok { background:rgba(18,18,18,.8); color:#adaaaa; border:1px solid rgba(72,72,71,.4); }
+  .stock-low { background:rgba(255,113,108,.9); color:#fff; }
+  .pill { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; padding:4px 10px; border-radius:9999px; }
+  .offline { background:#20201f; color:#adaaaa; border:1px solid rgba(72,72,71,.5); }
+  .pending { background:rgba(6,182,212,.15); color:#53ddfc; border:1px solid rgba(6,182,212,.4); }
+  .failed { background:rgba(255,113,108,.15); color:#ff716c; border:1px solid rgba(255,113,108,.4); }
+</style>
+</head>
+<body>
+  <div class="row"><span class="b promo">Promo</span><span class="spec">produto em promoção (sobre a foto)</span></div>
+  <div class="row"><span class="b fiado">Fiado</span><span class="spec">venda a prazo no histórico</span></div>
+  <div class="row"><span class="b stock-ok">23 em est.</span><span class="b stock-low">3 em est.</span><span class="spec">estoque normal / baixo (≤5)</span></div>
+  <div class="row"><span class="pill offline">⊘ Offline · 2</span><span class="pill pending">↑ 2</span><span class="pill failed">⚠ 1</span><span class="spec">chip de status: sem rede / vendas a sincronizar / rejeitadas</span></div>
+</body>
+</html>

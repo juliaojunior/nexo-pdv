@@ -19,7 +19,7 @@ export function BottomNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 w-full z-50 pb-safe bg-[#1a1a1a]/95 backdrop-blur-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.5)] border-t border-[#484847]/40">
+    <nav className="fixed bottom-0 w-full z-50 pb-safe bg-surface/95 backdrop-blur-2xl shadow-overlay border-t border-border/40">
       <div className="flex justify-around items-center h-20 px-1 w-full max-w-md mx-auto">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
@@ -31,12 +31,12 @@ export function BottomNav() {
               href={item.href}
               className={`flex flex-col items-center justify-center px-1.5 sm:px-2 py-1.5 transition-all active:scale-90 ${
                 isActive
-                  ? "text-[#53ddfc] bg-[#004b58]/30 rounded-xl"
-                  : "text-[#adaaaa] hover:text-[#53ddfc]"
+                  ? "text-primary-bright bg-primary-deep/30 rounded-xl"
+                  : "text-muted hover:text-primary-bright"
               }`}
             >
               <Icon size={22} className={isActive ? "fill-current" : ""} />
-              <span className="font-['Inter'] text-[10px] uppercase tracking-widest font-bold mt-1">
+              <span className="font-['Inter'] text-[11px] uppercase tracking-wide font-bold mt-1">
                 {item.label}
               </span>
             </Link>
