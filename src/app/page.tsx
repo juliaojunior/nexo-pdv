@@ -31,7 +31,7 @@ export default function Home() {
   }, []);
 
   // Modo de exibição dos produtos (grade ou lista) com preferência salva
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   useEffect(() => {
     const saved = localStorage.getItem("nexo_viewMode");
     if (saved === 'grid' || saved === 'list') setViewMode(saved);
