@@ -132,9 +132,14 @@ export default function OrdersPage() {
                      <h2 className="font-black text-foreground text-lg leading-tight uppercase tracking-wide">{order.customer_name}</h2>
                      <span className="text-muted text-xs flex items-center gap-1 mt-0.5"><Clock size={12}/> {new Date(order.created_at).toLocaleTimeString('pt-BR')}</span>
                   </div>
-                  <span className="bg-primary-deep text-primary-bright px-2 py-1 flex items-center gap-1 rounded font-black text-xs">
-                     {order.payment_method}
-                  </span>
+                  <div className="flex flex-col items-end gap-1.5">
+                     <span className="bg-warning/15 text-warning border border-warning/30 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
+                       <span className="w-1.5 h-1.5 rounded-full bg-warning animate-pulse" /> Pendente
+                     </span>
+                     <span className="bg-primary/10 text-primary-bright border border-primary/20 px-2 py-1 flex items-center gap-1 rounded font-black text-xs">
+                       {order.payment_method}
+                     </span>
+                  </div>
                </div>
 
                <div className="flex flex-col gap-2 mb-4">
@@ -153,7 +158,7 @@ export default function OrdersPage() {
 
                <button 
                  onClick={() => setModalOrder(order)}
-                 className="w-full bg-primary text-background py-3.5 rounded-xl font-black uppercase tracking-widest active:scale-[0.98] transition-transform shadow-glow hover:bg-primary-bright"
+                 className="w-full bg-primary text-primary-deep py-3.5 rounded-xl font-black uppercase tracking-widest active:scale-[0.98] transition-transform shadow-glow hover:bg-primary-bright"
                >
                  Avaliar Pedido
                </button>
@@ -181,7 +186,7 @@ export default function OrdersPage() {
                  <button 
                     disabled={processingId === modalOrder.id}
                     onClick={() => handleAction(modalOrder, 'ACEITAR')}
-                    className="w-full bg-primary text-background py-4 rounded-xl flex items-center justify-center gap-2 font-black uppercase tracking-widest disabled:opacity-50"
+                    className="w-full bg-primary text-primary-deep py-4 rounded-xl flex items-center justify-center gap-2 font-black uppercase tracking-widest disabled:opacity-50"
                  >
                     {processingId === modalOrder.id ? "Processando e Retirando do Estoque..." : <><CheckCircle /> Sim, Confirmar Pagamento</>}
                  </button>

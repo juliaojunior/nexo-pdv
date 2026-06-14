@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Settings, Users, PackageMinus, LogOut, ChevronRight, Share2, Compass, QrCode, FileText } from "lucide-react";
+import { Settings, Users, PackageMinus, LogOut, Share2, Compass, QrCode, FileText } from "lucide-react";
 import Link from "next/link";
 import { SignOutButton, useAuth } from "@clerk/nextjs";
 import { toast } from "sonner";
@@ -56,7 +56,7 @@ export default function MorePage() {
         <p className="text-muted text-sm mt-1">Recursos adicionais e gerência da loja</p>
       </header>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
 
         {/* CÉLULA ESPECIAL DE COMPARTILHAMENTO DE CARDÁPIO */}
         <button 
@@ -82,39 +82,28 @@ export default function MorePage() {
         </button>
 
 
-        {menuItems.map((item, i) => {
-          const Icon = item.icon;
-          const content = (
-            <>
-              <div className="flex items-center gap-4">
-                <div className="bg-surface-raised p-3 rounded-xl border border-border/20 group-hover:bg-primary-deep/30 transition-colors">
-                  <Icon size={24} className="text-primary-bright" />
+        <div className="grid grid-cols-2 gap-3">
+          {menuItems.map((item, i) => {
+            const Icon = item.icon;
+            const tile = "bg-surface rounded-2xl shadow-card p-4 flex flex-col gap-3 min-h-[124px] active:scale-[0.97] transition-transform group";
+            const inner = (
+              <>
+                <div className="bg-surface-raised w-11 h-11 rounded-xl flex items-center justify-center group-hover:bg-primary-deep/30 transition-colors">
+                  <Icon size={22} className="text-primary-bright" />
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-bold text-foreground text-lg tracking-tight">{item.label}</span>
-                  <span className="text-muted text-xs font-medium">{item.description}</span>
+                <div className="mt-auto">
+                  <span className="font-bold text-foreground text-base tracking-tight block leading-tight">{item.label}</span>
+                  <span className="text-muted text-[11px] font-medium leading-snug block mt-0.5">{item.description}</span>
                 </div>
-              </div>
-              <ChevronRight size={20} className="text-muted group-hover:text-primary-bright transition-colors" />
-            </>
-          );
-
-          const classNameStr = "bg-surface p-4 rounded-2xl flex items-center justify-between shadow-card active:scale-[0.98] transition-all w-full text-left group";
-          
-          if (item.href) {
-            return (
-              <Link key={i} href={item.href} className={classNameStr}>
-                {content}
-              </Link>
-            )
-          }
-
-          return (
-            <button key={i} className={classNameStr}>
-              {content}
-            </button>
-          )
-        })}
+              </>
+            );
+            return item.href ? (
+              <Link key={i} href={item.href} className={tile}>{inner}</Link>
+            ) : (
+              <button key={i} className={`${tile} text-left`}>{inner}</button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Danger Zone */}
