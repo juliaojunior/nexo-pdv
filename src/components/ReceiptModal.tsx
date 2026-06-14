@@ -45,7 +45,7 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
     try {
       // Usando html-to-image que é muito mais robusto em Mobile DOM e SVGs
       const blob = await toBlob(receiptRef.current, { 
-         backgroundColor: "#1e1e1c",
+         backgroundColor: "#ffffff",
          pixelRatio: 3, 
       });
       
@@ -91,6 +91,25 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
     }
   };
 
+  const handleDownload = async () => {
+    if (!receiptRef.current) return;
+    setIsGenerating(true);
+    try {
+      const blob = await toBlob(receiptRef.current, { backgroundColor: "#ffffff", pixelRatio: 3 });
+      if (!blob) throw new Error("Falha ao gerar a imagem.");
+      const link = document.createElement('a');
+      link.download = `Nexo_Recibo_${new Date().getTime()}.png`;
+      link.href = URL.createObjectURL(blob);
+      link.click();
+      toast.success("Recibo salvo como imagem!");
+    } catch (e: any) {
+      toast.error(e?.message || "Erro ao salvar o recibo.");
+      console.error(e);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[200] bg-black/95 flex flex-col items-center p-4 sm:p-8 overflow-y-auto backdrop-blur-xl animate-in fade-in zoom-in-95 duration-300">
       
@@ -105,7 +124,7 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
         {/* THE ACTUAL RECEIPT TO BE CAPTURED (Canvas Target) */}
         <div 
           ref={receiptRef} 
-          className="dark bg-surface w-full max-w-[340px] rounded-t-lg border-t-8 border-primary shadow-xl flex flex-col items-center text-center pb-8 pt-8 px-6 relative overflow-hidden shrink-0"
+          className="bg-surface w-full max-w-[340px] rounded-t-lg border-t-8 border-primary shadow-xl flex flex-col items-center text-center pb-8 pt-8 px-6 relative overflow-hidden shrink-0"
           style={{ fontFamily: "'Inter', sans-serif" }} // Force font for canvas
         >
            {/* Subtle watermark or pattern could go here */}
@@ -113,7 +132,7 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
            <div className="flex flex-col items-center mb-6 w-full border-b border-dashed border-border/70 pb-6">
               <h1 className="text-foreground font-black text-2xl uppercase tracking-tighter leading-tight mb-1 break-words max-w-full px-2">{storeName}</h1>
               {storeDoc && <p className="text-muted text-[10px] uppercase tracking-widest font-bold">Doc: {storeDoc}</p>}
-              <p className="text-border text-[10px] mt-2 font-bold">{new Date(receiptData.date).toLocaleString('pt-BR')}</p>
+              <p className="text-muted text-[10px] mt-2 font-bold">{new Date(receiptData.date).toLocaleString('pt-BR')}</p>
               {receiptData.customerName && (
                 <p className="text-primary bg-primary/10 border border-primary/30 px-2 py-0.5 rounded text-[10px] uppercase mt-2 font-bold tracking-widest">
                   Cli: {receiptData.customerName}
@@ -129,7 +148,7 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
               
               {receiptData.items.map((item, idx) => (
                  <div key={idx} className="flex justify-between items-start text-sm font-semibold w-full gap-2">
-                    <span className="text-gray-300 break-words text-left leading-tight">
+                    <span className="text-gray-700 break-words text-left leading-tight">
                        {item.quantity}x {item.productName}
                     </span>
                     <span className="text-foreground shrink-0 pt-0.5">{formatCurrency(item.subtotal)}</span>
@@ -144,7 +163,7 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
               </div>
               <div className="flex justify-between items-center mt-2">
                  <span className="text-muted text-[10px] font-bold uppercase tracking-widest">Meio</span>
-                 <span className={`${receiptData.paymentMethod === 'Fiado' ? 'text-surface bg-danger' : 'text-foreground bg-surface'} text-[10px] font-bold px-2 py-0.5 uppercase tracking-widest rounded`}>
+                 <span className={`${receiptData.paymentMethod === 'Fiado' ? 'text-surface bg-danger' : 'text-foreground bg-surface-raised'} text-[10px] font-bold px-2 py-0.5 uppercase tracking-widest rounded`}>
                    {receiptData.paymentMethod}
                  </span>
               </div>
@@ -165,11 +184,11 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
 
            <div className="mt-8 pt-4 border-t border-dashed border-border/50 w-full flex flex-col items-center">
               <span className="text-muted text-[10px] font-bold uppercase tracking-widest text-center">Nexo PDV Digital</span>
-              <span className="text-border text-[10px] mt-1">Obrigado pela preferência!</span>
+              <span className="text-muted text-[10px] mt-1">Obrigado pela preferência!</span>
            </div>
            
            {/* Zigzag bottom styling */}
-           <div className="absolute bottom-0 left-0 w-full h-3" style={{ backgroundImage: 'linear-gradient(135deg, transparent 50%, #1e1e1c 50%), linear-gradient(225deg, transparent 50%, #1e1e1c 50%)', backgroundSize: '10px 10px' }}></div>
+           <div className="absolute bottom-0 left-0 w-full h-3" style={{ backgroundImage: 'linear-gradient(135deg, transparent 50%, #ffffff 50%), linear-gradient(225deg, transparent 50%, #ffffff 50%)', backgroundSize: '10px 10px' }}></div>
         </div>
 
         {/* ONSCREEN BUTTONS (Not captured by html2canvas because they are outside ref) */}
@@ -183,7 +202,15 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
              {isGenerating ? 'Preparando...' : 'Enviar Recibo'}
            </button>
            
-           <button 
+           <button
+             onClick={handleDownload}
+             disabled={isGenerating}
+             className="w-full h-12 bg-white/10 border border-white/30 hover:bg-white/20 text-white font-bold rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
+           >
+             <Download size={18} /> Baixar imagem
+           </button>
+
+           <button
              onClick={onClose}
              disabled={isGenerating}
              className="w-full h-12 bg-transparent border border-white/30 hover:bg-white/10 text-white font-bold rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-50"
