@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import { UserButton } from "@clerk/nextjs";
@@ -9,7 +9,7 @@ import { formatCurrency, isPromotionActive, getEffectivePrice } from "@/lib/util
 import { CheckoutModal } from "@/components/CheckoutModal";
 import { ReceiptModal, ReceiptData } from "@/components/ReceiptModal";
 import { BarcodeScannerModal } from "@/components/BarcodeScannerModal";
-import { Plus, Camera, Search, RefreshCw } from "lucide-react";
+import { Plus, Camera, Search, RefreshCw, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { OfflineBadge } from "@/components/OfflineBadge";
 
@@ -39,7 +39,23 @@ export default function Home() {
   const { data: rawDbProducts, isLoading, mutate: mutateProducts } = useSWR("/api/products", fetcher, { revalidateOnFocus: true });
 
   const categories = rawCategories || [];
-  
+
+  // Resumo de vendas de hoje (estilo Kyte) — lido do cache offline
+  const { data: rawSales } = useSWR("/api/sales", fetcher);
+  const todayMetrics = useMemo(() => {
+    const sales = rawSales || [];
+    const now = new Date();
+    let total = 0, count = 0;
+    for (const s of sales) {
+      const d = new Date(s.date);
+      if (d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) {
+        total += Number(s.total || 0);
+        count += 1;
+      }
+    }
+    return { total, count };
+  }, [rawSales]);
+
   // Mapeamento idêntico ao do catálogo
   const products = (rawDbProducts || []).map((p: any) => ({
     id: p.id,
@@ -137,6 +153,20 @@ export default function Home() {
 
       {/* Main Content: Dynamic Product Grid */}
       <main className="pt-32 pb-24 px-4 overflow-y-auto relative flex-1 max-w-md mx-auto w-full">
+        {/* Resumo de vendas do dia */}
+        <Link href="/reports" className="block mb-4">
+          <div className="bg-surface rounded-2xl shadow-card px-5 py-4 flex items-center justify-between active:scale-[0.98] transition-transform">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted mb-1">Vendas de hoje</span>
+              <span className="text-primary font-black text-2xl tracking-tight leading-none">{formatCurrency(todayMetrics.total)}</span>
+              <span className="text-muted text-xs font-semibold mt-1.5">
+                {todayMetrics.count === 1 ? "1 venda concluída" : `${todayMetrics.count} vendas concluídas`}
+              </span>
+            </div>
+            <ChevronRight size={20} className="text-muted shrink-0" />
+          </div>
+        </Link>
+
         {isLoading ? (
            <div className="flex flex-col items-center justify-center p-8 text-center mt-10 opacity-50">
                <div className="w-10 h-10 border-4 border-border border-t-primary animate-spin rounded-full mb-4"></div>
