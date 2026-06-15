@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Search, ShoppingBag, Plus, Minus, Store, ChevronRight, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, ShoppingBag, Plus, Minus, Store, ChevronRight, X, LayoutGrid, List, Tag } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 
@@ -43,6 +43,25 @@ export default function CatalogClient({
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  // Modo de exibição (grade ou lista) — espelha a tela do vendedor, preferência salva no aparelho do cliente
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  useEffect(() => {
+    const saved = localStorage.getItem("nexo_catalogView");
+    if (saved === 'grid' || saved === 'list') setViewMode(saved);
+  }, []);
+  const changeView = (mode: 'grid' | 'list') => {
+    setViewMode(mode);
+    localStorage.setItem("nexo_catalogView", mode);
+  };
+
+  // Nome da categoria e selo de disponibilidade para a tela de detalhe
+  const categoryName = (id?: number) => categories.find(c => c.local_id === id)?.name;
+  const stockBadge = (stock: number) => {
+    if (stock <= 0) return { text: "Esgotado", cls: "bg-surface-raised text-muted" };
+    if (stock <= 5) return { text: `Últimas ${stock} un.`, cls: "bg-danger/10 text-danger" };
+    return { text: "Em estoque", cls: "bg-primary/10 text-primary" };
+  };
 
   // Filtro
   const displayedProducts = products.filter(p => {
@@ -195,11 +214,60 @@ export default function CatalogClient({
            ))}
          </div>
 
-         {/* GRID DE PRODUTOS */}
-         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+         {/* ALTERNÂNCIA GRADE / LISTA */}
+         {displayedProducts.length > 0 && (
+           <div className="flex justify-end mb-4">
+             <div className="inline-flex bg-surface-raised rounded-lg p-0.5 border border-border/40">
+               <button onClick={() => changeView('grid')} aria-label="Ver em grade" className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-surface text-primary shadow-sm' : 'text-muted'}`}><LayoutGrid size={16} /></button>
+               <button onClick={() => changeView('list')} aria-label="Ver em lista" className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-surface text-primary shadow-sm' : 'text-muted'}`}><List size={16} /></button>
+             </div>
+           </div>
+         )}
+
+         {/* PRODUTOS */}
+         <div className={viewMode === 'grid' ? "grid grid-cols-2 md:grid-cols-3 gap-4" : "flex flex-col gap-2.5"}>
            {displayedProducts.map(product => {
               const inCartItem = cart.find(i => i.local_id === product.local_id);
               const isEsgotado = product.stock <= 0;
+              const hasPromo = calcActivePrice(product) < Number(product.price);
+
+              if (viewMode === 'list') {
+                return (
+                  <div key={product.local_id} onClick={() => setSelectedProduct(product)} className={`bg-surface border border-border/30 rounded-2xl p-2.5 flex items-center gap-3 relative overflow-hidden transition-all hover:border-primary-bright/30 cursor-pointer ${isEsgotado ? 'opacity-60' : ''}`}>
+                    <div className="w-16 h-16 bg-surface-raised rounded-xl flex items-center justify-center overflow-hidden border border-border/20 shrink-0 relative">
+                      {product.imageurl ? (
+                        <img src={product.imageurl} alt={product.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <ShoppingBag size={20} className="text-muted" />
+                      )}
+                      {hasPromo && <div className="absolute top-0.5 left-0.5 bg-primary-bright text-primary-deep px-1 rounded text-[8px] font-bold uppercase tracking-wider">Promo</div>}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <span className="text-foreground font-bold text-sm leading-tight line-clamp-1 block">{product.name}</span>
+                      <div className="flex items-baseline gap-2 mt-0.5 font-black tracking-tight">
+                        <span className="text-primary-bright text-base">R$ {calcActivePrice(product).toFixed(2).replace('.', ',')}</span>
+                        {hasPromo && <span className="text-[11px] text-danger line-through font-medium">R$ {Number(product.price).toFixed(2).replace('.', ',')}</span>}
+                      </div>
+                      <span className={`text-[10px] font-bold ${isEsgotado ? 'text-danger' : 'text-muted'}`}>{isEsgotado ? 'Esgotado' : `${product.stock} em estoque`}</span>
+                    </div>
+
+                    {!isEsgotado && (
+                      inCartItem ? (
+                        <div className="flex items-center gap-2 bg-surface-raised rounded-full p-1 border border-border/30 shrink-0" onClick={e => e.stopPropagation()}>
+                          <button onClick={() => handleUpdateQty(product.local_id, -1)} className="w-7 h-7 rounded-full bg-background text-foreground flex items-center justify-center active:scale-95"><Minus size={13} /></button>
+                          <span className="text-foreground font-black w-4 text-center text-sm">{inCartItem.quantity}</span>
+                          <button disabled={inCartItem.quantity >= product.stock} onClick={() => handleUpdateQty(product.local_id, 1)} className="w-7 h-7 rounded-full bg-primary text-background flex items-center justify-center active:scale-95 disabled:opacity-50"><Plus size={13} strokeWidth={3} /></button>
+                        </div>
+                      ) : (
+                        <button onClick={e => { e.stopPropagation(); handleAddToCart(product); }} className="w-11 h-11 rounded-full bg-primary text-background flex items-center justify-center shrink-0 active:scale-90 transition-transform shadow-glow" aria-label={`Adicionar ${product.name} à sacola`}>
+                          <Plus size={20} strokeWidth={2.5} />
+                        </button>
+                      )
+                    )}
+                  </div>
+                );
+              }
 
               return (
                 <div key={product.local_id} onClick={() => setSelectedProduct(product)} className="bg-surface border border-border/30 rounded-2xl p-4 flex flex-col relative overflow-hidden transition-all hover:border-primary-bright/30 cursor-pointer">
@@ -224,7 +292,7 @@ export default function CatalogClient({
                   <div className="flex flex-col mt-auto">
                     <span className="text-foreground font-bold leading-tight mb-1 line-clamp-2">{product.name}</span>
                     <span className="text-primary-bright font-black text-lg">
-                      {calcActivePrice(product) < Number(product.price) ? (
+                      {hasPromo ? (
                          <div className="flex flex-col mt-1">
                            <span className="text-[11px] text-danger line-through font-normal leading-none" style={{marginBottom: '-2px'}}>R$ {Number(product.price).toFixed(2).replace('.', ',')}</span>
                            <span className="flex items-center gap-1.5 align-middle leading-none mt-1">R$ {calcActivePrice(product).toFixed(2).replace('.', ',')} <span className="text-[10px] bg-primary-bright text-primary-deep px-1.5 py-0.5 rounded font-bold tracking-widest uppercase">Promo</span></span>
@@ -265,38 +333,53 @@ export default function CatalogClient({
         <div className="fixed inset-0 z-[60] flex flex-col justify-end bg-black/80 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setSelectedProduct(null)}>
            <div className="bg-background rounded-t-3xl flex flex-col border-t border-border/30 shadow-overlay animate-in slide-in-from-bottom-full duration-300 max-w-3xl mx-auto w-full relative overflow-hidden" onClick={e => e.stopPropagation()}>
              
-             {/* Thumbnail gigante do produto */}
-             <div className="relative w-full h-[35vh] bg-surface-raised flex items-center justify-center shrink-0">
-               <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-background/80 text-muted flex items-center justify-center hover:text-foreground active:scale-95 z-10"><X size={20} /></button>
+             {/* Foto do produto (proporcional) */}
+             <div className="relative w-full aspect-[4/3] max-h-[42vh] bg-surface-raised flex items-center justify-center shrink-0 overflow-hidden">
+               <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm text-muted flex items-center justify-center hover:text-foreground active:scale-95 z-10 shadow-sm"><X size={20} /></button>
                {selectedProduct.imageurl ? (
                   <img src={selectedProduct.imageurl} alt={selectedProduct.name} className="w-full h-full object-cover" />
                ) : (
-                  <ShoppingBag size={64} className="text-surface-raised" />
+                  <div className="flex flex-col items-center gap-2 text-muted">
+                    <ShoppingBag size={48} strokeWidth={1.5} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Sem foto</span>
+                  </div>
+               )}
+               {calcActivePrice(selectedProduct) < Number(selectedProduct.price) && (
+                 <div className="absolute top-4 left-4 bg-primary-bright text-primary-deep px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest shadow-glow z-10">Promoção</div>
                )}
              </div>
 
-             <div className="p-6 flex flex-col gap-3 overflow-y-auto max-h-[45vh] hide-scrollbar border-t border-border/30">
-               <div className="flex justify-between items-start gap-4">
-                 <h2 className="text-foreground font-black text-2xl tracking-tight leading-tight">{selectedProduct.name}</h2>
-                 <div className="bg-surface-raised text-foreground px-2.5 py-1.5 rounded-lg flex flex-col items-center justify-center border border-border/10 shrink-0 min-w-[50px]">
-                   <span className="font-black text-sm leading-none">{selectedProduct.stock}</span>
-                   <span className="text-muted text-[10px] font-bold uppercase tracking-widest leading-none mt-1">est.</span>
-                 </div>
+             <div className="p-6 flex flex-col gap-4 overflow-y-auto max-h-[45vh] hide-scrollbar border-t border-border/30">
+               {/* Categoria + disponibilidade */}
+               <div className="flex items-center gap-2 flex-wrap">
+                 {categoryName(selectedProduct.categoryid) && (
+                   <span className="inline-flex items-center gap-1.5 bg-surface-raised text-muted px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-widest border border-border/20">
+                     <Tag size={12} /> {categoryName(selectedProduct.categoryid)}
+                   </span>
+                 )}
+                 <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-widest ${stockBadge(selectedProduct.stock).cls}`}>
+                   {stockBadge(selectedProduct.stock).text}
+                 </span>
                </div>
-               
-               <div className="flex items-end gap-2 mt-[-4px]">
+
+               <h2 className="text-foreground font-black text-2xl tracking-tight leading-tight">{selectedProduct.name}</h2>
+
+               <div className="flex items-end gap-2 mt-[-6px]">
                  <span className="text-primary-bright font-black text-3xl">R$ {calcActivePrice(selectedProduct).toFixed(2).replace('.', ',')}</span>
                  {calcActivePrice(selectedProduct) < Number(selectedProduct.price) && (
                    <span className="text-sm text-danger line-through font-normal mb-1 pb-0.5">R$ {Number(selectedProduct.price).toFixed(2).replace('.', ',')}</span>
                  )}
                </div>
 
-               {selectedProduct.description && (
-                 <div className="mt-2 pt-4 border-t border-border/30">
-                   <span className="text-muted text-[10px] font-bold uppercase tracking-widest mb-2 block">Destaques e Detalhes</span>
+               {/* Detalhes do produto (descrição preenchida no cadastro) */}
+               <div className="mt-2 pt-4 border-t border-border/30">
+                 <span className="text-muted text-[10px] font-bold uppercase tracking-widest mb-2 block">Sobre o produto</span>
+                 {selectedProduct.description ? (
                    <p className="text-foreground/80 text-sm leading-relaxed whitespace-pre-wrap">{selectedProduct.description}</p>
-                 </div>
-               )}
+                 ) : (
+                   <p className="text-muted text-sm leading-relaxed italic">O vendedor ainda não adicionou uma descrição para este produto. Fale com a loja para mais detalhes.</p>
+                 )}
+               </div>
              </div>
 
              <div className="p-6 bg-surface border-t border-border/50 pb-8 mt-auto shrink-0 z-20 shadow-overlay">
