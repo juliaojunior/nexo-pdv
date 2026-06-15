@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react";
 import useSWR from "swr";
 import { useAuth } from "@clerk/nextjs";
-import { ChevronLeft, Store, Tags, Smartphone, Volume2, Trash2, Edit3, Plus, ArrowLeft, X, Link as LinkIcon, Copy } from "lucide-react";
+import { ChevronLeft, Store, Tags, Smartphone, Volume2, Trash2, Edit3, Plus, ArrowLeft, X, Link as LinkIcon, Copy, BellRing } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { requireOnline } from "@/lib/offline/onlineGuard";
+import { requestNotificationPermission } from "@/lib/notifications";
+import { ORDER_ALERTS_EVENT } from "@/components/OrderAlerts";
 
 interface Category {
   id: number;
@@ -26,6 +28,7 @@ export default function SettingsPage() {
 
   const [receiptAutoShow, setReceiptAutoShow] = useState(true);
   const [checkoutSounds, setCheckoutSounds] = useState(true);
+  const [orderAlerts, setOrderAlerts] = useState(true);
 
   // Cloud SWR Initialization
   const { data: cloudSettings, mutate: mutateSettings } = useSWR("/api/settings", fetcher, { revalidateOnFocus: false });
@@ -37,6 +40,7 @@ export default function SettingsPage() {
       if (cloudSettings.nexo_storePhone) setStorePhone(cloudSettings.nexo_storePhone);
       if (cloudSettings.nexo_receiptAutoShow) setReceiptAutoShow(cloudSettings.nexo_receiptAutoShow !== "false");
       if (cloudSettings.nexo_checkoutSounds) setCheckoutSounds(cloudSettings.nexo_checkoutSounds !== "false");
+      if (cloudSettings.nexo_orderAlerts) setOrderAlerts(cloudSettings.nexo_orderAlerts !== "false");
     }
   }, [cloudSettings]);
 
@@ -64,16 +68,30 @@ export default function SettingsPage() {
     // Removemos os LocalStorage e passaremos a disparar o sync usando onBlur lá no HTML!
   };
 
-  const handlePrefUpdate = (field: 'receipt' | 'sound', val: boolean) => {
-    if (field === 'receipt') { 
-       setReceiptAutoShow(val); 
-       localStorage.setItem("nexo_receiptAutoShow", String(val)); 
+  const handlePrefUpdate = async (field: 'receipt' | 'sound' | 'orderAlerts', val: boolean) => {
+    if (field === 'receipt') {
+       setReceiptAutoShow(val);
+       localStorage.setItem("nexo_receiptAutoShow", String(val));
        saveToCloud({ key: 'nexo_receiptAutoShow', value: String(val) });
     }
-    if (field === 'sound') { 
-       setCheckoutSounds(val); 
-       localStorage.setItem("nexo_checkoutSounds", String(val)); 
+    if (field === 'sound') {
+       setCheckoutSounds(val);
+       localStorage.setItem("nexo_checkoutSounds", String(val));
        saveToCloud({ key: 'nexo_checkoutSounds', value: String(val) });
+    }
+    if (field === 'orderAlerts') {
+       // Ao ligar, pede a permissão de notificação no contexto certo (nativo x web)
+       if (val) {
+          const granted = await requestNotificationPermission();
+          if (!granted) {
+             toast.error("Ative as notificações nas permissões do app para receber os alertas.");
+          }
+       }
+       setOrderAlerts(val);
+       localStorage.setItem("nexo_orderAlerts", String(val));
+       saveToCloud({ key: 'nexo_orderAlerts', value: String(val) });
+       // Avisa o vigia global (OrderAlerts) para ligar/desligar na hora
+       window.dispatchEvent(new Event(ORDER_ALERTS_EVENT));
     }
   };
 
@@ -262,13 +280,25 @@ export default function SettingsPage() {
             </div>
 
             {/* Toggle Sons */}
-            <div className="p-4 flex items-center justify-between bg-surface transition-colors">
+            <div className="p-4 border-b border-border/30 flex items-center justify-between bg-surface transition-colors">
               <div className="flex flex-col pr-4">
                 <span className="font-bold text-foreground text-[15px] mb-1 flex items-center gap-2">Sons do PDV <Volume2 size={16} className="text-muted" /></span>
                 <span className="text-muted text-[11px] leading-tight font-medium">Toca o famoso bipe "blip" e sons de sucesso quando registrar produtos em alta velocidade no Checkout.</span>
               </div>
               <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
                 <input type="checkbox" className="sr-only peer" checked={checkoutSounds} onChange={e => handlePrefUpdate('sound', e.target.checked)} />
+                <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+              </label>
+            </div>
+
+            {/* Toggle Alerta de Pedidos */}
+            <div className="p-4 flex items-center justify-between bg-surface transition-colors">
+              <div className="flex flex-col pr-4">
+                <span className="font-bold text-foreground text-[15px] mb-1 flex items-center gap-2">Alerta de novos pedidos <BellRing size={16} className="text-muted" /></span>
+                <span className="text-muted text-[11px] leading-tight font-medium">Toca um alerta e mostra uma notificação assim que um cliente envia um pedido pelo seu link, enquanto o app está aberto.</span>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                <input type="checkbox" className="sr-only peer" checked={orderAlerts} onChange={e => handlePrefUpdate('orderAlerts', e.target.checked)} />
                 <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
               </label>
             </div>
