@@ -11,6 +11,14 @@ const config: CapacitorConfig = {
     // Login (Clerk), API e catálogo rodam na mesma origem da Vercel.
     url: 'https://nexo-pdv.vercel.app',
     cleartext: false,
+    // Mantém na própria WebView as navegações cross-origin do Clerk
+    // (handshake de sessão no domínio *.clerk.accounts.dev) em vez de
+    // chutar para o Chrome externo. Sem isso o app "abre no navegador".
+    allowNavigation: [
+      'nexo-pdv.vercel.app',
+      'rational-gopher-23.clerk.accounts.dev',
+      '*.clerk.accounts.dev',
+    ],
   },
   plugins: {
     LocalNotifications: {
