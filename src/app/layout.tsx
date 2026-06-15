@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import { BottomNav } from "@/components/BottomNav";
 import { SyncProvider } from "@/components/SyncProvider";
+import OrderAlerts from "@/components/OrderAlerts";
 import { ClerkProvider } from '@clerk/nextjs';
 import { ptBR } from "@clerk/localizations";
 import "./globals.css";
@@ -51,6 +52,7 @@ export default function RootLayout({
           
           {/* Componentes Globais Injetados */}
           <SyncProvider />
+          <OrderAlerts />
           <BottomNav />
           <Toaster position="top-center" theme="light" richColors />
         </body>
