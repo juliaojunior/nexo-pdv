@@ -5,6 +5,20 @@ import { formatCurrency } from "@/lib/utils";
 import { toBlob } from "html-to-image";
 import { Share2, X, Download, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+import { Capacitor } from "@capacitor/core";
+import { Share } from "@capacitor/share";
+import { Filesystem, Directory } from "@capacitor/filesystem";
+
+// Converte um Blob para base64 puro (sem o prefixo "data:...;base64,"),
+// formato exigido pelo Filesystem do Capacitor.
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve((reader.result as string).split(",")[1] ?? "");
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
 
 export interface ReceiptData {
   items: Array<{ productName: string; quantity: number; unitPrice: number; discount?: number; subtotal: number }>;
@@ -45,18 +59,47 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
 
     try {
       // Usando html-to-image que é muito mais robusto em Mobile DOM e SVGs
-      const blob = await toBlob(receiptRef.current, { 
+      const blob = await toBlob(receiptRef.current, {
          backgroundColor: "#ffffff",
-         pixelRatio: 3, 
+         pixelRatio: 3,
       });
-      
+
       if (!blob) throw new Error("A biblioteca falhou ao renderizar a imagem.");
 
-      const file = new File([blob], `Nexo_Recibo_${new Date().getTime()}.png`, { type: 'image/png' });
+      const fileName = `Nexo_Recibo_${new Date().getTime()}.png`;
 
+      // 1) App nativo (Capacitor): a WebView do Android não expõe navigator.share
+      // com arquivos, então usamos o plugin Share — grava no cache e abre a folha
+      // de compartilhamento do sistema (WhatsApp/Instagram/Gmail...).
+      if (Capacitor.isNativePlatform()) {
+        try {
+          const base64 = await blobToBase64(blob);
+          const written = await Filesystem.writeFile({
+            path: fileName,
+            data: base64,
+            directory: Directory.Cache,
+          });
+          await Share.share({
+            title: `Recibo - ${storeName}`,
+            text: "Aqui está seu recibo digital de compra. Muito Obrigado!",
+            files: [written.uri],
+            dialogTitle: "Enviar recibo",
+          });
+          toast.success("Recibo pronto para enviar!");
+          return;
+        } catch (nativeErr: any) {
+          const msg = String(nativeErr?.message || "").toLowerCase();
+          // Usuário fechou a folha de compartilhamento: não é erro.
+          if (msg.includes("cancel") || msg.includes("abort")) return;
+          // Falha real no plugin (ex.: APK sem o plugin): cai para o fallback web abaixo.
+          console.error("Share nativo falhou, tentando fallback web:", nativeErr);
+        }
+      }
+
+      // 2) Web (PWA/desktop): Web Share API com arquivos; senão, baixa a imagem.
+      const file = new File([blob], fileName, { type: 'image/png' });
       let sharedSuccessfully = false;
 
-      // Tenta compartilhar primeiro se a API nativa estiver viva
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
           await navigator.share({
@@ -69,7 +112,7 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
         } catch (shareErr: any) {
           // AbortError = usuário só fechou a aba de compartilhamento.
           if (shareErr.name === 'AbortError') {
-             sharedSuccessfully = true; 
+             sharedSuccessfully = true;
           } else {
              console.error("Share cancelado/falhou:", shareErr);
           }
