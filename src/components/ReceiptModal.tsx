@@ -219,13 +219,19 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
 
            <div className="w-full flex flex-col gap-2 rounded-xl bg-background/50 p-4 border border-border/30">
               {receiptData.discountTotal ? (
-                 <div className="flex justify-between items-center pb-2 mb-1 border-b border-dashed border-border/40">
-                    <span className="text-muted text-[10px] font-bold uppercase tracking-widest">Descontos</span>
-                    <span className="text-primary-bright text-[11px] font-bold">− {formatCurrency(receiptData.discountTotal)}</span>
-                 </div>
+                 <>
+                    <div className="flex justify-between items-center">
+                       <span className="text-muted text-[10px] font-bold uppercase tracking-widest">Valor original</span>
+                       <span className="text-foreground text-[11px] font-bold">{formatCurrency(receiptData.total + receiptData.discountTotal)}</span>
+                    </div>
+                    <div className="flex justify-between items-center pb-2 mb-1 border-b border-dashed border-border/40">
+                       <span className="text-muted text-[10px] font-bold uppercase tracking-widest">Desconto</span>
+                       <span className="text-primary-bright text-[11px] font-bold">− {formatCurrency(receiptData.discountTotal)}</span>
+                    </div>
+                 </>
               ) : null}
               <div className="flex justify-between items-center">
-                 <span className="text-muted text-xs font-bold uppercase tracking-widest">Total Pgto</span>
+                 <span className="text-muted text-xs font-bold uppercase tracking-widest">Total a Pagar</span>
                  <span className="text-primary-bright font-black text-xl">{formatCurrency(receiptData.total)}</span>
               </div>
               <div className="flex justify-between items-center mt-2">
