@@ -1,9 +1,18 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { toast } from 'sonner';
 import type { Product } from '@/db/db';
 
 export interface CartItem extends Product {
   quantity: number;
+}
+
+// Avisa o operador quando a quantidade pedida foi cortada pelo limite de estoque,
+// para que ele não pense que adicionou mais do que realmente entrou no carrinho.
+function notifyStockLimit(name: string, requested: number, stock: number) {
+  if (requested > stock) {
+    toast.warning(`Só há ${stock} un. de ${name} em estoque.`);
+  }
 }
 
 interface CartState {
@@ -24,10 +33,12 @@ export const useCartStore = create<CartState>()(persist((set) => ({
       if (existingItemIndex > -1) {
         const updatedItems = [...state.items];
         const existingItem = updatedItems[existingItemIndex];
-        
+
         // Bloqueia exceder limite de estoque
-        const newQuantity = Math.min(existingItem.quantity + quantity, product.stock);
-        
+        const requested = existingItem.quantity + quantity;
+        const newQuantity = Math.min(requested, product.stock);
+        notifyStockLimit(product.name, requested, product.stock);
+
         updatedItems[existingItemIndex] = {
           ...existingItem,
           quantity: newQuantity,
@@ -38,6 +49,7 @@ export const useCartStore = create<CartState>()(persist((set) => ({
 
       // Se novo item
       const initialQuantity = Math.min(quantity, product.stock);
+      notifyStockLimit(product.name, quantity, product.stock);
       return { items: [...state.items, { ...product, quantity: initialQuantity }] };
     });
   },
@@ -58,6 +70,7 @@ export const useCartStore = create<CartState>()(persist((set) => ({
         items: state.items.map((item) => {
            if (item.id === productId) {
               const safeQuantity = Math.min(quantity, item.stock);
+              notifyStockLimit(item.name, quantity, item.stock);
               return { ...item, quantity: safeQuantity };
            }
            return item;

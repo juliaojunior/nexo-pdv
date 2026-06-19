@@ -2,16 +2,22 @@ import { NextResponse } from 'next/server';
 import { cloudDb } from '@/lib/cloudDb';
 import { auth } from '@clerk/nextjs/server';
 
-// Lê TODAS as configurações do usuário da Nuvem
+// Chaves expostas publicamente (Vitrine sem login). Tudo fora disso só é
+// devolvido para a própria loja autenticada — evita vazamento entre lojas.
+const PUBLIC_KEYS = ['nexo_storeName', 'nexo_storePhone'];
+
+// Lê as configurações do usuário da Nuvem
 export async function GET(req: Request) {
   try {
     const { userId } = await auth();
-    
+
     // Se não estiver logado, checa se tem param ?userId=... (Vindo da Vitrine Pública)
     const { searchParams } = new URL(req.url);
     const publicUserId = searchParams.get('userId');
-    
+
+    // Autenticado lê o próprio user_id; público lê via param (acesso restrito).
     const targetUserId = userId || publicUserId;
+    const isPublic = !userId && !!publicUserId;
 
     if (!targetUserId) {
       return NextResponse.json({ error: "No userId provided" }, { status: 400 });
@@ -19,14 +25,20 @@ export async function GET(req: Request) {
 
     const client = await cloudDb.connect();
 
-    const { rows } = await client.sql`
-      SELECT key, value FROM nexo_settings WHERE user_id = ${targetUserId};
-    `;
-    
-    client.release();
+    let rows;
+    try {
+      const result = await client.sql`
+        SELECT key, value FROM nexo_settings WHERE user_id = ${targetUserId};
+      `;
+      rows = result.rows;
+    } finally {
+      client.release();
+    }
 
     // Converte de array [{key: 'name', value: 'LojaX'}] para Object {name: 'LojaX'}
     const settingsMap = rows.reduce((acc, row) => {
+      // Requisição pública só enxerga a allow-list; autenticada vê tudo.
+      if (isPublic && !PUBLIC_KEYS.includes(row.key)) return acc;
       acc[row.key] = row.value;
       return acc;
     }, {} as Record<string, string>);

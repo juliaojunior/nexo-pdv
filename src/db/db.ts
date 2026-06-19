@@ -1,5 +1,10 @@
 import Dexie, { type Table } from 'dexie';
 
+// Enum canônico de pagamento mora em módulo isomórfico (sem Dexie) e é reexportado
+// aqui por conveniência dos consumidores client. Ver [[payments]].
+export { PAYMENT_METHODS, type PaymentMethod } from '@/lib/payments';
+import type { PaymentMethod } from '@/lib/payments';
+
 export interface Category {
   id?: number;
   name: string;
@@ -31,7 +36,7 @@ export interface Customer {
 export interface Sale {
   id?: number;
   total: number;
-  paymentMethod: 'Dinheiro' | 'PIX' | 'Crédito' | 'Débito' | 'Fiado';
+  paymentMethod: PaymentMethod;
   amountReceived?: number;
   change?: number;
   customerId?: number;
@@ -62,7 +67,7 @@ export interface SalePayloadItem {
 export interface SalePayload {
   clientId: string; // UUID gerado no aparelho — chave de idempotência no servidor
   total: number;
-  paymentMethod: 'Dinheiro' | 'PIX' | 'Crédito' | 'Débito' | 'Fiado';
+  paymentMethod: PaymentMethod;
   amountReceived?: number;
   change?: number;
   customerId?: number;

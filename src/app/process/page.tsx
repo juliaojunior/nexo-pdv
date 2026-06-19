@@ -28,6 +28,7 @@ function ProcessOrderContent() {
 
   const [orderItems, setOrderItems] = useState<{product: any, quantity: number}[] | null>(null);
   const [total, setTotal] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (products && orderParam) {
@@ -51,8 +52,9 @@ function ProcessOrderContent() {
   }, [products, orderParam]);
 
   const handleApprove = async () => {
-     if (!orderItems || orderItems.length === 0) return;
+     if (!orderItems || orderItems.length === 0 || isSubmitting) return;
 
+     setIsSubmitting(true);
      try {
        const payload: SalePayload = {
            clientId: crypto.randomUUID(),
@@ -85,6 +87,8 @@ function ProcessOrderContent() {
        } else {
          toast.error("Ocorreu um erro ao processar o pedido.");
        }
+     } finally {
+       setIsSubmitting(false);
      }
   };
 
@@ -151,16 +155,18 @@ function ProcessOrderContent() {
       </div>
 
       <div className="flex flex-col gap-3 mt-auto pt-4">
-         <button 
+         <button
            onClick={handleApprove}
-           className="w-full bg-primary text-primary-deep font-black text-lg uppercase tracking-wider py-4 rounded-xl shadow-glow hover:bg-primary-bright active:scale-95 transition-all text-center flex justify-center items-center gap-2"
+           disabled={isSubmitting}
+           className="w-full bg-primary text-primary-deep font-black text-lg uppercase tracking-wider py-4 rounded-xl shadow-glow hover:bg-primary-bright active:scale-95 transition-all text-center flex justify-center items-center gap-2 disabled:opacity-50 disabled:pointer-events-none"
          >
            <CheckCircle2 size={24} />
-           Aprovar e Dar Baixa
+           {isSubmitting ? "Processando..." : "Aprovar e Dar Baixa"}
          </button>
-         <button 
+         <button
            onClick={handleErrorOrCancel}
-           className="w-full bg-surface-raised text-muted font-bold text-sm uppercase tracking-wider py-4 rounded-xl border border-border/50 active:scale-95 transition-all text-center hover:text-foreground"
+           disabled={isSubmitting}
+           className="w-full bg-surface-raised text-muted font-bold text-sm uppercase tracking-wider py-4 rounded-xl border border-border/50 active:scale-95 transition-all text-center hover:text-foreground disabled:opacity-50"
          >
            Cancelar / Ignorar
          </button>

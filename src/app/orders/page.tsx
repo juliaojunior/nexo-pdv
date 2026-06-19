@@ -27,6 +27,12 @@ interface Order {
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
+// clientId determinístico e estável por pedido — habilita o dedupe do servidor
+// (/api/sales) caso a aprovação seja reenviada. order.id é SERIAL global em
+// nexo_orders, então o UUID gerado é globalmente único (índice único de client_id).
+const orderClientId = (orderId: number) =>
+  `00000000-0000-4000-8000-${orderId.toString(16).padStart(12, '0').slice(-12)}`;
+
 export default function OrdersPage() {
   const { data, error, mutate, isLoading } = useSWR('/api/orders?status=PENDING', fetcher, {
     refreshInterval: 10000, // Escuta de 10 em 10 segundos
@@ -44,8 +50,10 @@ export default function OrdersPage() {
       if (action === 'ACEITAR') {
         // 1. Injeta a Venda + Deduz o Estoque
         const salePayload = {
+          clientId: orderClientId(order.id),
           total: Number(order.total_price),
-          paymentMethod: order.payment_method === 'PIX' ? 'pix' : 'money',
+          // Normaliza para o enum canônico (PaymentMethod). "Na Entrega" → Dinheiro.
+          paymentMethod: order.payment_method === 'PIX' ? 'PIX' : 'Dinheiro',
           amountReceived: Number(order.total_price),
           change: 0,
           items: order.cart_items.map(item => ({
