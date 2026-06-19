@@ -223,7 +223,6 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
               </div>
 
               {receiptData.items.map((item, idx) => {
-                 const gross = item.unitPrice * item.quantity;
                  const hasDiscount = !!item.discount && item.discount > 0;
                  return (
                     <div key={idx} className="grid grid-cols-[1fr_1.75rem_3.25rem_3.75rem] gap-x-1.5 items-start text-[11px] font-semibold mb-2">
@@ -231,9 +230,9 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
                        <span className="text-gray-700 text-center">{item.quantity}</span>
                        <span className="text-gray-700 text-right text-[10px]">{formatCurrency(item.unitPrice)}</span>
                        <span className="text-foreground text-right text-[10px] flex flex-col leading-tight">
-                          {/* valor após o desconto em cima; original entre parênteses e itálico embaixo */}
+                          {/* valor após o desconto em cima; valor do desconto entre parênteses e itálico embaixo */}
                           <span>{formatCurrency(item.subtotal)}</span>
-                          {hasDiscount && <span className="text-muted/70 italic">({formatCurrency(gross)})</span>}
+                          {hasDiscount && <span className="text-primary-bright/80 italic">(−{formatCurrency(item.discount ?? 0)})</span>}
                        </span>
                     </div>
                  );
