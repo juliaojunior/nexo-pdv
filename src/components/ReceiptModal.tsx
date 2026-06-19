@@ -7,12 +7,13 @@ import { Share2, X, Download, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export interface ReceiptData {
-  items: Array<{ productName: string; quantity: number; unitPrice: number; subtotal: number }>;
+  items: Array<{ productName: string; quantity: number; unitPrice: number; discount?: number; subtotal: number }>;
   total: number;
   paymentMethod: string;
   amountReceived?: number;
   change?: number;
   date: string;
+  discountTotal?: number;
   customerName?: string;
 }
 
@@ -150,6 +151,7 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
                  <div key={idx} className="flex justify-between items-start text-sm font-semibold w-full gap-2">
                     <span className="text-gray-700 break-words text-left leading-tight">
                        {item.quantity}x {item.productName}
+                       {item.discount ? <span className="text-primary-bright text-[10px] font-bold ml-1">(−{formatCurrency(item.discount)})</span> : null}
                     </span>
                     <span className="text-foreground shrink-0 pt-0.5">{formatCurrency(item.subtotal)}</span>
                  </div>
@@ -157,6 +159,12 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
            </div>
 
            <div className="w-full flex flex-col gap-2 rounded-xl bg-background/50 p-4 border border-border/30">
+              {receiptData.discountTotal ? (
+                 <div className="flex justify-between items-center pb-2 mb-1 border-b border-dashed border-border/40">
+                    <span className="text-muted text-[10px] font-bold uppercase tracking-widest">Descontos</span>
+                    <span className="text-primary-bright text-[11px] font-bold">− {formatCurrency(receiptData.discountTotal)}</span>
+                 </div>
+              ) : null}
               <div className="flex justify-between items-center">
                  <span className="text-muted text-xs font-bold uppercase tracking-widest">Total Pgto</span>
                  <span className="text-primary-bright font-black text-xl">{formatCurrency(receiptData.total)}</span>

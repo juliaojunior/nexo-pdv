@@ -78,6 +78,7 @@ export async function GET() {
         amount_received NUMERIC(10, 2),
         change_returned NUMERIC(10, 2),
         client_id UUID,
+        discount_total NUMERIC(10, 2) DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `;
@@ -93,6 +94,7 @@ export async function GET() {
         product_name VARCHAR(255),
         quantity INTEGER NOT NULL,
         price_at_time NUMERIC(10, 2) NOT NULL,
+        discount NUMERIC(10, 2) DEFAULT 0,
         subtotal NUMERIC(10, 2)
       );
     `;

@@ -22,6 +22,7 @@ export async function GET() {
           s.customer_id as "customerId",
           s.amount_received as "amountReceived",
           s.change_returned as change,
+          s.discount_total as "discountTotal",
           s.created_at as date,
           COALESCE(
             json_agg(
@@ -31,6 +32,7 @@ export async function GET() {
                 'productName', si.product_name,
                 'quantity', si.quantity,
                 'unitPrice', si.price_at_time,
+                'discount', si.discount,
                 'subtotal', si.subtotal
               )
             ) FILTER (WHERE si.id IS NOT NULL), '[]'
@@ -69,11 +71,32 @@ export async function POST(req: Request) {
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: "Carrinho vazio ou inválido." }, { status: 400 });
     }
+
+    // 0.2 Normaliza/valida cada item. O subtotal e o desconto são RECALCULADOS no
+    // servidor (não confiamos no que o client mandou): desconto trava em [0, bruto].
+    const normalizedItems = [] as Array<{
+      productId: any; productName: any; quantity: number; unitPrice: number; discount: number; subtotal: number;
+    }>;
     for (const item of items) {
       if (typeof item.quantity !== 'number' || item.quantity <= 0) {
          return NextResponse.json({ error: `A quantidade do item ${item.productName || 'desconhecido'} é inválida ou negativa.` }, { status: 400 });
       }
+      const unitPrice = Number(item.unitPrice);
+      if (!Number.isFinite(unitPrice) || unitPrice < 0) {
+         return NextResponse.json({ error: `Preço inválido para ${item.productName || 'item desconhecido'}.` }, { status: 400 });
+      }
+      const gross = unitPrice * item.quantity;
+      let discount = Number(item.discount) || 0;
+      if (discount < 0) discount = 0;
+      if (discount > gross) discount = gross; // desconto nunca passa do valor cheio da linha
+      discount = Math.round(discount * 100) / 100;
+      const subtotal = Math.round((gross - discount) * 100) / 100;
+      normalizedItems.push({ productId: item.productId, productName: item.productName, quantity: item.quantity, unitPrice, discount, subtotal });
     }
+
+    // Totais confiáveis derivados dos itens normalizados (evita spoofing do total)
+    const computedTotal = Math.round(normalizedItems.reduce((s, it) => s + it.subtotal, 0) * 100) / 100;
+    const computedDiscountTotal = Math.round(normalizedItems.reduce((s, it) => s + it.discount, 0) * 100) / 100;
 
     // 0.1 Chave de idempotência opcional (vendas offline reenviadas pela fila)
     const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -99,8 +122,8 @@ export async function POST(req: Request) {
 
         // 2. Insere a Venda Primária (ON CONFLICT cobre corrida entre dois retries simultâneos)
         const saleResult = await client.sql`
-          INSERT INTO nexo_sales (user_id, total_amount, payment_method, customer_id, amount_received, change_returned, created_at, client_id)
-          VALUES (${userId}, ${total}, ${paymentMethod}, ${customerId || null}, ${amountReceived || null}, ${change || null}, ${date || new Date().toISOString()}, ${safeClientId})
+          INSERT INTO nexo_sales (user_id, total_amount, payment_method, customer_id, amount_received, change_returned, created_at, client_id, discount_total)
+          VALUES (${userId}, ${computedTotal}, ${paymentMethod}, ${customerId || null}, ${amountReceived || null}, ${change || null}, ${date || new Date().toISOString()}, ${safeClientId}, ${computedDiscountTotal})
           ON CONFLICT (client_id) DO NOTHING
           RETURNING id;
         `;
@@ -115,10 +138,10 @@ export async function POST(req: Request) {
         const newSaleId = saleResult.rows[0].id;
 
         // 3. Insere os Itens e Subtrai Estoque
-        for (const item of items) {
+        for (const item of normalizedItems) {
           await client.sql`
-            INSERT INTO nexo_sale_items (sale_id, product_id, product_name, quantity, price_at_time, subtotal)
-            VALUES (${newSaleId}, ${item.productId || null}, ${item.productName}, ${item.quantity}, ${item.unitPrice}, ${item.subtotal})
+            INSERT INTO nexo_sale_items (sale_id, product_id, product_name, quantity, price_at_time, discount, subtotal)
+            VALUES (${newSaleId}, ${item.productId || null}, ${item.productName}, ${item.quantity}, ${item.unitPrice}, ${item.discount}, ${item.subtotal})
           `;
 
           if (item.productId) {

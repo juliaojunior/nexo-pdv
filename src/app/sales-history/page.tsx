@@ -135,10 +135,19 @@ export default function SalesHistoryPage() {
                        <div key={item.id} className="flex justify-between items-center">
                           <span className="text-muted text-xs font-semibold max-w-[200px] truncate">
                             {item.quantity}x {item.productName}
+                            {Number(item.discount) > 0 && (
+                              <span className="text-primary-bright font-bold ml-1">(−{formatCurrency(Number(item.discount))})</span>
+                            )}
                           </span>
                           <span className="text-foreground text-xs font-medium">{formatCurrency(Number(item.subtotal))}</span>
                        </div>
                     ))}
+                    {Number(sale.discountTotal) > 0 && (
+                       <div className="flex justify-between items-center pt-2 mt-1 border-t border-dashed border-border/40">
+                          <span className="text-primary-bright text-[10px] font-bold uppercase tracking-widest">Descontos</span>
+                          <span className="text-primary-bright text-xs font-bold">− {formatCurrency(Number(sale.discountTotal))}</span>
+                       </div>
+                    )}
                     <div className="w-full flex justify-end mt-2 pt-3 border-t border-dashed border-border/50">
                        <button 
                          onClick={() => setRevertCandidate(sale.id!)}
