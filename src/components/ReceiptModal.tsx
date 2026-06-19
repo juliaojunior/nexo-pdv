@@ -58,12 +58,17 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
     settings?.nexo_storeDocument ||
     (typeof window !== "undefined" ? localStorage.getItem("nexo_storeDocument") : "") ||
     "";
+  const storePhone =
+    settings?.nexo_storePhone ||
+    (typeof window !== "undefined" ? localStorage.getItem("nexo_storePhone") : "") ||
+    "";
 
   // Espelha no localStorage quando a nuvem responde (cache p/ próximas aberturas/offline)
   useEffect(() => {
     if (typeof window === "undefined" || !settings) return;
     if (settings.nexo_storeName) localStorage.setItem("nexo_storeName", settings.nexo_storeName);
     if (settings.nexo_storeDocument) localStorage.setItem("nexo_storeDocument", settings.nexo_storeDocument);
+    if (settings.nexo_storePhone) localStorage.setItem("nexo_storePhone", settings.nexo_storePhone);
   }, [settings]);
 
   if (!isOpen || !receiptData) return null;
@@ -189,75 +194,95 @@ export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps
         >
            {/* Subtle watermark or pattern could go here */}
            
-           <div className="flex flex-col items-center mb-6 w-full border-b border-dashed border-border/70 pb-6">
-              <h1 className="text-foreground font-black text-2xl uppercase tracking-tighter leading-tight mb-1 break-words max-w-full px-2">{storeName}</h1>
-              {storeDoc && <p className="text-muted text-[10px] uppercase tracking-widest font-bold">Doc: {storeDoc}</p>}
-              <p className="text-muted text-[10px] mt-2 font-bold">{new Date(receiptData.date).toLocaleString('pt-BR')}</p>
-              {receiptData.customerName && (
-                <p className="text-primary bg-primary/10 border border-primary/30 px-2 py-0.5 rounded text-[10px] uppercase mt-2 font-bold tracking-widest">
-                  Cli: {receiptData.customerName}
-                </p>
-              )}
+           {/* Cabeçalho: nome da loja */}
+           <div className="flex flex-col items-center mb-4 w-full">
+              <h1 className="text-foreground font-black text-2xl uppercase tracking-tighter leading-tight break-words max-w-full px-2 text-center">{storeName}</h1>
+              {storeDoc && <p className="text-muted text-[10px] uppercase tracking-widest font-bold mt-0.5">Doc: {storeDoc}</p>}
            </div>
 
-           <div className="w-full flex flex-col gap-3 mb-6">
-              <div className="flex justify-between text-muted text-[10px] font-bold uppercase tracking-widest mb-1 border-b border-border/30 pb-2">
-                 <span>Item</span>
-                 <span>Total</span>
+           {/* RECIBO + data */}
+           <div className="flex flex-col items-center w-full border-t border-b border-border/40 py-3 mb-3">
+              <h2 className="text-foreground font-black text-lg tracking-tight">RECIBO</h2>
+              <p className="text-muted text-[11px] font-bold mt-0.5">{new Date(receiptData.date).toLocaleString('pt-BR')}</p>
+           </div>
+
+           {/* Cliente */}
+           {receiptData.customerName && (
+              <div className="w-full text-left mb-3">
+                 <p className="text-gray-700 text-xs"><span className="font-black text-foreground uppercase">Cliente:</span> {receiptData.customerName}</p>
               </div>
-              
-              {receiptData.items.map((item, idx) => (
-                 <div key={idx} className="flex justify-between items-start text-sm font-semibold w-full gap-2">
-                    <span className="text-gray-700 break-words text-left leading-tight">
-                       {item.quantity}x {item.productName}
-                       {item.discount ? <span className="text-primary-bright text-[10px] font-bold ml-1">(−{formatCurrency(item.discount)})</span> : null}
-                    </span>
-                    <span className="text-foreground shrink-0 pt-0.5">{formatCurrency(item.subtotal)}</span>
-                 </div>
-              ))}
+           )}
+
+           {/* Tabela de itens */}
+           <div className="w-full mb-4">
+              <div className="grid grid-cols-[1fr_1.75rem_3.25rem_3.75rem] gap-x-1.5 text-muted text-[9px] font-black uppercase tracking-widest border-b border-border/50 pb-1 mb-2">
+                 <span className="text-left">Item</span>
+                 <span className="text-center">Qtde</span>
+                 <span className="text-right">Unit.</span>
+                 <span className="text-right">Subtotal</span>
+              </div>
+
+              {receiptData.items.map((item, idx) => {
+                 const gross = item.unitPrice * item.quantity;
+                 const hasDiscount = !!item.discount && item.discount > 0;
+                 return (
+                    <div key={idx} className="grid grid-cols-[1fr_1.75rem_3.25rem_3.75rem] gap-x-1.5 items-start text-[11px] font-semibold mb-2">
+                       <span className="text-gray-700 text-left leading-tight break-words">{idx + 1}. {item.productName}</span>
+                       <span className="text-gray-700 text-center">{item.quantity}</span>
+                       <span className="text-gray-700 text-right text-[10px]">{formatCurrency(item.unitPrice)}</span>
+                       <span className="text-foreground text-right text-[10px] flex flex-col leading-tight">
+                          {/* valor após o desconto em cima; original entre parênteses e itálico embaixo */}
+                          <span>{formatCurrency(item.subtotal)}</span>
+                          {hasDiscount && <span className="text-muted/70 italic">({formatCurrency(gross)})</span>}
+                       </span>
+                    </div>
+                 );
+              })}
            </div>
 
-           <div className="w-full flex flex-col gap-2 rounded-xl bg-background/50 p-4 border border-border/30">
-              {receiptData.discountTotal ? (
-                 <>
-                    <div className="flex justify-between items-center">
-                       <span className="text-muted text-[10px] font-bold uppercase tracking-widest">Valor original</span>
-                       <span className="text-foreground text-[11px] font-bold">{formatCurrency(receiptData.total + receiptData.discountTotal)}</span>
-                    </div>
-                    <div className="flex justify-between items-center pb-2 mb-1 border-b border-dashed border-border/40">
-                       <span className="text-muted text-[10px] font-bold uppercase tracking-widest">Desconto</span>
-                       <span className="text-primary-bright text-[11px] font-bold">− {formatCurrency(receiptData.discountTotal)}</span>
-                    </div>
-                 </>
-              ) : null}
+           {/* TOTAL DA VENDA */}
+           <div className="w-full flex justify-between items-center border-t-2 border-border/60 pt-3 mb-4">
+              <span className="text-foreground font-black text-base uppercase tracking-tight">Total da Venda:</span>
+              <span className="text-foreground font-black text-xl">{formatCurrency(receiptData.total)}</span>
+           </div>
+
+           {/* Forma de pagamento */}
+           <div className="w-full flex flex-col gap-1 rounded-lg bg-background/60 p-3 border border-border/30 text-left mb-4">
+              <span className="text-muted text-[10px] font-black uppercase tracking-widest mb-1">Forma de Pagamento:</span>
               <div className="flex justify-between items-center">
-                 <span className="text-muted text-xs font-bold uppercase tracking-widest">Total a Pagar</span>
-                 <span className="text-primary-bright font-black text-xl">{formatCurrency(receiptData.total)}</span>
-              </div>
-              <div className="flex justify-between items-center mt-2">
-                 <span className="text-muted text-[10px] font-bold uppercase tracking-widest">Meio</span>
-                 <span className={`${receiptData.paymentMethod === 'Fiado' ? 'text-surface bg-danger' : 'text-foreground bg-surface-raised'} text-[10px] font-bold px-2 py-0.5 uppercase tracking-widest rounded`}>
+                 <span className={`text-[11px] font-bold px-2 py-0.5 uppercase tracking-widest rounded ${receiptData.paymentMethod === 'Fiado' ? 'text-surface bg-danger' : 'text-foreground bg-surface-raised'}`}>
                    {receiptData.paymentMethod}
                  </span>
+                 <span className="text-foreground font-black text-sm">{formatCurrency(receiptData.total)}</span>
               </div>
-
-              {receiptData.paymentMethod === 'Dinheiro' && receiptData.amountReceived && (
+              {receiptData.paymentMethod === 'Dinheiro' && receiptData.amountReceived ? (
                  <>
                    <div className="flex justify-between items-center mt-1">
                      <span className="text-muted text-[10px] font-bold uppercase tracking-widest">Recebido</span>
                      <span className="text-foreground text-[11px] font-bold">{formatCurrency(receiptData.amountReceived)}</span>
                    </div>
-                   <div className="flex justify-between items-center mt-1">
+                   <div className="flex justify-between items-center">
                      <span className="text-muted text-[10px] font-bold uppercase tracking-widest">Troco</span>
                      <span className="text-danger text-[11px] font-bold">{formatCurrency(receiptData.change || 0)}</span>
                    </div>
                  </>
-              )}
+              ) : null}
            </div>
 
-           <div className="mt-8 pt-4 border-t border-dashed border-border/50 w-full flex flex-col items-center">
-              <span className="text-muted text-[10px] font-bold uppercase tracking-widest text-center">Nexo PDV Digital</span>
-              <span className="text-muted text-[10px] mt-1">Obrigado pela preferência!</span>
+           {/* Rodapé */}
+           <div className="w-full flex flex-col items-center">
+              <p className="text-foreground text-[11px] font-bold text-center">
+                 Obrigado pela preferência{receiptData.customerName ? `, ${receiptData.customerName}` : ''}! Volte sempre!
+              </p>
+              {(storeName || storePhone) && (
+                 <p className="text-muted text-[10px] mt-1 text-center break-words">
+                   {storeName}{storePhone ? ` | ${storePhone}` : ''}
+                 </p>
+              )}
+              <div className="w-full border-t border-dashed border-border/50 mt-3 pt-3 flex flex-col items-center">
+                 <span className="text-muted text-[9px] uppercase tracking-widest">Gerado por</span>
+                 <span className="text-foreground text-[11px] font-black">Nexo PDV — Fácil &amp; Rápido</span>
+              </div>
            </div>
            
            {/* Zigzag bottom styling */}
