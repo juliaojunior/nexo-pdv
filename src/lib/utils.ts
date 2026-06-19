@@ -40,3 +40,18 @@ export function isPromotionActive(product: PromotionInput): boolean {
 export function getEffectivePrice(product: PromotionInput): number {
   return isPromotionActive(product) ? Number(product.promotionalPrice) : Number(product.price);
 }
+
+// Desconto por item na venda: digitado em R$ (fixo) ou % (percentual).
+export type DiscountMode = 'BRL' | 'PCT';
+
+/**
+ * Converte a entrada de desconto (R$ fixo ou %) para um valor em R$, arredondado a
+ * centavos e travado ao intervalo [0, gross] (nunca passa do valor cheio da linha).
+ * Isomórfico: usado no checkout (client) e revalidado no backend de /api/sales.
+ */
+export function lineDiscountToBRL(gross: number, mode: DiscountMode, rawValue: number): number {
+  if (!Number.isFinite(rawValue) || rawValue <= 0 || !Number.isFinite(gross) || gross <= 0) return 0;
+  const brl = mode === 'PCT' ? (gross * rawValue) / 100 : rawValue;
+  const rounded = Math.round(brl * 100) / 100;
+  return Math.min(Math.max(0, rounded), gross);
+}

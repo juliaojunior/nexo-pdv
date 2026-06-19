@@ -49,8 +49,9 @@ export interface SaleItem {
   productId: number;
   productName: string;
   quantity: number;
-  unitPrice: number;
-  subtotal: number;
+  unitPrice: number;   // preço cheio unitário
+  discount?: number;   // desconto da linha em R$ (0 = sem desconto)
+  subtotal: number;    // líquido da linha: unitPrice*quantity - discount
 }
 
 // ===== Offline-first (v2) =====
@@ -60,8 +61,9 @@ export interface SalePayloadItem {
   productId: number;
   productName: string;
   quantity: number;
-  unitPrice: number;
-  subtotal: number;
+  unitPrice: number;   // preço cheio unitário
+  discount?: number;   // desconto da linha em R$ (0 = sem desconto)
+  subtotal: number;    // líquido da linha: unitPrice*quantity - discount
 }
 
 export interface SalePayload {
@@ -72,6 +74,7 @@ export interface SalePayload {
   change?: number;
   customerId?: number;
   date: string;
+  discountTotal?: number; // soma dos descontos das linhas (R$)
   items: SalePayloadItem[];
 }
 

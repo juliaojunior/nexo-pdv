@@ -6,8 +6,8 @@ import { db, type SalePayload, type PaymentMethod, PAYMENT_METHODS } from "@/db/
 import { useLiveQuery } from "dexie-react-hooks";
 import { submitSale } from "@/lib/offline/submitSale";
 import { useCartStore } from "@/stores/cart.store";
-import { formatCurrency } from "@/lib/utils";
-import { X, Minus, Plus, Users, Search, CheckCircle2 } from "lucide-react";
+import { formatCurrency, lineDiscountToBRL, type DiscountMode } from "@/lib/utils";
+import { X, Minus, Plus, Users, Search, CheckCircle2, Tag } from "lucide-react";
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -25,12 +25,32 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
   const [customerSearch, setCustomerSearch] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState<{id?: number, name: string} | null>(null);
 
+  // Desconto por item (decisão do momento da venda — estado local, reseta a cada venda).
+  // Chave = item.id; guarda o modo (R$/%) e o valor digitado.
+  const [discounts, setDiscounts] = useState<Record<number, { mode: DiscountMode; value: string }>>({});
+  const [openDiscountId, setOpenDiscountId] = useState<number | null>(null);
+
   // Consulta Viva de Clientes Local
   const customers = useLiveQuery(() => db.customers.toArray()) || [];
 
   if (!isOpen) return null;
 
-  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  // ----- Cálculo de desconto por linha (fonte única: lineDiscountToBRL) -----
+  const lineGross = (item: { price: number; quantity: number }) => item.price * item.quantity;
+  const lineDiscount = (item: { id?: number; price: number; quantity: number }) => {
+    const d = item.id != null ? discounts[item.id] : undefined;
+    if (!d) return 0;
+    return lineDiscountToBRL(lineGross(item), d.mode, parseFloat(d.value.replace(',', '.')) || 0);
+  };
+  const lineNet = (item: { id?: number; price: number; quantity: number }) => lineGross(item) - lineDiscount(item);
+
+  const setDiscount = (id: number, patch: Partial<{ mode: DiscountMode; value: string }>) =>
+    setDiscounts((prev) => ({ ...prev, [id]: { mode: prev[id]?.mode ?? 'BRL', value: prev[id]?.value ?? '', ...patch } }));
+  const clearDiscount = (id: number) =>
+    setDiscounts((prev) => { const next = { ...prev }; delete next[id]; return next; });
+
+  const total = items.reduce((sum, item) => sum + lineNet(item), 0);
+  const discountTotal = items.reduce((sum, item) => sum + lineDiscount(item), 0);
   const amountReceived = parseFloat(amountReceivedInput.replace(',', '.')) || 0;
   const change = amountReceived > total ? amountReceived - total : 0;
 
@@ -68,18 +88,22 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
         change: paymentMethod === 'Dinheiro' ? change : undefined,
         customerId: selectedCustomer?.id,
         date: new Date().toISOString(),
+        discountTotal: discountTotal > 0 ? discountTotal : undefined,
         items: items.map(item => ({
           productId: item.id!,
           productName: item.name,
           quantity: item.quantity,
-          unitPrice: item.price,
-          subtotal: item.price * item.quantity,
+          unitPrice: item.price,           // preço cheio unitário
+          discount: lineDiscount(item),    // desconto da linha em R$
+          subtotal: lineNet(item),         // líquido (cheio - desconto)
         }))
       };
 
       const result = await submitSale(saleData, selectedCustomer?.name);
 
       clearCart();
+      setDiscounts({});
+      setOpenDiscountId(null);
       if (result.status === 'queued') {
         toast.warning("Sem conexão. Venda salva no aparelho — será enviada automaticamente quando a internet voltar.", { id: tsId, duration: 6000 });
       } else {
@@ -93,6 +117,7 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
         amountReceived: saleData.amountReceived,
         change: saleData.change,
         date: saleData.date,
+        discountTotal: discountTotal > 0 ? discountTotal : undefined,
         customerName: selectedCustomer?.name
       };
 
@@ -226,24 +251,95 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
            {/* Lista Menor do Carrinho Editável */}
            <div className="flex flex-col gap-2 mt-4 relative z-0">
              <span className="text-muted text-xs font-bold uppercase tracking-widest mb-1">Itens do Pedido</span>
-            {items.map((item) => (
-              <div key={item.id} className="flex justify-between items-center bg-surface p-2 rounded-xl border border-border/20 shadow-sm">
-                <span className="text-foreground font-medium text-sm line-clamp-1 flex-1 px-2">{item.name}</span>
-                
-                <div className="flex items-center gap-2">
-                   <div className="flex items-center bg-surface-raised rounded-lg border border-border/40 shadow-inner overflow-hidden">
-                     <button type="button" onClick={() => updateQuantity(item.id!, item.quantity - 1)} className="min-w-11 min-h-11 flex items-center justify-center text-danger hover:bg-danger/10 active:opacity-50 transition-colors">
-                       <Minus size={14} strokeWidth={3} />
+            {items.map((item) => {
+              const disc = lineDiscount(item);
+              const isOpen = openDiscountId === item.id;
+              const dState = item.id != null ? discounts[item.id] : undefined;
+              return (
+              <div key={item.id} className="flex flex-col bg-surface p-2 rounded-xl border border-border/20 shadow-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-foreground font-medium text-sm line-clamp-1 flex-1 px-2">{item.name}</span>
+
+                  <div className="flex items-center gap-2">
+                     {/* Botão de desconto da linha */}
+                     <button
+                       type="button"
+                       onClick={() => setOpenDiscountId(isOpen ? null : item.id!)}
+                       className={`min-w-11 min-h-11 flex items-center justify-center rounded-lg border transition-colors ${
+                         disc > 0
+                           ? "bg-primary/15 text-primary-bright border-primary/40"
+                           : "bg-surface-raised text-muted border-border/40 hover:text-foreground"
+                       }`}
+                       aria-label="Desconto do item"
+                     >
+                       <Tag size={14} strokeWidth={2.5} />
                      </button>
-                     <span className="text-foreground font-black w-6 text-center text-sm">{item.quantity}</span>
-                     <button type="button" onClick={() => updateQuantity(item.id!, item.quantity + 1)} className="min-w-11 min-h-11 flex items-center justify-center text-primary-bright hover:bg-primary-bright/10 active:opacity-50 transition-colors border-l border-border/40">
-                       <Plus size={14} strokeWidth={3} />
-                     </button>
-                   </div>
-                   <span className="text-muted text-xs font-bold w-[60px] text-right">{formatCurrency(item.price * item.quantity)}</span>
+
+                     <div className="flex items-center bg-surface-raised rounded-lg border border-border/40 shadow-inner overflow-hidden">
+                       <button type="button" onClick={() => updateQuantity(item.id!, item.quantity - 1)} className="min-w-11 min-h-11 flex items-center justify-center text-danger hover:bg-danger/10 active:opacity-50 transition-colors">
+                         <Minus size={14} strokeWidth={3} />
+                       </button>
+                       <span className="text-foreground font-black w-6 text-center text-sm">{item.quantity}</span>
+                       <button type="button" onClick={() => updateQuantity(item.id!, item.quantity + 1)} className="min-w-11 min-h-11 flex items-center justify-center text-primary-bright hover:bg-primary-bright/10 active:opacity-50 transition-colors border-l border-border/40">
+                         <Plus size={14} strokeWidth={3} />
+                       </button>
+                     </div>
+                     <span className="text-xs font-bold w-[64px] text-right flex flex-col items-end leading-tight">
+                        {disc > 0 && <span className="text-muted/60 line-through text-[10px]">{formatCurrency(lineGross(item))}</span>}
+                        <span className={disc > 0 ? "text-primary-bright" : "text-muted"}>{formatCurrency(lineNet(item))}</span>
+                     </span>
+                  </div>
                 </div>
+
+                {/* Editor de desconto (R$ ou %) */}
+                {isOpen && (
+                  <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/20 px-1 animate-in fade-in slide-in-from-top-1">
+                    <div className="flex rounded-lg border border-border/40 overflow-hidden shrink-0">
+                      {(['BRL', 'PCT'] as DiscountMode[]).map((m) => (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => setDiscount(item.id!, { mode: m })}
+                          className={`px-3 py-2 text-xs font-black transition-colors ${
+                            (dState?.mode ?? 'BRL') === m ? "bg-primary text-primary-deep" : "bg-surface-raised text-muted"
+                          }`}
+                        >
+                          {m === 'BRL' ? 'R$' : '%'}
+                        </button>
+                      ))}
+                    </div>
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      min={0}
+                      value={dState?.value ?? ''}
+                      onChange={(e) => setDiscount(item.id!, { value: e.target.value })}
+                      placeholder={(dState?.mode ?? 'BRL') === 'PCT' ? '% desconto' : 'R$ desconto'}
+                      className="flex-1 bg-surface-raised border border-border/50 rounded-lg py-2 px-3 text-foreground text-sm outline-none focus:border-primary"
+                    />
+                    {disc > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => { clearDiscount(item.id!); setOpenDiscountId(null); }}
+                        className="min-w-11 min-h-11 flex items-center justify-center text-danger bg-danger/10 rounded-lg border border-danger/30 shrink-0"
+                        aria-label="Remover desconto"
+                      >
+                        <X size={16} />
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
-            ))}
+              );
+            })}
+
+            {/* Resumo de descontos */}
+            {discountTotal > 0 && (
+              <div className="flex justify-between items-center px-2 pt-1 text-xs font-bold">
+                <span className="text-muted uppercase tracking-widest">Descontos</span>
+                <span className="text-primary-bright">− {formatCurrency(discountTotal)}</span>
+              </div>
+            )}
           </div>
         </div>
 
