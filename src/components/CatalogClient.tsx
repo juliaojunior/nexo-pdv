@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Search, ShoppingBag, Plus, Minus, Store, ChevronRight, X, LayoutGrid, List, Tag } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
+import { getEffectivePrice } from "@/lib/utils";
 
 interface Product {
   local_id: number;
@@ -70,13 +71,8 @@ export default function CatalogClient({
     return matchCat && matchSearch;
   });
 
-  // Função Local de Preço
-  const calcActivePrice = (p: Product) => {
-    if (!p.promotionalPrice || !p.promotionEndDate) return Number(p.price);
-    const expire = new Date(p.promotionEndDate).getTime();
-    if (Date.now() <= expire) return Number(p.promotionalPrice);
-    return Number(p.price);
-  };
+  // Preço ativo via fonte única de verdade (mesma lógica do backend anti-spoofing)
+  const calcActivePrice = (p: Product) => getEffectivePrice(p);
 
   const cartTotal = cart.reduce((acc, curr) => acc + (calcActivePrice(curr) * curr.quantity), 0);
   const cartItemsCount = cart.reduce((acc, curr) => acc + curr.quantity, 0);

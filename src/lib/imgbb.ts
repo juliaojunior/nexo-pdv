@@ -7,9 +7,13 @@ export async function uploadImageToImgBB(base64DataUrl: string): Promise<string>
 
   const base64Data = base64DataUrl.split("base64,")[1];
   
+  // Chave configurável via env (permite rotação sem novo deploy). Fallback mantém
+  // a community key pública do FreeImage.Host para não quebrar em dev/sem env.
+  const apiKey = process.env.NEXT_PUBLIC_IMGBB_KEY || "6d207e02198a847aa98d0a2a901485a5";
+
   const formData = new FormData();
   formData.append("source", base64Data);
-  formData.append("key", "6d207e02198a847aa98d0a2a901485a5"); // PWA Community Key from FreeImage.Host
+  formData.append("key", apiKey);
   formData.append("action", "upload");
 
   try {

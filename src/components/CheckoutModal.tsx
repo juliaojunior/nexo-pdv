@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { db, type SalePayload } from "@/db/db";
+import { db, type SalePayload, type PaymentMethod, PAYMENT_METHODS } from "@/db/db";
 import { useLiveQuery } from "dexie-react-hooks";
 import { submitSale } from "@/lib/offline/submitSale";
 import { useCartStore } from "@/stores/cart.store";
@@ -14,8 +14,6 @@ interface CheckoutModalProps {
   onClose: () => void;
   onSuccess?: (data: any) => void;
 }
-
-type PaymentMethod = 'Dinheiro' | 'PIX' | 'Crédito' | 'Débito' | 'Fiado';
 
 export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps) {
   const { items, updateQuantity, clearCart } = useCartStore();
@@ -182,7 +180,7 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
           <div className="flex flex-col gap-2 relative z-0">
             <span className="text-muted text-sm font-bold uppercase tracking-widest mb-1">Pagamento / Condição</span>
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
-              {(['Dinheiro', 'PIX', 'Crédito', 'Débito', 'Fiado'] as PaymentMethod[]).map((method) => (
+              {PAYMENT_METHODS.map((method) => (
                 <button
                   key={method}
                   onClick={() => setPaymentMethod(method)}
@@ -253,13 +251,16 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
         <div className="p-5 border-t border-border/30 bg-background z-0">
           <button
             onClick={handleFinalizeSale}
-            className={`w-full font-black text-lg uppercase tracking-wider py-4 rounded-xl active:scale-[0.98] transition-transform ${
-              paymentMethod === 'Fiado' 
-               ? "bg-danger hover:bg-danger/90 text-surface" 
+            disabled={isSubmitting}
+            className={`w-full font-black text-lg uppercase tracking-wider py-4 rounded-xl active:scale-[0.98] transition-transform disabled:opacity-50 disabled:pointer-events-none ${
+              paymentMethod === 'Fiado'
+               ? "bg-danger hover:bg-danger/90 text-surface"
                : "bg-primary hover:bg-primary-bright text-primary-deep"
             }`}
           >
-            {paymentMethod === 'Fiado' ? 'Anotar na Cartela' : 'Confirmar Venda'}
+            {isSubmitting
+              ? 'Processando...'
+              : paymentMethod === 'Fiado' ? 'Anotar na Cartela' : 'Confirmar Venda'}
           </button>
         </div>
       </div>

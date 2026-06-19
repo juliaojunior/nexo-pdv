@@ -8,14 +8,16 @@ export async function GET() {
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const client = await cloudDb.connect();
-    const { rows } = await client.sql`
-      SELECT * FROM nexo_categories 
-      WHERE user_id = ${userId} 
-      ORDER BY name ASC;
-    `;
-    client.release();
-    
-    return NextResponse.json(rows);
+    try {
+      const { rows } = await client.sql`
+        SELECT * FROM nexo_categories
+        WHERE user_id = ${userId}
+        ORDER BY name ASC;
+      `;
+      return NextResponse.json(rows);
+    } finally {
+      client.release();
+    }
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -42,14 +44,16 @@ export async function POST(req: Request) {
     const { name } = parseResult.data;
 
     const client = await cloudDb.connect();
-    const { rows } = await client.sql`
-      INSERT INTO nexo_categories (user_id, name)
-      VALUES (${userId}, ${name})
-      RETURNING *;
-    `;
-    client.release();
-
-    return NextResponse.json(rows[0], { status: 201 });
+    try {
+      const { rows } = await client.sql`
+        INSERT INTO nexo_categories (user_id, name)
+        VALUES (${userId}, ${name})
+        RETURNING *;
+      `;
+      return NextResponse.json(rows[0], { status: 201 });
+    } finally {
+      client.release();
+    }
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -66,8 +70,12 @@ export async function DELETE(req: Request) {
     if (!id) return NextResponse.json({ error: "Category ID is required" }, { status: 400 });
 
     const client = await cloudDb.connect();
-    const { rowCount } = await client.sql`DELETE FROM nexo_categories WHERE id = ${id} AND user_id = ${userId}`;
-    client.release();
+    let rowCount;
+    try {
+      ({ rowCount } = await client.sql`DELETE FROM nexo_categories WHERE id = ${id} AND user_id = ${userId}`);
+    } finally {
+      client.release();
+    }
 
     if (rowCount === 0) return NextResponse.json({ error: "Category not found or unauthorized" }, { status: 404 });
 

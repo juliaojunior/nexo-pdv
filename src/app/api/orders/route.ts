@@ -1,13 +1,17 @@
 import { cloudDb } from '@/lib/cloudDb';
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
+import { getEffectivePrice } from '@/lib/utils';
 
-// Map em memória para agir como Rate Limiter rápido (Defesa contra DoS / Spam)
+// Rate Limiter best-effort em memória de processo.
+// AVISO: em serverless (Vercel) cada instância/cold start tem seu próprio Map,
+// então este limite é facilmente contornável e NÃO é proteção forte contra DDoS.
+// Para proteção real, migrar para um limiter persistente (ex.: Upstash/Redis).
 const rateLimitMap = new Map<string, { count: number, lastTime: number }>();
 
 export async function POST(request: Request) {
   try {
-    // 0. RATE LIMITING (Anti-Spam DDoS na Vitrine)
+    // 0. RATE LIMITING best-effort (atenua spam casual; ver aviso acima)
     const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0] || 'ip-desconhecido';
     const now = Date.now();
     const WINDOW_MS = 60 * 1000; // 1 minuto
@@ -45,69 +49,75 @@ export async function POST(request: Request) {
     }
 
     const client = await cloudDb.connect();
+    try {
+      // Cria a Tabela se não existir (Mantido)
+      await client.sql`
+        CREATE TABLE IF NOT EXISTS nexo_orders (
+          id SERIAL PRIMARY KEY,
+          user_id VARCHAR(255) NOT NULL,
+          customer_name VARCHAR(255) NOT NULL,
+          customer_phone VARCHAR(50) NOT NULL,
+          payment_method VARCHAR(50) NOT NULL,
+          payment_status VARCHAR(50) DEFAULT 'PENDING',
+          order_status VARCHAR(50) DEFAULT 'PENDING',
+          cart_items JSONB NOT NULL,
+          total_price DECIMAL(10,2) NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `;
 
-    // Cria a Tabela se não existir (Mantido)
-    await client.sql`
-      CREATE TABLE IF NOT EXISTS nexo_orders (
-        id SERIAL PRIMARY KEY,
-        user_id VARCHAR(255) NOT NULL,
-        customer_name VARCHAR(255) NOT NULL,
-        customer_phone VARCHAR(50) NOT NULL,
-        payment_method VARCHAR(50) NOT NULL,
-        payment_status VARCHAR(50) DEFAULT 'PENDING',
-        order_status VARCHAR(50) DEFAULT 'PENDING',
-        cart_items JSONB NOT NULL,
-        total_price DECIMAL(10,2) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `;
+      // 1.5 Valida que a loja existe (evita pedidos-fantasma com storeId arbitrário)
+      const storeCheck = await client.sql`
+        SELECT 1 FROM nexo_products WHERE user_id = ${storeId} LIMIT 1;
+      `;
+      if (storeCheck.rows.length === 0) {
+        return NextResponse.json({ error: 'Loja inválida ou sem produtos cadastrados.' }, { status: 404 });
+      }
 
-    // 2. ANTI PRICE SPOOFING (Cálculo real de preços usando o Banco Blindado)
-    let realTotalPrice = 0;
-    const realCartItems = [];
+      // 2. ANTI PRICE SPOOFING (Cálculo real de preços usando o Banco Blindado)
+      let realTotalPrice = 0;
+      const realCartItems = [];
 
-    for (const item of cartItems) {
-       if (!item.productId) continue;
+      for (const item of cartItems) {
+         if (!item.productId) continue;
 
-       const { rows } = await client.sql`SELECT name, price, promotional_price, promotion_end_date FROM nexo_products WHERE id = ${item.productId} AND user_id = ${storeId}`;
-       
-       if (rows.length === 0) {
-          client.release();
-          return NextResponse.json({ error: `Produto indisponível ou apagado. ID: ${item.productId}` }, { status: 404 });
-       }
+         const { rows } = await client.sql`SELECT name, price, promotional_price, promotion_end_date FROM nexo_products WHERE id = ${item.productId} AND user_id = ${storeId}`;
 
-       let productRealPrice = Number(rows[0].price);
-       
-       // Aplica a promoção se existir e estiver no prazo válido
-       if (rows[0].promotional_price && rows[0].promotion_end_date) {
-          const promoExpire = new Date(rows[0].promotion_end_date).getTime();
-          if (Date.now() <= promoExpire) {
-             productRealPrice = Number(rows[0].promotional_price);
-          }
-       }
+         if (rows.length === 0) {
+            return NextResponse.json({ error: `Produto indisponível ou apagado. ID: ${item.productId}` }, { status: 404 });
+         }
 
-       realTotalPrice += productRealPrice * item.quantity;
+         // Fonte única de verdade de preço promocional (mesma usada no client). Ver getEffectivePrice.
+         const productRealPrice = getEffectivePrice({
+           price: rows[0].price,
+           promotionalPrice: rows[0].promotional_price,
+           promotionEndDate: rows[0].promotion_end_date,
+         });
 
-       realCartItems.push({
-         productId: item.productId,
-         name: rows[0].name, // Usa o nome real do banco pra evitar spoofing de nomes!
-         price: productRealPrice,
-         quantity: item.quantity
-       });
+         realTotalPrice += productRealPrice * item.quantity;
+
+         realCartItems.push({
+           productId: item.productId,
+           name: rows[0].name, // Usa o nome real do banco pra evitar spoofing de nomes!
+           price: productRealPrice,
+           quantity: item.quantity
+         });
+      }
+
+      // 3. Registra o Pedido na Tabela do Lojista COM PREÇOS REAIS CALCUADOS
+      const result = await client.sql`
+        INSERT INTO nexo_orders (
+          user_id, customer_name, customer_phone, payment_method, cart_items, total_price
+        ) VALUES (
+          ${storeId}, ${customerName}, ${customerPhone}, ${paymentMethod}, ${JSON.stringify(realCartItems)}, ${realTotalPrice}
+        )
+        RETURNING id
+      `;
+
+      return NextResponse.json({ success: true, orderId: result.rows[0].id, realTotal: realTotalPrice });
+    } finally {
+      client.release();
     }
-
-    // 3. Registra o Pedido na Tabela do Lojista COM PREÇOS REAIS CALCUADOS
-    const result = await client.sql`
-      INSERT INTO nexo_orders (
-        user_id, customer_name, customer_phone, payment_method, cart_items, total_price
-      ) VALUES (
-        ${storeId}, ${customerName}, ${customerPhone}, ${paymentMethod}, ${JSON.stringify(realCartItems)}, ${realTotalPrice}
-      )
-      RETURNING id
-    `;
-
-    client.release();
-    return NextResponse.json({ success: true, orderId: result.rows[0].id, realTotal: realTotalPrice });
   } catch (error: any) {
     console.error('Erro ao registrar pedido:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -126,15 +136,16 @@ export async function GET(request: Request) {
     const status = searchParams.get('status') || 'PENDING';
 
     const client = await cloudDb.connect();
-    
-    const result = await client.sql`
-      SELECT * FROM nexo_orders 
-      WHERE user_id = ${userId} AND order_status = ${status}
-      ORDER BY created_at ASC
-    `;
-
-    client.release();
-    return NextResponse.json({ orders: result.rows });
+    try {
+      const result = await client.sql`
+        SELECT * FROM nexo_orders
+        WHERE user_id = ${userId} AND order_status = ${status}
+        ORDER BY created_at ASC
+      `;
+      return NextResponse.json({ orders: result.rows });
+    } finally {
+      client.release();
+    }
   } catch (error: any) {
     console.error('Erro ao buscar pedidos:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
