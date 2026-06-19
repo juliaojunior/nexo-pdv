@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import useSWR from "swr";
 import { formatCurrency } from "@/lib/utils";
 import { toBlob } from "html-to-image";
 import { Share2, X, Download, CheckCircle } from "lucide-react";
@@ -39,16 +40,31 @@ interface ReceiptModalProps {
 
 export function ReceiptModal({ isOpen, onClose, receiptData }: ReceiptModalProps) {
   const receiptRef = useRef<HTMLDivElement>(null);
-  const [storeName, setStoreName] = useState("Minha Loja");
-  const [storeDoc, setStoreDoc] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // Nome/documento da loja vêm da fonte autoritativa (nuvem). O localStorage é só
+  // cache para leitura instantânea/offline; o texto genérico é o último recurso.
+  const { data: settings } = useSWR<Record<string, string>>(
+    "/api/settings",
+    (u: string) => fetch(u).then((r) => r.json()),
+    { revalidateOnFocus: false }
+  );
+
+  const storeName =
+    settings?.nexo_storeName ||
+    (typeof window !== "undefined" ? localStorage.getItem("nexo_storeName") : "") ||
+    "Meu Estabelecimento";
+  const storeDoc =
+    settings?.nexo_storeDocument ||
+    (typeof window !== "undefined" ? localStorage.getItem("nexo_storeDocument") : "") ||
+    "";
+
+  // Espelha no localStorage quando a nuvem responde (cache p/ próximas aberturas/offline)
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setStoreName(localStorage.getItem("nexo_storeName") || "Meu Estabelecimento");
-      setStoreDoc(localStorage.getItem("nexo_storeDocument") || "");
-    }
-  }, [isOpen]);
+    if (typeof window === "undefined" || !settings) return;
+    if (settings.nexo_storeName) localStorage.setItem("nexo_storeName", settings.nexo_storeName);
+    if (settings.nexo_storeDocument) localStorage.setItem("nexo_storeDocument", settings.nexo_storeDocument);
+  }, [settings]);
 
   if (!isOpen || !receiptData) return null;
 
