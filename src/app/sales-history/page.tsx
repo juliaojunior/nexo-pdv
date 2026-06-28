@@ -117,6 +117,11 @@ export default function SalesHistoryPage() {
                        </div>
                     </div>
                     <div className="flex flex-col items-end">
+                      {sale.paymentMethod === 'Fiado' && (
+                        <span className="bg-warning/15 text-warning border border-warning/30 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1 mb-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-warning animate-pulse" /> A receber
+                        </span>
+                      )}
                       <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md mb-1 ${
                         sale.paymentMethod === 'PIX' ? 'bg-primary/10 text-primary border border-primary/30' :
                         sale.paymentMethod === 'Dinheiro' ? 'bg-success/10 text-success border border-success/30' :
