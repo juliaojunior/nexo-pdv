@@ -253,10 +253,10 @@ export default function CatalogClient({
                         <div className="flex items-center gap-2 bg-surface-raised rounded-full p-1 border border-border/30 shrink-0" onClick={e => e.stopPropagation()}>
                           <button onClick={() => handleUpdateQty(product.local_id, -1)} className="w-7 h-7 rounded-full bg-background text-foreground flex items-center justify-center active:scale-95"><Minus size={13} /></button>
                           <span className="text-foreground font-black w-4 text-center text-sm">{inCartItem.quantity}</span>
-                          <button disabled={inCartItem.quantity >= product.stock} onClick={() => handleUpdateQty(product.local_id, 1)} className="w-7 h-7 rounded-full bg-primary text-background flex items-center justify-center active:scale-95 disabled:opacity-50"><Plus size={13} strokeWidth={3} /></button>
+                          <button disabled={inCartItem.quantity >= product.stock} onClick={() => handleUpdateQty(product.local_id, 1)} className="w-7 h-7 rounded-full bg-primary text-primary-deep flex items-center justify-center active:scale-95 disabled:opacity-50"><Plus size={13} strokeWidth={3} /></button>
                         </div>
                       ) : (
-                        <button onClick={e => { e.stopPropagation(); handleAddToCart(product); }} className="w-11 h-11 rounded-full bg-primary text-background flex items-center justify-center shrink-0 active:scale-90 transition-transform shadow-glow" aria-label={`Adicionar ${product.name} à sacola`}>
+                        <button onClick={e => { e.stopPropagation(); handleAddToCart(product); }} className="w-11 h-11 rounded-full bg-primary text-primary-deep flex items-center justify-center shrink-0 active:scale-90 transition-transform shadow-glow" aria-label={`Adicionar ${product.name} à sacola`}>
                           <Plus size={20} strokeWidth={2.5} />
                         </button>
                       )
@@ -279,7 +279,7 @@ export default function CatalogClient({
                           <div className="flex items-center gap-3 bg-background/90 border border-border/50 rounded-full p-1.5 shadow-xl" onClick={e => e.stopPropagation()}>
                             <button onClick={() => handleUpdateQty(product.local_id, -1)} className="w-8 h-8 rounded-full bg-surface-raised text-foreground flex items-center justify-center active:scale-95"><Minus size={14} /></button>
                             <span className="text-foreground font-black w-4 text-center">{inCartItem.quantity}</span>
-                            <button disabled={inCartItem.quantity >= product.stock} onClick={() => handleUpdateQty(product.local_id, 1)} className="w-8 h-8 rounded-full bg-primary text-background flex items-center justify-center active:scale-95 disabled:opacity-50"><Plus size={14} strokeWidth={3} /></button>
+                            <button disabled={inCartItem.quantity >= product.stock} onClick={() => handleUpdateQty(product.local_id, 1)} className="w-8 h-8 rounded-full bg-primary text-primary-deep flex items-center justify-center active:scale-95 disabled:opacity-50"><Plus size={14} strokeWidth={3} /></button>
                           </div>
                        </div>
                      )}
@@ -386,13 +386,13 @@ export default function CatalogClient({
                       <div className="flex items-center gap-4 bg-background rounded-lg p-1.5">
                         <button onClick={() => handleUpdateQty(selectedProduct.local_id, -1)} className="w-10 h-10 rounded-lg bg-surface-raised text-foreground flex items-center justify-center active:scale-95"><Minus size={18} /></button>
                         <span className="text-foreground font-black w-6 text-center text-xl">{cart.find(i => i.local_id === selectedProduct.local_id)?.quantity}</span>
-                        <button disabled={cart.find(i => i.local_id === selectedProduct.local_id)!.quantity >= selectedProduct.stock} onClick={() => handleUpdateQty(selectedProduct.local_id, 1)} className="w-10 h-10 rounded-lg bg-primary text-background flex items-center justify-center active:scale-95 disabled:opacity-50"><Plus size={18} strokeWidth={3} /></button>
+                        <button disabled={cart.find(i => i.local_id === selectedProduct.local_id)!.quantity >= selectedProduct.stock} onClick={() => handleUpdateQty(selectedProduct.local_id, 1)} className="w-10 h-10 rounded-lg bg-primary text-primary-deep flex items-center justify-center active:scale-95 disabled:opacity-50"><Plus size={18} strokeWidth={3} /></button>
                       </div>
                    </div>
                  ) : (
                    <button 
                      onClick={() => { handleAddToCart(selectedProduct); setSelectedProduct(null); toast.success("Adicionado à sacola!"); }}
-                     className="w-full py-4 rounded-xl flex items-center justify-center gap-3 font-black text-lg uppercase tracking-wide shadow-glow transition-transform active:scale-[0.98] bg-primary text-background"
+                     className="w-full py-4 rounded-xl flex items-center justify-center gap-3 font-black text-lg uppercase tracking-wide shadow-glow transition-transform active:scale-[0.98] bg-primary text-primary-deep"
                    >
                      <ShoppingBag size={22} />
                      Adicionar à Sacola
@@ -464,7 +464,7 @@ export default function CatalogClient({
                         <div className="flex items-center gap-3 bg-surface-raised rounded-full p-1 border border-border/30">
                             <button onClick={() => handleUpdateQty(item.local_id, -1)} className="w-6 h-6 rounded-full bg-background text-foreground flex items-center justify-center active:scale-95"><Minus size={12} /></button>
                             <span className="text-foreground font-black w-3 text-center text-xs">{item.quantity}</span>
-                            <button disabled={item.quantity >= item.stock} onClick={() => handleUpdateQty(item.local_id, 1)} className="w-6 h-6 rounded-full bg-primary text-background flex items-center justify-center active:scale-95 disabled:opacity-50"><Plus size={12} strokeWidth={3} /></button>
+                            <button disabled={item.quantity >= item.stock} onClick={() => handleUpdateQty(item.local_id, 1)} className="w-6 h-6 rounded-full bg-primary text-primary-deep flex items-center justify-center active:scale-95 disabled:opacity-50"><Plus size={12} strokeWidth={3} /></button>
                           </div>
                       </div>
                    </div>
@@ -478,7 +478,7 @@ export default function CatalogClient({
                  </div>
                  <button 
                    onClick={() => setCheckoutModalOpen(true)}
-                   className="w-full py-4 rounded-xl flex items-center justify-center font-black text-lg uppercase tracking-wide shadow-glow transition-transform active:scale-[0.98] bg-primary text-background"
+                   className="w-full py-4 rounded-xl flex items-center justify-center font-black text-lg uppercase tracking-wide shadow-glow transition-transform active:scale-[0.98] bg-primary text-primary-deep"
                  >
                    Prosseguir
                  </button>
@@ -522,7 +522,7 @@ export default function CatalogClient({
               <button 
                 onClick={handleFinishOrder}
                 disabled={sendingOrder}
-                className="w-full py-4 rounded-xl bg-primary text-background font-black text-lg uppercase tracking-wide disabled:opacity-50 mt-auto"
+                className="w-full py-4 rounded-xl bg-primary text-primary-deep font-black text-lg uppercase tracking-wide disabled:opacity-50 mt-auto"
               >
                 {sendingOrder ? 'Fechando Conta...' : 'Efetuar Pedido (R$ ' + cartTotal.toFixed(2).replace('.',',') + ')'}
               </button>
@@ -535,7 +535,7 @@ export default function CatalogClient({
         <div className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center p-6 animate-in zoom-in-95">
            <div className="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center mb-6 animate-pulse">
              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center shadow-glow">
-                <ShoppingBag size={32} className="text-background" />
+                <ShoppingBag size={32} className="text-primary-deep" />
              </div>
            </div>
            
