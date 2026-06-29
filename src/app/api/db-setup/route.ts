@@ -129,6 +129,22 @@ export async function GET() {
     await client.sql`CREATE INDEX IF NOT EXISTS nexo_sale_payments_sale_id_idx ON nexo_sale_payments (sale_id);`;
     await client.sql`CREATE INDEX IF NOT EXISTS nexo_sale_payments_user_id_idx ON nexo_sale_payments (user_id);`;
 
+    // 7. Clientes na nuvem. CHAVE COMPOSTA (user_id, id): o id é POR USUÁRIO, preservado
+    // do Dexie local — assim nexo_sales.customer_id (id local) continua resolvendo sem
+    // remapeamento. NÃO usar SERIAL: o id vem do cliente/migração.
+    await client.sql`
+      CREATE TABLE IF NOT EXISTS nexo_customers (
+        user_id VARCHAR(255) NOT NULL,
+        id INTEGER NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        phone VARCHAR(50),
+        email VARCHAR(255),
+        document VARCHAR(50),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (user_id, id)
+      );
+    `;
+
     } finally {
       client.release();
     }

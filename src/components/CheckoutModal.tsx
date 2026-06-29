@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { db, type SalePayload, type PaymentMethod, PAYMENT_METHODS } from "@/db/db";
-import { useLiveQuery } from "dexie-react-hooks";
+import { type SalePayload, type PaymentMethod, PAYMENT_METHODS } from "@/db/db";
+import useSWR from "swr";
+import { cachedFetcher } from "@/lib/offline/cachedFetcher";
 import { submitSale } from "@/lib/offline/submitSale";
 import { useCartStore } from "@/stores/cart.store";
 import { formatCurrency, lineDiscountToBRL, type DiscountMode } from "@/lib/utils";
@@ -30,8 +31,10 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
   const [discounts, setDiscounts] = useState<Record<number, { mode: DiscountMode; value: string }>>({});
   const [openDiscountId, setOpenDiscountId] = useState<number | null>(null);
 
-  // Consulta Viva de Clientes Local
-  const customers = useLiveQuery(() => db.customers.toArray()) || [];
+  // Clientes da nuvem (com cache offline via apiCache — vender p/ cliente existente
+  // continua funcionando sem rede).
+  const { data: customersData } = useSWR("/api/customers", cachedFetcher);
+  const customers: { id?: number; name: string; phone?: string }[] = customersData || [];
 
   if (!isOpen) return null;
 

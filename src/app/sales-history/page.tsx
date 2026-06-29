@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useLiveQuery } from "dexie-react-hooks";
 import useSWR from "swr";
-import { db } from "@/db/db";
+import { cachedFetcher } from "@/lib/offline/cachedFetcher";
 import { ChevronLeft, Receipt, Trash2, ArrowDownRight, Clock, AlertTriangle, Wallet, ChevronDown, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -20,8 +19,9 @@ export default function SalesHistoryPage() {
   const { data: rawSales, mutate, isLoading } = useSWR("/api/sales", fetcher, { revalidateOnFocus: true });
   const sales = rawSales || [];
 
-  // Manteve-se o customer local pois o cadastro de clientes ainda não foi portado para a Nuvem
-  const customers = useLiveQuery(() => db.customers.toArray()) || [];
+  // Clientes da nuvem (cache offline via apiCache) — resolve os nomes nas dívidas
+  const { data: customersData } = useSWR("/api/customers", cachedFetcher);
+  const customers: { id?: number; name: string }[] = customersData || [];
   
   const [filterMode, setFilterMode] = useState<"all" | "fiado">("all");
   const filteredSales = sales.filter((s: any) => filterMode === 'all' || s.paymentMethod === 'Fiado');

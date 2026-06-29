@@ -1,8 +1,7 @@
 "use client";
 
-import { useLiveQuery } from "dexie-react-hooks";
 import useSWR from "swr";
-import { db } from "@/db/db";
+import { cachedFetcher } from "@/lib/offline/cachedFetcher";
 import { ChevronLeft, Wallet, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
@@ -13,8 +12,9 @@ export default function ReceivablesPage() {
   const router = useRouter();
   const { data: rawSales, isLoading } = useSWR("/api/sales", fetcher, { revalidateOnFocus: true });
   const sales = rawSales || [];
-  // Clientes são locais (Dexie); junta-se com as vendas (servidor) por customerId.
-  const customers = useLiveQuery(() => db.customers.toArray()) || [];
+  // Clientes da nuvem; junta-se com as vendas por customerId (id por-usuário).
+  const { data: customersData } = useSWR("/api/customers", cachedFetcher);
+  const customers: { id?: number; name: string }[] = customersData || [];
 
   // Vendas fiado com saldo em aberto
   const open = sales

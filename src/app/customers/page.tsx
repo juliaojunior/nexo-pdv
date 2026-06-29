@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { useLiveQuery } from "dexie-react-hooks";
-import { db, Customer } from "@/db/db";
+import useSWR from "swr";
+import { Customer } from "@/db/db";
+import { cachedFetcher } from "@/lib/offline/cachedFetcher";
+import { requireOnline } from "@/lib/offline/onlineGuard";
 import { ChevronLeft, Search, Plus, User, Phone, Trash2, Edit3 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 export default function CustomersPage() {
   const router = useRouter();
-  const allCustomers = useLiveQuery(() => db.customers.toArray()) || [];
+  // Clientes agora vêm da nuvem (cache offline p/ leitura via apiCache).
+  const { data: customersData, mutate } = useSWR("/api/customers", cachedFetcher);
+  const allCustomers: Customer[] = customersData || [];
   
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -51,40 +55,51 @@ export default function CustomersPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return toast.error("O nome é obrigatório!");
+    if (!requireOnline()) return; // cadastro/edição de cliente é online-only
 
     try {
-      const payload: Customer = {
+      const payload = {
         name: name.trim(),
-        phone: phone.trim() || undefined,
-        email: email.trim() || undefined,
-        document: document.trim() || undefined,
-        createdAt: editingCustomer ? editingCustomer.createdAt : new Date().toISOString(),
+        phone: phone.trim() || null,
+        email: email.trim() || null,
+        document: document.trim() || null,
       };
 
+      let res: Response;
       if (editingCustomer && editingCustomer.id) {
-        payload.id = editingCustomer.id;
-        // db.customers.put handles both add and update
-        await db.customers.put(payload);
-        toast.success("Cliente atualizado!");
+        res = await fetch("/api/customers", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingCustomer.id, ...payload }),
+        });
       } else {
-        await db.customers.add(payload);
-        toast.success("Cliente registrado!");
+        res = await fetch("/api/customers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
       }
+      if (!res.ok) throw new Error();
 
+      toast.success(editingCustomer ? "Cliente atualizado!" : "Cliente registrado!");
+      mutate();
       closeForm();
     } catch (err) {
-      toast.error("Erro interno ao salvar o cliente.");
+      toast.error("Não foi possível salvar o cliente. Verifique a conexão.");
       console.error(err);
     }
   };
 
   const handleDelete = async () => {
     if (!editingCustomer || !editingCustomer.id) return;
-    
+    if (!requireOnline()) return;
+
     if (confirm(`Tem certeza que deseja apagar ${editingCustomer.name}?`)) {
       try {
-        await db.customers.delete(editingCustomer.id);
+        const res = await fetch(`/api/customers?id=${editingCustomer.id}`, { method: "DELETE" });
+        if (!res.ok) throw new Error();
         toast.success("Cadastro removido.");
+        mutate();
         closeForm();
       } catch (err) {
         toast.error("Erro ao deletar.");

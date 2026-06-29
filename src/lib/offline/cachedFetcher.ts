@@ -1,7 +1,7 @@
 import { db } from "@/db/db";
 
 // GETs que podem ser servidos do cache local quando a rede falhar
-const CACHEABLE = new Set(["/api/products", "/api/categories"]);
+const CACHEABLE = new Set(["/api/products", "/api/categories", "/api/customers"]);
 
 // Erro HTTP do servidor: a rede funcionou, então NUNCA serve cache nem enfileira
 export class ApiError extends Error {
