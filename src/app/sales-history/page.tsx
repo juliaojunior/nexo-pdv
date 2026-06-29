@@ -4,10 +4,12 @@ import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import useSWR from "swr";
 import { db } from "@/db/db";
-import { ChevronLeft, Receipt, Trash2, ArrowDownRight, Clock, AlertTriangle } from "lucide-react";
+import { ChevronLeft, Receipt, Trash2, ArrowDownRight, Clock, AlertTriangle, Wallet, ChevronDown, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
+import { requireOnline } from "@/lib/offline/onlineGuard";
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
@@ -25,6 +27,52 @@ export default function SalesHistoryPage() {
   const filteredSales = sales.filter((s: any) => filterMode === 'all' || s.paymentMethod === 'Fiado');
   
   const [revertCandidate, setRevertCandidate] = useState<number | null>(null);
+
+  // Caderneta (fiado): registro de pagamento + histórico expansível
+  const [payingSale, setPayingSale] = useState<any>(null);
+  const [payAmount, setPayAmount] = useState("");
+  const [payDate, setPayDate] = useState("");
+  const [submittingPay, setSubmittingPay] = useState(false);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  const handleRegisterPayment = async () => {
+    if (!requireOnline() || !payingSale) return;
+    const amount = parseFloat(payAmount.replace(",", "."));
+    if (!amount || amount <= 0) { toast.error("Informe um valor de pagamento válido."); return; }
+
+    setSubmittingPay(true);
+    const tsId = toast.loading("Registrando pagamento...");
+    try {
+      const res = await fetch(`/api/sales/${payingSale.id}/payment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        // Meio-dia local evita o "dia-off" de UTC quando a data é só YYYY-MM-DD
+        body: JSON.stringify({ amount, paidAt: payDate ? `${payDate}T12:00:00` : undefined }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.error || "Falha ao registrar.");
+      toast.success("Pagamento registrado!", { id: tsId });
+      setPayingSale(null); setPayAmount(""); setPayDate("");
+      mutate();
+    } catch (e: any) {
+      toast.error(e.message || "Não foi possível registrar o pagamento.", { id: tsId });
+    } finally {
+      setSubmittingPay(false);
+    }
+  };
+
+  const handleDeletePayment = async (saleId: number, paymentId: number) => {
+    if (!requireOnline()) return;
+    const tsId = toast.loading("Estornando pagamento...");
+    try {
+      const res = await fetch(`/api/sales/${saleId}/payment?paymentId=${paymentId}`, { method: "DELETE" });
+      if (!res.ok) { const d = await res.json().catch(() => null); throw new Error(d?.error || "Falha."); }
+      toast.success("Pagamento estornado.", { id: tsId });
+      mutate();
+    } catch (e: any) {
+      toast.error(e.message || "Erro ao estornar pagamento.", { id: tsId });
+    }
+  };
 
   const handleRevertSale = async () => {
     if (!revertCandidate) return;
@@ -58,6 +106,12 @@ export default function SalesHistoryPage() {
             <h1 className="text-primary-bright font-black tracking-tighter text-2xl">Histórico de Caixa</h1>
             <span className="text-[10px] text-muted uppercase tracking-widest font-bold flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"/> Histórico de vendas</span>
           </div>
+          <Link
+            href="/receivables"
+            className="ml-auto flex items-center gap-1.5 px-3 py-2 rounded-xl bg-warning/15 text-warning border border-warning/30 text-xs font-bold uppercase tracking-widest active:scale-95 transition-transform"
+          >
+            <Wallet size={14} /> A Receber
+          </Link>
         </div>
       </header>
 
@@ -105,6 +159,14 @@ export default function SalesHistoryPage() {
                 0
               );
 
+              // Fiado: saldo = total − amount_paid; status derivado
+              const isFiado = sale.paymentMethod === 'Fiado';
+              const amountPaid = Number(sale.amountPaid || 0);
+              const balance = Math.round((Number(sale.total) - amountPaid) * 100) / 100;
+              const payments = sale.payments || [];
+              const isPaid = isFiado && balance <= 0.001;
+              const isPartial = isFiado && amountPaid > 0.001 && !isPaid;
+
               return (
                 <div key={sale.id} className="bg-surface rounded-2xl flex flex-col shadow-card overflow-hidden active:scale-[0.98] transition-transform">
                   
@@ -122,10 +184,17 @@ export default function SalesHistoryPage() {
                        </div>
                     </div>
                     <div className="flex flex-col items-end">
-                      {sale.paymentMethod === 'Fiado' && (
-                        <span className="bg-warning/15 text-warning border border-warning/30 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1 mb-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-warning animate-pulse" /> A receber
-                        </span>
+                      {isFiado && (
+                        isPaid ? (
+                          <span className="bg-success/15 text-success border border-success/30 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1 mb-1">
+                            Pago
+                          </span>
+                        ) : (
+                          <span className="bg-warning/15 text-warning border border-warning/30 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-1 mb-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-warning animate-pulse" />
+                            {isPartial ? 'Parcial' : 'A receber'} {formatCurrency(balance)}
+                          </span>
+                        )
                       )}
                       <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md mb-1 ${
                         sale.paymentMethod === 'PIX' ? 'bg-primary/10 text-primary border border-primary/30' :
@@ -162,6 +231,56 @@ export default function SalesHistoryPage() {
                        <span className="text-success text-[10px] font-bold uppercase tracking-widest">Lucro</span>
                        <span className="text-success text-xs font-black">{formatCurrency(profit)}</span>
                     </div>
+
+                    {/* Caderneta (Fiado): saldo, histórico de parcelas e registro de pagamento */}
+                    {isFiado && (
+                      <div className="mt-2 pt-3 border-t border-dashed border-warning/30 flex flex-col gap-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted text-[10px] font-bold uppercase tracking-widest">Pago</span>
+                          <span className="text-foreground text-xs font-bold">{formatCurrency(amountPaid)}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className={`text-[10px] font-bold uppercase tracking-widest ${isPaid ? 'text-success' : 'text-warning'}`}>Saldo</span>
+                          <span className={`text-xs font-black ${isPaid ? 'text-success' : 'text-warning'}`}>{formatCurrency(balance)}</span>
+                        </div>
+
+                        {payments.length > 0 && (
+                          <button
+                            onClick={() => setExpandedId(expandedId === sale.id ? null : sale.id)}
+                            className="flex items-center justify-center gap-1 text-muted text-[10px] font-bold uppercase tracking-widest py-1 hover:text-foreground transition-colors"
+                          >
+                            {payments.length} pagamento{payments.length > 1 ? 's' : ''}
+                            <ChevronDown size={12} className={`transition-transform ${expandedId === sale.id ? 'rotate-180' : ''}`} />
+                          </button>
+                        )}
+
+                        {expandedId === sale.id && payments.map((p: any) => (
+                          <div key={p.id} className="flex justify-between items-center bg-surface-raised/60 rounded-lg px-3 py-2 border border-border/20">
+                            <div className="flex flex-col">
+                              <span className="text-foreground text-xs font-bold">{formatCurrency(Number(p.amount))}</span>
+                              <span className="text-muted text-[10px] font-medium">{new Date(p.paidAt).toLocaleDateString('pt-BR')}</span>
+                            </div>
+                            <button
+                              onClick={() => handleDeletePayment(sale.id, p.id)}
+                              className="text-muted hover:text-danger p-1 rounded-md hover:bg-danger/10 transition-colors"
+                              title="Estornar este pagamento"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ))}
+
+                        {!isPaid && (
+                          <button
+                            onClick={() => { setPayingSale(sale); setPayAmount(""); setPayDate(""); }}
+                            className="flex items-center justify-center gap-1.5 mt-1 px-3 py-2 rounded-lg bg-warning/15 text-warning text-xs font-bold uppercase tracking-widest border border-warning/30 hover:bg-warning/25 transition-colors"
+                          >
+                            <Wallet size={14} /> Registrar pagamento
+                          </button>
+                        )}
+                      </div>
+                    )}
+
                     <div className="w-full flex justify-end mt-2 pt-3 border-t border-dashed border-border/50">
                        <button 
                          onClick={() => setRevertCandidate(sale.id!)}
@@ -179,10 +298,77 @@ export default function SalesHistoryPage() {
       </main>
 
       {/* Modal de Confirmação de Estorno */}
+      {/* Modal: Registrar Pagamento (Fiado) */}
+      {payingSale && (
+        <div className="fixed inset-0 z-[100] bg-background/90 flex flex-col justify-end sm:justify-center sm:items-center backdrop-blur-md p-0 sm:p-4 animate-in fade-in duration-200">
+          <div className="bg-surface w-full max-w-md mx-auto rounded-t-3xl sm:rounded-3xl border-t sm:border border-warning/30 flex flex-col p-6 relative">
+            <div className="flex justify-between items-center mb-5">
+              <div className="flex items-center gap-3">
+                <div className="bg-surface-raised p-2.5 rounded-full text-warning border border-warning/20 shadow-inner">
+                  <Wallet size={22} />
+                </div>
+                <div className="flex flex-col">
+                  <h2 className="text-lg font-black tracking-tight leading-none">Registrar Pagamento</h2>
+                  <span className="text-muted text-xs font-semibold uppercase tracking-widest mt-1">
+                    Saldo: {formatCurrency(Math.round((Number(payingSale.total) - Number(payingSale.amountPaid || 0)) * 100) / 100)}
+                  </span>
+                </div>
+              </div>
+              <button onClick={() => setPayingSale(null)} className="text-muted hover:text-danger transition-colors p-2 rounded-full bg-surface-raised">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="flex gap-4">
+              <div className="flex-1 flex flex-col gap-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-widest pl-1 text-muted">Valor</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-warning text-sm">R$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    autoFocus
+                    value={payAmount}
+                    onChange={(e) => setPayAmount(e.target.value)}
+                    placeholder="0,00"
+                    className="w-full bg-background rounded-xl py-3 pl-9 pr-3 outline-none text-foreground font-black border border-border/50 focus:border-warning shadow-inner"
+                  />
+                </div>
+              </div>
+              <div className="flex-[1.2] flex flex-col gap-1.5">
+                <label className="text-[10px] font-bold uppercase tracking-widest pl-1 text-muted">Data (opcional)</label>
+                <input
+                  type="date"
+                  value={payDate}
+                  onChange={(e) => setPayDate(e.target.value)}
+                  className="w-full bg-background rounded-xl py-3 px-3 outline-none text-foreground font-medium border border-border/50 focus:border-warning text-sm shadow-inner"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => { setPayAmount(String(Math.round((Number(payingSale.total) - Number(payingSale.amountPaid || 0)) * 100) / 100)); }}
+                className="flex-1 bg-surface-raised text-muted font-bold text-xs uppercase tracking-wider py-3.5 rounded-xl border border-border/50 active:scale-95 transition-all hover:text-foreground"
+              >
+                Quitar tudo
+              </button>
+              <button
+                onClick={handleRegisterPayment}
+                disabled={submittingPay}
+                className="flex-[1.5] bg-warning text-surface font-black text-sm uppercase tracking-wider py-3.5 rounded-xl active:scale-95 transition-all disabled:opacity-50"
+              >
+                {submittingPay ? 'Registrando...' : 'Confirmar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {revertCandidate && (
         <div className="fixed inset-0 z-[100] bg-background/95 flex flex-col justify-center items-center backdrop-blur-md p-4 animate-in fade-in duration-200">
            <div className="bg-surface w-full max-w-sm rounded-3xl border border-danger/30 flex flex-col p-6 items-center text-center relative overflow-hidden">
-             
+
              <div className="bg-surface-raised p-4 rounded-full text-danger mb-4 shadow-inner border border-danger/20 relative">
                <AlertTriangle size={32} />
                <div className="absolute top-0 right-0 w-3 h-3 bg-danger animate-ping rounded-full" />

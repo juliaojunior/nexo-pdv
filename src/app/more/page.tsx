@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Settings, Users, PackageMinus, LogOut, Share2, Compass, QrCode, FileText } from "lucide-react";
+import { Settings, Users, PackageMinus, LogOut, Share2, Compass, QrCode, FileText, Wallet } from "lucide-react";
 import Link from "next/link";
 import { SignOutButton, useAuth } from "@clerk/nextjs";
 import { toast } from "sonner";
@@ -44,6 +44,7 @@ export default function MorePage() {
 
   const menuItems = [
     { icon: Users, label: "Clientes", description: "Gerenciar base de clientes", href: "/customers" },
+    { icon: Wallet, label: "A Receber", description: "Fiado em aberto por cliente", href: "/receivables" },
     { icon: FileText, label: "Histórico de Caixa", description: "Extrato de vendas e Estornos", href: "/sales-history" },
     { icon: PackageMinus, label: "Ajuste de Estoque", description: "Balanços e perdas manuais", href: "/inventory" },
     { icon: Settings, label: "Configurações", description: "Dados da Loja, Categorias e Recibos", href: "/more/settings" },

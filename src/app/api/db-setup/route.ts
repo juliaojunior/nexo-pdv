@@ -85,12 +85,17 @@ export async function GET() {
         change_returned NUMERIC(10, 2),
         client_id UUID,
         discount_total NUMERIC(10, 2) DEFAULT 0,
+        amount_paid NUMERIC(10, 2) NOT NULL DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `;
 
     // Índice único da chave de idempotência (dedupe de vendas reenviadas pela fila offline)
     await client.sql`CREATE UNIQUE INDEX IF NOT EXISTS nexo_sales_client_id_key ON nexo_sales (client_id);`;
+
+    // Bases criadas antes do Sprint 2 não ganham a coluna pelo CREATE IF NOT EXISTS acima.
+    // amount_paid = total já pago da venda (fiado). Vendas antigas ficam 0.
+    await client.sql`ALTER TABLE nexo_sales ADD COLUMN IF NOT EXISTS amount_paid NUMERIC(10, 2) NOT NULL DEFAULT 0;`;
 
     await client.sql`
       CREATE TABLE IF NOT EXISTS nexo_sale_items (
@@ -108,6 +113,21 @@ export async function GET() {
 
     // Bases criadas antes do Sprint 1 não ganham a coluna pelo CREATE IF NOT EXISTS acima.
     await client.sql`ALTER TABLE nexo_sale_items ADD COLUMN IF NOT EXISTS unit_cost NUMERIC(10, 2) NOT NULL DEFAULT 0;`;
+
+    // 6. Caderneta: cada pagamento (parcela) de uma venda fiado, com data.
+    await client.sql`
+      CREATE TABLE IF NOT EXISTS nexo_sale_payments (
+        id SERIAL PRIMARY KEY,
+        sale_id INTEGER NOT NULL REFERENCES nexo_sales(id) ON DELETE CASCADE,
+        user_id VARCHAR(255) NOT NULL,
+        amount NUMERIC(10, 2) NOT NULL,
+        paid_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        note TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+    await client.sql`CREATE INDEX IF NOT EXISTS nexo_sale_payments_sale_id_idx ON nexo_sale_payments (sale_id);`;
+    await client.sql`CREATE INDEX IF NOT EXISTS nexo_sale_payments_user_id_idx ON nexo_sale_payments (user_id);`;
 
     } finally {
       client.release();

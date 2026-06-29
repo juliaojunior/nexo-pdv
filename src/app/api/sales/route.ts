@@ -23,6 +23,7 @@ export async function GET() {
           s.amount_received as "amountReceived",
           s.change_returned as change,
           s.discount_total as "discountTotal",
+          s.amount_paid as "amountPaid",
           s.created_at as date,
           COALESCE(
             json_agg(
@@ -37,7 +38,16 @@ export async function GET() {
                 'subtotal', si.subtotal
               )
             ) FILTER (WHERE si.id IS NOT NULL), '[]'
-          ) AS items
+          ) AS items,
+          -- Pagamentos por SUBCONSULTA (não um 2º LEFT JOIN — evitaria produto
+          -- cartesiano com os itens e inflaria os totais agregados acima).
+          COALESCE((
+            SELECT json_agg(
+              json_build_object('id', p.id, 'amount', p.amount, 'paidAt', p.paid_at, 'note', p.note)
+              ORDER BY p.paid_at
+            )
+            FROM nexo_sale_payments p WHERE p.sale_id = s.id
+          ), '[]') AS payments
         FROM nexo_sales s
         LEFT JOIN nexo_sale_items si ON s.id = si.sale_id
         WHERE s.user_id = ${userId}
