@@ -97,6 +97,12 @@ export interface ApiCacheEntry {
 }
 
 export class NexoPDVDexie extends Dexie {
+  // ponytail: LEGADO NÃO USADO — categories/products/sales/saleItems eram a base local
+  // pré-offline-first; hoje a fonte da verdade é o servidor (/api/*). Ficam vazias e
+  // sem leitura/escrita. Não migrar só por limpeza: um version(3) de delete roda no
+  // aparelho de cada usuário e mexe no mesmo banco de `customers`/`pendingSales` (dados
+  // ainda não sincronizados). Remover só num bump de schema já necessário por outro motivo.
+  // Em uso de fato: customers, pendingSales, apiCache.
   categories!: Table<Category, number>;
   products!: Table<Product, number>;
   customers!: Table<Customer, number>;
@@ -121,67 +127,6 @@ export class NexoPDVDexie extends Dexie {
     this.version(2).stores({
       pendingSales: 'clientId, createdAt, status',
       apiCache: 'url'
-    });
-  }
-
-  // Realiza o fluxo atômico da venda garantindo a integridade dos dados
-  async finalizeSale(saleData: Omit<Sale, 'id'>, items: Omit<SaleItem, 'id' | 'saleId'>[]) {
-    // Escopo da transação (qualquer erro lança abort em todas as tabelas citadas)
-    return await this.transaction('rw', this.sales, this.saleItems, this.products, async () => {
-      // 1. Salva o registro da venda
-      const saleId = await this.sales.add(saleData) as number;
-
-      // 2. Salva os items e desconta do estoque
-      for (const item of items) {
-        const product = await this.products.get(item.productId);
-        
-        if (!product) {
-          throw new Error(`Produto não encontrado: ${item.productName}`);
-        }
-
-        // Aborta a transação lançando um erro customizado se tentar vender mais que o estoque atual
-        if (product.stock < item.quantity) {
-          throw new Error(`Estoque insuficiente para o produto: ${product.name}. Disponível: ${product.stock}`);
-        }
-
-        // Grava o item vinculado à venda recém criada
-        await this.saleItems.add({
-          ...item,
-          saleId
-        });
-
-        // Efetua a atualização (decremento) de estoque
-        await this.products.update(item.productId, {
-          stock: product.stock - item.quantity,
-          updatedAt: new Date().toISOString()
-        });
-      }
-
-      // Se todas as Promises passaram, o motor do Dexie consolida o commit e retorna o id da venda.
-      return saleId;
-    });
-  }
-
-  // Estorno Seguro de Venda (Reestabelece estoque e apaga histórico)
-  async revertSale(saleId: number) {
-    return await this.transaction('rw', this.sales, this.saleItems, this.products, async () => {
-      // Puxa todos os items associados daquela venda especifica
-      const items = await this.saleItems.where('saleId').equals(saleId).toArray();
-
-      // Devolve a quantidade de cada item de volta pro estoque físico da Vitrine
-      for (const item of items) {
-        const product = await this.products.get(item.productId);
-        if (product) {
-          await this.products.update(item.productId, {
-             stock: product.stock + item.quantity,
-             updatedAt: new Date().toISOString()
-          });
-        }
-      }
-
-      // Expulsa os items e a venda inteira da base de dados local
-      await this.saleItems.where('saleId').equals(saleId).delete();
-      await this.sales.delete(saleId);
     });
   }
 }

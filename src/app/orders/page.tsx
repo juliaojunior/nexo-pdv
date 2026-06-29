@@ -4,6 +4,7 @@ import { BellRing, CheckCircle, XCircle, ShoppingBag, Clock, TrendingUp, AlertTr
 import useSWR from "swr";
 import { toast } from "sonner";
 import { useState } from "react";
+import { formatCurrency } from "@/lib/utils";
 
 interface OrderItem {
   productId: number | string;
@@ -154,14 +155,14 @@ export default function OrdersPage() {
                   {order.cart_items.map((item, idx) => (
                     <div key={idx} className="flex justify-between text-sm">
                        <span className="text-foreground/90 font-medium"><span className="text-primary-bright font-black mr-2">{item.quantity}x</span>{item.name}</span>
-                       <span className="text-muted">R$ {(item.price * item.quantity).toFixed(2).replace('.', ',')}</span>
+                       <span className="text-muted">{formatCurrency((item.price * item.quantity))}</span>
                     </div>
                   ))}
                </div>
 
                <div className="flex justify-between items-center bg-surface-raised p-3 rounded-xl mb-4 border border-border/30">
                   <span className="text-muted font-bold text-xs uppercase tracking-widest">Total a Receber</span>
-                  <span className="text-foreground font-black text-xl">R$ {Number(order.total_price).toFixed(2).replace('.', ',')}</span>
+                  <span className="text-foreground font-black text-xl">{formatCurrency(Number(order.total_price))}</span>
                </div>
 
                <button 
@@ -186,7 +187,7 @@ export default function OrdersPage() {
                   <AlertTriangle className="text-danger shrink-0 mt-1" />
                   <p className="text-muted text-sm leading-relaxed">
                      O cliente declarou que o método de pagamento será <strong className="text-foreground">{modalOrder.payment_method}</strong>.
-                     Você verificou se o valor de <strong className="text-foreground">R$ {Number(modalOrder.total_price).toFixed(2).replace('.',',')}</strong> foi recebido ou será recebido em segurança?
+                     Você verificou se o valor de <strong className="text-foreground">{formatCurrency(Number(modalOrder.total_price))}</strong> foi recebido ou será recebido em segurança?
                   </p>
                </div>
 
