@@ -3,6 +3,7 @@ export interface ProductView {
   id: number;
   name: string;
   price: number;
+  costPrice?: number;
   stock: number;
   barcode?: string;
   categoryId?: number;
@@ -18,6 +19,7 @@ export function mapProductRow(p: any): ProductView {
     id: p.id,
     name: p.name,
     price: Number(p.price),
+    costPrice: p.cost_price != null ? Number(p.cost_price) : undefined,
     stock: p.stock,
     barcode: p.barcode,
     categoryId: p.category_id,

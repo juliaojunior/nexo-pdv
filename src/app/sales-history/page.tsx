@@ -99,6 +99,11 @@ export default function SalesHistoryPage() {
          ) : (
            filteredSales.map((sale: any) => {
               const itemsCount = sale.items.reduce((acc: number, curr: any) => acc + curr.quantity, 0);
+              // Lucro = líquido da linha − custo congelado × quantidade (custo travado na venda)
+              const profit = sale.items.reduce(
+                (acc: number, it: any) => acc + (Number(it.subtotal) - Number(it.unitCost || 0) * it.quantity),
+                0
+              );
 
               return (
                 <div key={sale.id} className="bg-surface rounded-2xl flex flex-col shadow-card overflow-hidden active:scale-[0.98] transition-transform">
@@ -153,6 +158,10 @@ export default function SalesHistoryPage() {
                           <span className="text-primary-bright text-xs font-bold">− {formatCurrency(Number(sale.discountTotal))}</span>
                        </div>
                     )}
+                    <div className="flex justify-between items-center pt-2 mt-1 border-t border-dashed border-border/40">
+                       <span className="text-success text-[10px] font-bold uppercase tracking-widest">Lucro</span>
+                       <span className="text-success text-xs font-black">{formatCurrency(profit)}</span>
+                    </div>
                     <div className="w-full flex justify-end mt-2 pt-3 border-t border-dashed border-border/50">
                        <button 
                          onClick={() => setRevertCandidate(sale.id!)}

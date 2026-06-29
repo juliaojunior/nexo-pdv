@@ -100,10 +100,14 @@ export async function GET() {
         product_name VARCHAR(255),
         quantity INTEGER NOT NULL,
         price_at_time NUMERIC(10, 2) NOT NULL,
+        unit_cost NUMERIC(10, 2) NOT NULL DEFAULT 0,
         discount NUMERIC(10, 2) DEFAULT 0,
         subtotal NUMERIC(10, 2)
       );
     `;
+
+    // Bases criadas antes do Sprint 1 não ganham a coluna pelo CREATE IF NOT EXISTS acima.
+    await client.sql`ALTER TABLE nexo_sale_items ADD COLUMN IF NOT EXISTS unit_cost NUMERIC(10, 2) NOT NULL DEFAULT 0;`;
 
     } finally {
       client.release();

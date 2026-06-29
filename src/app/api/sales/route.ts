@@ -32,6 +32,7 @@ export async function GET() {
                 'productName', si.product_name,
                 'quantity', si.quantity,
                 'unitPrice', si.price_at_time,
+                'unitCost', si.unit_cost,
                 'discount', si.discount,
                 'subtotal', si.subtotal
               )
@@ -75,7 +76,7 @@ export async function POST(req: Request) {
     // 0.2 Normaliza/valida cada item. O subtotal e o desconto são RECALCULADOS no
     // servidor (não confiamos no que o client mandou): desconto trava em [0, bruto].
     const normalizedItems = [] as Array<{
-      productId: any; productName: any; quantity: number; unitPrice: number; discount: number; subtotal: number;
+      productId: any; productName: any; quantity: number; unitPrice: number; unitCost: number; discount: number; subtotal: number;
     }>;
     for (const item of items) {
       if (typeof item.quantity !== 'number' || item.quantity <= 0) {
@@ -91,7 +92,12 @@ export async function POST(req: Request) {
       if (discount > gross) discount = gross; // desconto nunca passa do valor cheio da linha
       discount = Math.round(discount * 100) / 100;
       const subtotal = Math.round((gross - discount) * 100) / 100;
-      normalizedItems.push({ productId: item.productId, productName: item.productName, quantity: item.quantity, unitPrice, discount, subtotal });
+      // Custo do payload é só fallback (venda offline). O valor autoritativo é
+      // congelado do nexo_products dentro da transação (ver loop abaixo).
+      let unitCost = Number(item.unitCost);
+      if (!Number.isFinite(unitCost) || unitCost < 0) unitCost = 0;
+      unitCost = Math.round(unitCost * 100) / 100;
+      normalizedItems.push({ productId: item.productId, productName: item.productName, quantity: item.quantity, unitPrice, unitCost, discount, subtotal });
     }
 
     // Totais confiáveis derivados dos itens normalizados (evita spoofing do total)
@@ -137,19 +143,20 @@ export async function POST(req: Request) {
         }
         const newSaleId = saleResult.rows[0].id;
 
-        // 3. Insere os Itens e Subtrai Estoque
+        // 3. Subtrai Estoque (congelando o custo) e insere os Itens
         for (const item of normalizedItems) {
-          await client.sql`
-            INSERT INTO nexo_sale_items (sale_id, product_id, product_name, quantity, price_at_time, discount, subtotal)
-            VALUES (${newSaleId}, ${item.productId || null}, ${item.productName}, ${item.quantity}, ${item.unitPrice}, ${item.discount}, ${item.subtotal})
-          `;
+          // unit_cost congelado: por padrão usa o custo do payload (fallback offline);
+          // se o item tem produto, sobrescreve com o cost_price atual do servidor.
+          let unitCost = item.unitCost;
 
           if (item.productId) {
-            // Subtrai o estoque validando Criteriosamente Transações Concorrentes
-            const { rowCount } = await client.sql`
+            // Subtrai o estoque validando Criteriosamente Transações Concorrentes.
+            // RETURNING traz o custo atual sem um SELECT extra.
+            const { rows, rowCount } = await client.sql`
               UPDATE nexo_products
               SET stock = stock - ${item.quantity}
               WHERE id = ${item.productId} AND user_id = ${userId} AND stock >= ${item.quantity}
+              RETURNING cost_price
             `;
 
             if (rowCount === 0) {
@@ -158,7 +165,14 @@ export async function POST(req: Request) {
               err.status = 409;
               throw err;
             }
+
+            if (rows[0]?.cost_price != null) unitCost = Number(rows[0].cost_price);
           }
+
+          await client.sql`
+            INSERT INTO nexo_sale_items (sale_id, product_id, product_name, quantity, price_at_time, unit_cost, discount, subtotal)
+            VALUES (${newSaleId}, ${item.productId || null}, ${item.productName}, ${item.quantity}, ${item.unitPrice}, ${unitCost}, ${item.discount}, ${item.subtotal})
+          `;
         }
 
         await client.sql`COMMIT`; // Confirma Transação

@@ -94,6 +94,7 @@ export function CheckoutModal({ isOpen, onClose, onSuccess }: CheckoutModalProps
           productName: item.name,
           quantity: item.quantity,
           unitPrice: item.price,           // preço cheio unitário
+          unitCost: item.costPrice ?? 0,   // custo p/ fallback offline (servidor recongela)
           discount: lineDiscount(item),    // desconto da linha em R$
           subtotal: lineNet(item),         // líquido (cheio - desconto)
         }))

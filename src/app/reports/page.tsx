@@ -65,6 +65,11 @@ export default function ReportsPage() {
   // Cálculos Diretos (Reduce) considerando apenas os dados filtrados
   const totalVendido = sales.reduce((acc: number, sale: any) => acc + Number(sale.total || 0), 0);
   const numeroVendas = sales.length;
+  // Lucro do período = soma de (líquido − custo congelado × qtd) dos itens filtrados
+  const lucroPeriodo = saleItems.reduce(
+    (acc: number, it: any) => acc + (Number(it.subtotal || 0) - Number(it.unitCost || 0) * it.quantity),
+    0
+  );
 
   // Lógica Top 5 Produtos Mais Vendidos via HashMap
   const productSalesMap = saleItems.reduce((acc: Record<number, { id: number; name: string; quantity: number }>, item: any) => {
@@ -192,6 +197,7 @@ export default function ReportsPage() {
         <div className="bg-surface rounded-2xl p-5 shadow-card flex flex-col">
           <p className="text-muted text-xs font-bold uppercase tracking-widest mb-2">Total Vendido</p>
           <p className="text-primary font-black text-2xl lg:text-3xl tracking-tighter truncate">{formatCurrency(totalVendido)}</p>
+          <p className="text-success text-sm font-black tracking-tight mt-1 truncate">Lucro: {formatCurrency(lucroPeriodo)}</p>
           <div className="text-primary mt-3"><Sparkline values={dailySeries.revenue} /></div>
         </div>
         <div className="bg-surface rounded-2xl p-5 shadow-card flex flex-col">

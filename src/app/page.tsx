@@ -72,6 +72,7 @@ export default function Home() {
     id: p.id,
     name: p.name,
     price: Number(p.price),
+    costPrice: p.cost_price != null ? Number(p.cost_price) : undefined,
     stock: p.stock,
     barcode: p.barcode,
     categoryId: p.category_id,

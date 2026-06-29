@@ -66,6 +66,7 @@ function ProcessOrderContent() {
                productName: item.product.name,
                quantity: item.quantity,
                unitPrice: getEffectivePrice(item.product),
+               unitCost: item.product.costPrice ?? 0,
                subtotal: getEffectivePrice(item.product) * item.quantity
            }))
        };
