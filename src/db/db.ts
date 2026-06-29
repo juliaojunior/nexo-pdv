@@ -14,7 +14,9 @@ export interface Product {
   id?: number;
   name: string;
   categoryId: number;
+  brand?: string;       // marca multimarca (Natura, Avon, Boticário, Eudora, Outra)
   price: number;
+  costPrice?: number;   // preço de custo — base do lucro (Sprint 1)
   promotionalPrice?: number;
   promotionEndDate?: string;
   barcode?: string;
@@ -50,6 +52,7 @@ export interface SaleItem {
   productName: string;
   quantity: number;
   unitPrice: number;   // preço cheio unitário
+  unitCost?: number;   // custo unitário congelado no momento da venda (preenchido no Sprint 1)
   discount?: number;   // desconto da linha em R$ (0 = sem desconto)
   subtotal: number;    // líquido da linha: unitPrice*quantity - discount
 }
@@ -62,6 +65,7 @@ export interface SalePayloadItem {
   productName: string;
   quantity: number;
   unitPrice: number;   // preço cheio unitário
+  unitCost?: number;   // custo unitário congelado no momento da venda (preenchido no Sprint 1)
   discount?: number;   // desconto da linha em R$ (0 = sem desconto)
   subtotal: number;    // líquido da linha: unitPrice*quantity - discount
 }
@@ -97,6 +101,12 @@ export interface ApiCacheEntry {
 }
 
 export class NexoPDVDexie extends Dexie {
+  // ponytail: LEGADO NÃO USADO — categories/products/sales/saleItems eram a base local
+  // pré-offline-first; hoje a fonte da verdade é o servidor (/api/*). Ficam vazias e
+  // sem leitura/escrita. Não migrar só por limpeza: um version(3) de delete roda no
+  // aparelho de cada usuário e mexe no mesmo banco de `customers`/`pendingSales` (dados
+  // ainda não sincronizados). Remover só num bump de schema já necessário por outro motivo.
+  // Em uso de fato: customers, pendingSales, apiCache.
   categories!: Table<Category, number>;
   products!: Table<Product, number>;
   customers!: Table<Customer, number>;
@@ -122,66 +132,20 @@ export class NexoPDVDexie extends Dexie {
       pendingSales: 'clientId, createdAt, status',
       apiCache: 'url'
     });
-  }
 
-  // Realiza o fluxo atômico da venda garantindo a integridade dos dados
-  async finalizeSale(saleData: Omit<Sale, 'id'>, items: Omit<SaleItem, 'id' | 'saleId'>[]) {
-    // Escopo da transação (qualquer erro lança abort em todas as tabelas citadas)
-    return await this.transaction('rw', this.sales, this.saleItems, this.products, async () => {
-      // 1. Salva o registro da venda
-      const saleId = await this.sales.add(saleData) as number;
-
-      // 2. Salva os items e desconta do estoque
-      for (const item of items) {
-        const product = await this.products.get(item.productId);
-        
-        if (!product) {
-          throw new Error(`Produto não encontrado: ${item.productName}`);
-        }
-
-        // Aborta a transação lançando um erro customizado se tentar vender mais que o estoque atual
-        if (product.stock < item.quantity) {
-          throw new Error(`Estoque insuficiente para o produto: ${product.name}. Disponível: ${product.stock}`);
-        }
-
-        // Grava o item vinculado à venda recém criada
-        await this.saleItems.add({
-          ...item,
-          saleId
-        });
-
-        // Efetua a atualização (decremento) de estoque
-        await this.products.update(item.productId, {
-          stock: product.stock - item.quantity,
-          updatedAt: new Date().toISOString()
-        });
-      }
-
-      // Se todas as Promises passaram, o motor do Dexie consolida o commit e retorna o id da venda.
-      return saleId;
-    });
-  }
-
-  // Estorno Seguro de Venda (Reestabelece estoque e apaga histórico)
-  async revertSale(saleId: number) {
-    return await this.transaction('rw', this.sales, this.saleItems, this.products, async () => {
-      // Puxa todos os items associados daquela venda especifica
-      const items = await this.saleItems.where('saleId').equals(saleId).toArray();
-
-      // Devolve a quantidade de cada item de volta pro estoque físico da Vitrine
-      for (const item of items) {
-        const product = await this.products.get(item.productId);
-        if (product) {
-          await this.products.update(item.productId, {
-             stock: product.stock + item.quantity,
-             updatedAt: new Date().toISOString()
-          });
-        }
-      }
-
-      // Expulsa os items e a venda inteira da base de dados local
-      await this.saleItems.where('saleId').equals(saleId).delete();
-      await this.sales.delete(saleId);
+    // v3: marca + preço de custo no produto e custo congelado no item da venda.
+    // Campos não-indexados, então não muda .stores(); só faz backfill dos registros
+    // antigos (marca vazia, custos 0). As tabelas locais products/saleItems são legado
+    // não usado (ver comentário acima), então na prática isto é no-op em instalações
+    // reais — mas mantém o schema coerente caso existam linhas órfãs.
+    this.version(3).upgrade(async (tx) => {
+      await tx.table('products').toCollection().modify((p: Product) => {
+        if (p.brand === undefined) p.brand = '';
+        if (p.costPrice === undefined) p.costPrice = 0;
+      });
+      await tx.table('saleItems').toCollection().modify((it: SaleItem) => {
+        if (it.unitCost === undefined) it.unitCost = 0;
+      });
     });
   }
 }

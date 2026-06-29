@@ -6,7 +6,9 @@ import { z } from 'zod';
 // Zod Security Shield: Evita invasão de strings maliciosas em campos de número e valores irracionais.
 const productSchema = z.object({
   name: z.string().min(2, "Nome deve ter no mínimo 2 caracteres"),
+  brand: z.string().optional().nullable(),
   price: z.number().min(0, "Preço inválido"),
+  costPrice: z.number().min(0, "Custo inválido").optional().nullable(),
   stock: z.number().min(0, "Estoque não pode ser negativo"),
   barcode: z.string().optional().nullable(),
   categoryId: z.number().optional().nullable(),
@@ -53,13 +55,13 @@ export async function POST(req: Request) {
        return NextResponse.json({ error: "Payload malicioso ou inválido processado.", details: parseResult.error.format() }, { status: 400 });
     }
 
-    const { name, price, stock, barcode, categoryId, image, promotionalPrice, promotionEndDate, description } = parseResult.data;
+    const { name, brand, price, costPrice, stock, barcode, categoryId, image, promotionalPrice, promotionEndDate, description } = parseResult.data;
 
     const client = await cloudDb.connect();
     try {
       const { rows } = await client.sql`
-        INSERT INTO nexo_products (user_id, name, price, stock, barcode, category_id, image_url, promotional_price, promotion_end_date, description)
-        VALUES (${userId}, ${name}, ${price}, ${stock}, ${barcode || null}, ${categoryId || null}, ${image || null}, ${promotionalPrice || null}, ${promotionEndDate || null}, ${description || null})
+        INSERT INTO nexo_products (user_id, name, brand, price, cost_price, stock, barcode, category_id, image_url, promotional_price, promotion_end_date, description)
+        VALUES (${userId}, ${name}, ${brand || ''}, ${price}, ${costPrice ?? 0}, ${stock}, ${barcode || null}, ${categoryId || null}, ${image || null}, ${promotionalPrice || null}, ${promotionEndDate || null}, ${description || null})
         RETURNING *;
       `;
       return NextResponse.json(rows[0], { status: 201 });
@@ -83,7 +85,7 @@ export async function PATCH(req: Request) {
        return NextResponse.json({ error: "Payload malicioso ou inválido processado na edição.", details: parseResult.error.format() }, { status: 400 });
     }
 
-    const { id, name, price, stock, barcode, categoryId, image, promotionalPrice, promotionEndDate, description } = parseResult.data;
+    const { id, name, brand, price, costPrice, stock, barcode, categoryId, image, promotionalPrice, promotionEndDate, description } = parseResult.data;
 
     const client = await cloudDb.connect();
     let rows;
@@ -93,7 +95,9 @@ export async function PATCH(req: Request) {
         UPDATE nexo_products
         SET
           name = COALESCE(${name}, name),
+          brand = COALESCE(${brand}, brand),
           price = COALESCE(${price}, price),
+          cost_price = COALESCE(${costPrice}, cost_price),
           stock = COALESCE(${stock}, stock),
           barcode = COALESCE(${barcode}, barcode),
           category_id = COALESCE(${categoryId}, category_id),

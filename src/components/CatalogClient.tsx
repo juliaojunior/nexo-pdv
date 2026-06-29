@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Search, ShoppingBag, Plus, Minus, Store, ChevronRight, X, LayoutGrid, List, Tag } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
-import { getEffectivePrice } from "@/lib/utils";
+import { getEffectivePrice, formatCurrency } from "@/lib/utils";
 
 interface Product {
   local_id: number;
@@ -72,9 +72,8 @@ export default function CatalogClient({
   });
 
   // Preço ativo via fonte única de verdade (mesma lógica do backend anti-spoofing)
-  const calcActivePrice = (p: Product) => getEffectivePrice(p);
 
-  const cartTotal = cart.reduce((acc, curr) => acc + (calcActivePrice(curr) * curr.quantity), 0);
+  const cartTotal = cart.reduce((acc, curr) => acc + (getEffectivePrice(curr) * curr.quantity), 0);
   const cartItemsCount = cart.reduce((acc, curr) => acc + curr.quantity, 0);
 
   const handleAddToCart = (product: Product) => {
@@ -101,9 +100,9 @@ export default function CatalogClient({
   const buildWhatsappLink = () => {
      let text = `🛍️ *Novo Pedido - ${storeName}*\n\n`;
      cart.forEach(i => {
-       text += `${i.quantity}x ${i.name} - R$ ${(calcActivePrice(i)*i.quantity).toFixed(2)}\n`;
+       text += `${i.quantity}x ${i.name} - ${formatCurrency((getEffectivePrice(i)*i.quantity))}\n`;
      });
-     text += `\n*Total estimado: R$ ${cartTotal.toFixed(2)}*\n\n`;
+     text += `\n*Total estimado: ${formatCurrency(cartTotal)}*\n\n`;
      text += `Podemos prosseguir com o pagamento?`;
      return `https://wa.me/55${wppPhone}?text=${encodeURIComponent(text)}`;
   };
@@ -131,7 +130,7 @@ export default function CatalogClient({
          customerName,
          customerPhone: customerWpp,
          paymentMethod,
-         cartItems: cart.map(i => ({ productId: i.local_id, name: i.name, price: calcActivePrice(i), quantity: i.quantity })),
+         cartItems: cart.map(i => ({ productId: i.local_id, name: i.name, price: getEffectivePrice(i), quantity: i.quantity })),
          total: cartTotal
        };
 
@@ -154,7 +153,7 @@ export default function CatalogClient({
   };
 
   const getPoszapLink = () => {
-    const text = `🛍️ *Pedido #${orderDoneId || '000'} - Pagamento: ${paymentMethod}*\nOi, ${storeName}! Acabei de registrar meu pedido de R$ ${cartTotal.toFixed(2)} pelo aplicativo. Me avisa quando aprovar!`;
+    const text = `🛍️ *Pedido #${orderDoneId || '000'} - Pagamento: ${paymentMethod}*\nOi, ${storeName}! Acabei de registrar meu pedido de ${formatCurrency(cartTotal)} pelo aplicativo. Me avisa quando aprovar!`;
     return `https://wa.me/55${wppPhone}?text=${encodeURIComponent(text)}`;
   };
 
@@ -225,7 +224,7 @@ export default function CatalogClient({
            {displayedProducts.map(product => {
               const inCartItem = cart.find(i => i.local_id === product.local_id);
               const isEsgotado = product.stock <= 0;
-              const hasPromo = calcActivePrice(product) < Number(product.price);
+              const hasPromo = getEffectivePrice(product) < Number(product.price);
 
               if (viewMode === 'list') {
                 return (
@@ -242,8 +241,8 @@ export default function CatalogClient({
                     <div className="flex-1 min-w-0">
                       <span className="text-foreground font-bold text-sm leading-tight line-clamp-1 block">{product.name}</span>
                       <div className="flex items-baseline gap-2 mt-0.5 font-black tracking-tight">
-                        <span className="text-primary-bright text-base">R$ {calcActivePrice(product).toFixed(2).replace('.', ',')}</span>
-                        {hasPromo && <span className="text-[11px] text-danger line-through font-medium">R$ {Number(product.price).toFixed(2).replace('.', ',')}</span>}
+                        <span className="text-primary-bright text-base">{formatCurrency(getEffectivePrice(product))}</span>
+                        {hasPromo && <span className="text-[11px] text-danger line-through font-medium">{formatCurrency(Number(product.price))}</span>}
                       </div>
                       <span className={`text-[10px] font-bold ${isEsgotado ? 'text-danger' : 'text-muted'}`}>{isEsgotado ? 'Esgotado' : `${product.stock} em estoque`}</span>
                     </div>
@@ -290,11 +289,11 @@ export default function CatalogClient({
                     <span className="text-primary-bright font-black text-lg">
                       {hasPromo ? (
                          <div className="flex flex-col mt-1">
-                           <span className="text-[11px] text-danger line-through font-normal leading-none" style={{marginBottom: '-2px'}}>R$ {Number(product.price).toFixed(2).replace('.', ',')}</span>
-                           <span className="flex items-center gap-1.5 align-middle leading-none mt-1">R$ {calcActivePrice(product).toFixed(2).replace('.', ',')} <span className="text-[10px] bg-primary-bright text-primary-deep px-1.5 py-0.5 rounded font-bold tracking-widest uppercase">Promo</span></span>
+                           <span className="text-[11px] text-danger line-through font-normal leading-none" style={{marginBottom: '-2px'}}>{formatCurrency(Number(product.price))}</span>
+                           <span className="flex items-center gap-1.5 align-middle leading-none mt-1">{formatCurrency(getEffectivePrice(product))} <span className="text-[10px] bg-primary-bright text-primary-deep px-1.5 py-0.5 rounded font-bold tracking-widest uppercase">Promo</span></span>
                          </div>
                       ) : (
-                         <span className="mt-1 block">R$ {Number(product.price).toFixed(2).replace('.', ',')}</span>
+                         <span className="mt-1 block">{formatCurrency(Number(product.price))}</span>
                       )}
                     </span>
                   </div>
@@ -340,7 +339,7 @@ export default function CatalogClient({
                     <span className="text-[10px] font-bold uppercase tracking-widest">Sem foto</span>
                   </div>
                )}
-               {calcActivePrice(selectedProduct) < Number(selectedProduct.price) && (
+               {getEffectivePrice(selectedProduct) < Number(selectedProduct.price) && (
                  <div className="absolute top-4 left-4 bg-primary-bright text-primary-deep px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest shadow-glow z-10">Promoção</div>
                )}
              </div>
@@ -361,9 +360,9 @@ export default function CatalogClient({
                <h2 className="text-foreground font-black text-2xl tracking-tight leading-tight">{selectedProduct.name}</h2>
 
                <div className="flex items-end gap-2 mt-[-6px]">
-                 <span className="text-primary-bright font-black text-3xl">R$ {calcActivePrice(selectedProduct).toFixed(2).replace('.', ',')}</span>
-                 {calcActivePrice(selectedProduct) < Number(selectedProduct.price) && (
-                   <span className="text-sm text-danger line-through font-normal mb-1 pb-0.5">R$ {Number(selectedProduct.price).toFixed(2).replace('.', ',')}</span>
+                 <span className="text-primary-bright font-black text-3xl">{formatCurrency(getEffectivePrice(selectedProduct))}</span>
+                 {getEffectivePrice(selectedProduct) < Number(selectedProduct.price) && (
+                   <span className="text-sm text-danger line-through font-normal mb-1 pb-0.5">{formatCurrency(Number(selectedProduct.price))}</span>
                  )}
                </div>
 
@@ -427,7 +426,7 @@ export default function CatalogClient({
                    <span className="text-foreground font-black uppercase tracking-widest text-xs">Ver Sacola</span>
                  </div>
                  <div className="flex items-center gap-2 text-foreground font-black">
-                   R$ {cartTotal.toFixed(2).replace('.',',')}
+                   {formatCurrency(cartTotal)}
                    <ChevronRight size={18} className="text-primary-bright" />
                  </div>
               </button>
@@ -456,11 +455,11 @@ export default function CatalogClient({
                          </div>
                          <div className="flex flex-col">
                            <span className="text-foreground font-bold text-sm leading-tight line-clamp-1">{item.name}</span>
-                           <span className="text-primary-bright font-black">R$ {calcActivePrice(item).toFixed(2).replace('.', ',')}</span>
+                           <span className="text-primary-bright font-black">{formatCurrency(getEffectivePrice(item))}</span>
                          </div>
                       </div>
                       <div className="flex flex-col items-end gap-2">
-                        <span className="text-muted text-[10px] font-bold uppercase tracking-widest">Total R$ {(calcActivePrice(item)*item.quantity).toFixed(2).replace('.',',')}</span>
+                        <span className="text-muted text-[10px] font-bold uppercase tracking-widest">Total {formatCurrency((getEffectivePrice(item)*item.quantity))}</span>
                         <div className="flex items-center gap-3 bg-surface-raised rounded-full p-1 border border-border/30">
                             <button onClick={() => handleUpdateQty(item.local_id, -1)} className="w-6 h-6 rounded-full bg-background text-foreground flex items-center justify-center active:scale-95"><Minus size={12} /></button>
                             <span className="text-foreground font-black w-3 text-center text-xs">{item.quantity}</span>
@@ -474,7 +473,7 @@ export default function CatalogClient({
               <div className="p-6 bg-surface border-t border-border/50 flex flex-col gap-4 pb-8 rounded-t-3xl">
                  <div className="flex justify-between items-center px-2">
                     <span className="text-muted font-bold uppercase tracking-widest text-sm">Total do Pedido</span>
-                    <span className="text-foreground font-black text-2xl">R$ {cartTotal.toFixed(2).replace('.', ',')}</span>
+                    <span className="text-foreground font-black text-2xl">{formatCurrency(cartTotal)}</span>
                  </div>
                  <button 
                    onClick={() => setCheckoutModalOpen(true)}
@@ -524,7 +523,7 @@ export default function CatalogClient({
                 disabled={sendingOrder}
                 className="w-full py-4 rounded-xl bg-primary text-primary-deep font-black text-lg uppercase tracking-wide disabled:opacity-50 mt-auto"
               >
-                {sendingOrder ? 'Fechando Conta...' : 'Efetuar Pedido (R$ ' + cartTotal.toFixed(2).replace('.',',') + ')'}
+                {sendingOrder ? 'Fechando Conta...' : `Efetuar Pedido (${formatCurrency(cartTotal)})`}
               </button>
            </div>
          </div>

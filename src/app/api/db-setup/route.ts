@@ -43,7 +43,9 @@ export async function GET() {
         id SERIAL PRIMARY KEY,
         user_id VARCHAR(255) NOT NULL,
         name VARCHAR(255) NOT NULL,
+        brand VARCHAR(100) NOT NULL DEFAULT '',
         price NUMERIC(10, 2) NOT NULL,
+        cost_price NUMERIC(10, 2) NOT NULL DEFAULT 0,
         stock INTEGER NOT NULL,
         barcode VARCHAR(100),
         category_id INTEGER REFERENCES nexo_categories(id) ON DELETE SET NULL,
@@ -55,6 +57,10 @@ export async function GET() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `;
+
+    // Bases já criadas antes do Sprint 0 não ganham colunas pelo CREATE IF NOT EXISTS acima.
+    await client.sql`ALTER TABLE nexo_products ADD COLUMN IF NOT EXISTS brand VARCHAR(100) NOT NULL DEFAULT '';`;
+    await client.sql`ALTER TABLE nexo_products ADD COLUMN IF NOT EXISTS cost_price NUMERIC(10, 2) NOT NULL DEFAULT 0;`;
 
     // 4. Tabela de Configurações da Loja
     await client.sql`

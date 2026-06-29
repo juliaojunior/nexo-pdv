@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { useAuth } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { fireOrderNotification } from "@/lib/notifications";
+import { formatCurrency } from "@/lib/utils";
 
 interface PendingOrder {
   id: number;
@@ -83,8 +84,8 @@ export default function OrderAlerts() {
     const titulo = novos.length === 1 ? "Novo pedido recebido! 🛍️" : `${novos.length} novos pedidos! 🛍️`;
     const corpo =
       novos.length === 1
-        ? `${novos[0].customer_name} — R$ ${Number(novos[0].total_price).toFixed(2).replace(".", ",")}`
-        : `Total: R$ ${total.toFixed(2).replace(".", ",")}`;
+        ? `${novos[0].customer_name} — ${formatCurrency(Number(novos[0].total_price))}`
+        : `Total: ${formatCurrency(total)}`;
 
     fireOrderNotification(titulo, corpo);
     toast.success(titulo, { description: corpo });
