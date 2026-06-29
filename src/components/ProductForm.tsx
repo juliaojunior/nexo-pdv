@@ -8,10 +8,15 @@ import { Camera, ImagePlus, X } from "lucide-react";
 import { BarcodeScannerModal } from "./BarcodeScannerModal";
 import { toast } from "sonner";
 
+// Marcas mais comuns da revenda multimarca. "Outra" cobre o resto sem virar cadastro.
+export const PRODUCT_BRANDS = ["Natura", "Avon", "Boticário", "Eudora", "Outra"] as const;
+
 const productSchema = z.object({
   name: z.string().min(2, "O nome deve ter no mínimo 2 letras"),
   categoryId: z.number().min(1, "Selecione uma categoria válida"),
+  brand: z.string().optional(),
   price: z.number().positive("O preço deve ser maior que 0"),
+  costPrice: z.number().min(0, "O custo não pode ser negativo").optional(),
   barcode: z.string().optional(),
   stock: z.number().min(0, "O estoque não pode ser negativo"),
   image: z.string().optional(),
@@ -40,7 +45,9 @@ export function ProductForm({ initialData, onSubmit, categories }: ProductFormPr
     defaultValues: {
       name: initialData?.name || "",
       categoryId: initialData?.categoryId || 0,
+      brand: initialData?.brand || "",
       price: initialData?.price,
+      costPrice: initialData?.costPrice,
       barcode: initialData?.barcode || "",
       stock: initialData?.stock || 0,
       image: initialData?.image || "",
@@ -156,6 +163,21 @@ export function ProductForm({ initialData, onSubmit, categories }: ProductFormPr
           </div>
 
           <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold uppercase tracking-widest pl-1 text-muted">
+              Marca
+            </label>
+            <select
+              {...register("brand")}
+              className="w-full bg-surface-raised rounded-xl py-3.5 px-4 outline-none text-foreground font-medium border appearance-none border-border/50 focus:border-primary focus:ring-1 focus:ring-primary"
+            >
+              <option value="">Sem marca</option>
+              {PRODUCT_BRANDS.map((b) => (
+                <option key={b} value={b}>{b}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
             <label className={`text-xs font-bold uppercase tracking-widest pl-1 transition-colors ${errors.price ? 'text-danger' : 'text-muted'}`}>
               Preço Base
             </label>
@@ -171,7 +193,24 @@ export function ProductForm({ initialData, onSubmit, categories }: ProductFormPr
             </div>
             {errors.price && <span className="text-danger text-xs font-semibold pl-1">{errors.price.message}</span>}
           </div>
-          
+
+          <div className="flex flex-col gap-1.5">
+            <label className={`text-xs font-bold uppercase tracking-widest pl-1 transition-colors ${errors.costPrice ? 'text-danger' : 'text-muted'}`}>
+              Preço de Custo (Opcional)
+            </label>
+            <div className="relative">
+              <span className={`absolute left-4 top-1/2 -translate-y-1/2 font-bold ${errors.costPrice ? 'text-danger' : 'text-muted'}`}>R$</span>
+              <input
+                {...register("costPrice", { setValueAs: (v) => (v === "" || v == null ? undefined : Number(v)) })}
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                className={`w-full bg-surface-raised rounded-xl py-3.5 pl-12 pr-4 outline-none text-foreground font-medium border ${errors.costPrice ? 'border-danger focus:ring-1 focus:ring-danger' : 'border-border/50 focus:border-primary focus:ring-1 focus:ring-primary'}`}
+              />
+            </div>
+            {errors.costPrice && <span className="text-danger text-xs font-semibold pl-1">{errors.costPrice.message}</span>}
+          </div>
+
 
           <div className="flex flex-col gap-1.5 mt-2">
             <label className={`text-xs font-bold uppercase tracking-widest pl-1 transition-colors ${errors.barcode ? 'text-danger' : 'text-muted'}`}>

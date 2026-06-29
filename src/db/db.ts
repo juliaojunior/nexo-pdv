@@ -14,7 +14,9 @@ export interface Product {
   id?: number;
   name: string;
   categoryId: number;
+  brand?: string;       // marca multimarca (Natura, Avon, Boticário, Eudora, Outra)
   price: number;
+  costPrice?: number;   // preço de custo — base do lucro (Sprint 1)
   promotionalPrice?: number;
   promotionEndDate?: string;
   barcode?: string;
@@ -50,6 +52,7 @@ export interface SaleItem {
   productName: string;
   quantity: number;
   unitPrice: number;   // preço cheio unitário
+  unitCost?: number;   // custo unitário congelado no momento da venda (preenchido no Sprint 1)
   discount?: number;   // desconto da linha em R$ (0 = sem desconto)
   subtotal: number;    // líquido da linha: unitPrice*quantity - discount
 }
@@ -62,6 +65,7 @@ export interface SalePayloadItem {
   productName: string;
   quantity: number;
   unitPrice: number;   // preço cheio unitário
+  unitCost?: number;   // custo unitário congelado no momento da venda (preenchido no Sprint 1)
   discount?: number;   // desconto da linha em R$ (0 = sem desconto)
   subtotal: number;    // líquido da linha: unitPrice*quantity - discount
 }
@@ -127,6 +131,21 @@ export class NexoPDVDexie extends Dexie {
     this.version(2).stores({
       pendingSales: 'clientId, createdAt, status',
       apiCache: 'url'
+    });
+
+    // v3: marca + preço de custo no produto e custo congelado no item da venda.
+    // Campos não-indexados, então não muda .stores(); só faz backfill dos registros
+    // antigos (marca vazia, custos 0). As tabelas locais products/saleItems são legado
+    // não usado (ver comentário acima), então na prática isto é no-op em instalações
+    // reais — mas mantém o schema coerente caso existam linhas órfãs.
+    this.version(3).upgrade(async (tx) => {
+      await tx.table('products').toCollection().modify((p: Product) => {
+        if (p.brand === undefined) p.brand = '';
+        if (p.costPrice === undefined) p.costPrice = 0;
+      });
+      await tx.table('saleItems').toCollection().modify((it: SaleItem) => {
+        if (it.unitCost === undefined) it.unitCost = 0;
+      });
     });
   }
 }

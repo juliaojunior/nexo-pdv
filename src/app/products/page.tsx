@@ -32,7 +32,9 @@ export default function ProductsPage() {
   const mappedProducts = (rawDbProducts || []).map((p: any) => ({
     id: p.id,
     name: p.name,
+    brand: p.brand || "",
     price: Number(p.price),
+    costPrice: p.cost_price != null ? Number(p.cost_price) : undefined,
     stock: p.stock,
     barcode: p.barcode,
     categoryId: p.category_id,
@@ -64,7 +66,9 @@ export default function ProductsPage() {
         id: editingProduct ? editingProduct.id : undefined,
         name: data.name,
         categoryId: data.categoryId,
+        brand: data.brand,
         price: data.price,
+        costPrice: data.costPrice,
         barcode: data.barcode,
         image: finalImageUrl,
         stock: data.stock,
@@ -73,7 +77,7 @@ export default function ProductsPage() {
 
       if (editingProduct) {
         // Optimistic
-        mutate(rawDbProducts?.map((p: any) => p.id === editingProduct.id ? { ...p, ...payload, image_url: finalImageUrl, category_id: data.categoryId } : p), false);
+        mutate(rawDbProducts?.map((p: any) => p.id === editingProduct.id ? { ...p, ...payload, image_url: finalImageUrl, category_id: data.categoryId, cost_price: data.costPrice } : p), false);
         
         await fetch('/api/products', {
           method: 'PATCH',
@@ -83,7 +87,7 @@ export default function ProductsPage() {
         toast.success("Produto atualizado!");
       } else {
         // Optimistic Create (Aparece instantaneamente com id imaginario ate voltar)
-        mutate([...(rawDbProducts || []), { ...payload, id: Date.now(), image_url: finalImageUrl, category_id: data.categoryId }], false);
+        mutate([...(rawDbProducts || []), { ...payload, id: Date.now(), image_url: finalImageUrl, category_id: data.categoryId, cost_price: data.costPrice }], false);
 
         await fetch('/api/products', {
           method: 'POST',
