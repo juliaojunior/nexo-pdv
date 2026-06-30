@@ -11,6 +11,9 @@ export const metadata: Metadata = {
     "Controle o fiado, o lucro e o estoque de todas as marcas que você vende — num lugar só, no seu celular.",
   openGraph: {
     url: "/comecar",
+    // O merge de metadata do Next é raso: definir openGraph aqui substitui o do
+    // layout inteiro, então o images precisa ser repetido ou o card fica sem imagem.
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Nexo PDV" }],
   },
 };
 
