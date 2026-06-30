@@ -5,7 +5,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { SyncProvider } from "@/components/SyncProvider";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import OrderAlerts from "@/components/OrderAlerts";
-import { ClerkProvider } from '@clerk/nextjs';
+import { ClerkProvider, Show } from '@clerk/nextjs';
 import { ptBR } from "@clerk/localizations";
 import "./globals.css";
 
@@ -71,11 +71,16 @@ export default function RootLayout({
             {children}
           </main>
           
-          {/* Componentes Globais Injetados */}
-          <SyncProvider />
-          <OrderAlerts />
+          {/* Casca do app — só para logados (visitantes na landing não veem).
+              Esta versão do Clerk usa <Show when="signed-in"> no lugar de <SignedIn>. */}
+          <Show when="signed-in">
+            <SyncProvider />
+            <OrderAlerts />
+            <BottomNav />
+          </Show>
+
+          {/* Globais que servem também à landing/visitante */}
           <InstallPrompt />
-          <BottomNav />
           <Toaster position="top-center" theme="light" richColors />
         </body>
       </html>

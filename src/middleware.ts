@@ -12,6 +12,9 @@ const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)', // Public login page
   '/sign-up(.*)', // Public signup page
   '/sso-callback(.*)', // SSOCallback para OAuth
+  '/comecar(.*)',     // Landing pública (porta de entrada via WhatsApp/Facebook)
+  '/privacidade(.*)', // Política de privacidade
+  '/termos(.*)',      // Termos de uso
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
