@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import useSWR from "swr";
 import { formatCurrency } from "@/lib/utils";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Tags } from "lucide-react";
 
 type TimeFilter = 'month' | 'year' | 'all';
 
@@ -70,6 +70,23 @@ export default function ReportsPage() {
     (acc: number, it: any) => acc + (Number(it.subtotal || 0) - Number(it.unitCost || 0) * it.quantity),
     0
   );
+
+  // Painel multimarca: agrupa os itens do período por marca (snapshot congelado no item).
+  // Lucro por marca soma exatamente o lucro do período; faturamento = soma dos subtotais.
+  // Itens sem marca ('') caem em "Sem marca". Ordenado do maior lucro p/ o menor.
+  const brandPanel = useMemo(() => {
+    const byBrand = new Map<string, { brand: string; revenue: number; profit: number }>();
+    for (const it of saleItems as any[]) {
+      const key = typeof it.brand === 'string' && it.brand.trim() ? it.brand : 'Sem marca';
+      const cur = byBrand.get(key) || { brand: key, revenue: 0, profit: 0 };
+      cur.revenue += Number(it.subtotal || 0);
+      cur.profit += Number(it.subtotal || 0) - Number(it.unitCost || 0) * it.quantity;
+      byBrand.set(key, cur);
+    }
+    return [...byBrand.values()]
+      .map((b) => ({ ...b, revenue: Math.round(b.revenue * 100) / 100, profit: Math.round(b.profit * 100) / 100 }))
+      .sort((a, b) => b.profit - a.profit);
+  }, [saleItems]);
 
   // Lógica Top 5 Produtos Mais Vendidos via HashMap
   const productSalesMap = saleItems.reduce((acc: Record<number, { id: number; name: string; quantity: number }>, item: any) => {
@@ -205,6 +222,35 @@ export default function ReportsPage() {
           <p className="text-foreground font-black text-2xl lg:text-3xl tracking-tighter">{numeroVendas}</p>
           <div className="text-primary-bright mt-3"><Sparkline values={dailySeries.count} /></div>
         </div>
+      </div>
+
+      {/* Painel Multimarca — lucro e faturamento por marca (o diferencial) */}
+      <div className="mb-8">
+        <h2 className="text-muted text-xs font-bold uppercase tracking-widest mb-3 px-1 flex items-center gap-2">
+          <Tags size={16} /> Lucro por Marca
+        </h2>
+        {brandPanel.length === 0 ? (
+          <div className="bg-surface rounded-2xl p-6 shadow-card text-center text-muted text-sm font-medium">
+            Sem vendas no período.
+          </div>
+        ) : (
+          <div className="flex flex-col bg-surface rounded-2xl overflow-hidden shadow-card">
+            {brandPanel.map((b) => (
+              <div key={b.brand} className="flex items-center justify-between p-4 border-b border-border/20 last:border-0">
+                <div className="flex flex-col">
+                  <span className="font-bold text-foreground tracking-tight">{b.brand}</span>
+                  <span className="text-[10px] text-muted uppercase font-bold tracking-widest mt-0.5">
+                    Faturou {formatCurrency(b.revenue)}
+                  </span>
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className="text-success font-black text-lg tracking-tight">{formatCurrency(b.profit)}</span>
+                  <span className="text-[10px] text-muted uppercase font-bold tracking-widest">lucro</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Gráfico de Volume Dinâmico */}

@@ -53,6 +53,7 @@ export interface SaleItem {
   quantity: number;
   unitPrice: number;   // preço cheio unitário
   unitCost?: number;   // custo unitário congelado no momento da venda (preenchido no Sprint 1)
+  brand?: string;      // marca congelada no momento da venda (Sprint 3 — painel multimarca)
   discount?: number;   // desconto da linha em R$ (0 = sem desconto)
   subtotal: number;    // líquido da linha: unitPrice*quantity - discount
 }
@@ -66,6 +67,7 @@ export interface SalePayloadItem {
   quantity: number;
   unitPrice: number;   // preço cheio unitário
   unitCost?: number;   // custo unitário congelado no momento da venda (preenchido no Sprint 1)
+  brand?: string;      // marca congelada no momento da venda (Sprint 3 — painel multimarca)
   discount?: number;   // desconto da linha em R$ (0 = sem desconto)
   subtotal: number;    // líquido da linha: unitPrice*quantity - discount
 }

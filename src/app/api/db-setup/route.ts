@@ -106,6 +106,7 @@ export async function GET() {
         quantity INTEGER NOT NULL,
         price_at_time NUMERIC(10, 2) NOT NULL,
         unit_cost NUMERIC(10, 2) NOT NULL DEFAULT 0,
+        brand VARCHAR(100) NOT NULL DEFAULT '',
         discount NUMERIC(10, 2) DEFAULT 0,
         subtotal NUMERIC(10, 2)
       );
@@ -113,6 +114,8 @@ export async function GET() {
 
     // Bases criadas antes do Sprint 1 não ganham a coluna pelo CREATE IF NOT EXISTS acima.
     await client.sql`ALTER TABLE nexo_sale_items ADD COLUMN IF NOT EXISTS unit_cost NUMERIC(10, 2) NOT NULL DEFAULT 0;`;
+    // brand congelada no item (Sprint 3 — painel multimarca). Itens antigos: '' (Sem marca).
+    await client.sql`ALTER TABLE nexo_sale_items ADD COLUMN IF NOT EXISTS brand VARCHAR(100) NOT NULL DEFAULT '';`;
 
     // 6. Caderneta: cada pagamento (parcela) de uma venda fiado, com data.
     await client.sql`

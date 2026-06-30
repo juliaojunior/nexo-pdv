@@ -71,6 +71,7 @@ export default function Home() {
   const products = (rawDbProducts || []).map((p: any) => ({
     id: p.id,
     name: p.name,
+    brand: p.brand || undefined,
     price: Number(p.price),
     costPrice: p.cost_price != null ? Number(p.cost_price) : undefined,
     stock: p.stock,

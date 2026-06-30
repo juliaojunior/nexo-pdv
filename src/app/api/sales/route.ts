@@ -34,6 +34,7 @@ export async function GET() {
                 'quantity', si.quantity,
                 'unitPrice', si.price_at_time,
                 'unitCost', si.unit_cost,
+                'brand', si.brand,
                 'discount', si.discount,
                 'subtotal', si.subtotal
               )
@@ -86,7 +87,7 @@ export async function POST(req: Request) {
     // 0.2 Normaliza/valida cada item. O subtotal e o desconto são RECALCULADOS no
     // servidor (não confiamos no que o client mandou): desconto trava em [0, bruto].
     const normalizedItems = [] as Array<{
-      productId: any; productName: any; quantity: number; unitPrice: number; unitCost: number; discount: number; subtotal: number;
+      productId: any; productName: any; quantity: number; unitPrice: number; unitCost: number; brand: string; discount: number; subtotal: number;
     }>;
     for (const item of items) {
       if (typeof item.quantity !== 'number' || item.quantity <= 0) {
@@ -107,7 +108,10 @@ export async function POST(req: Request) {
       let unitCost = Number(item.unitCost);
       if (!Number.isFinite(unitCost) || unitCost < 0) unitCost = 0;
       unitCost = Math.round(unitCost * 100) / 100;
-      normalizedItems.push({ productId: item.productId, productName: item.productName, quantity: item.quantity, unitPrice, unitCost, discount, subtotal });
+      // Marca do payload é só fallback (itens manuais/offline). O valor autoritativo
+      // é congelado do nexo_products dentro da transação (ver loop abaixo).
+      const brand = typeof item.brand === 'string' ? item.brand : '';
+      normalizedItems.push({ productId: item.productId, productName: item.productName, quantity: item.quantity, unitPrice, unitCost, brand, discount, subtotal });
     }
 
     // Totais confiáveis derivados dos itens normalizados (evita spoofing do total)
@@ -155,18 +159,19 @@ export async function POST(req: Request) {
 
         // 3. Subtrai Estoque (congelando o custo) e insere os Itens
         for (const item of normalizedItems) {
-          // unit_cost congelado: por padrão usa o custo do payload (fallback offline);
-          // se o item tem produto, sobrescreve com o cost_price atual do servidor.
+          // unit_cost e brand congelados: por padrão usam o que veio no payload (fallback
+          // offline); se o item tem produto, sobrescreve com os valores atuais do servidor.
           let unitCost = item.unitCost;
+          let brand = item.brand;
 
           if (item.productId) {
             // Subtrai o estoque validando Criteriosamente Transações Concorrentes.
-            // RETURNING traz o custo atual sem um SELECT extra.
+            // RETURNING traz custo e marca atuais sem um SELECT extra.
             const { rows, rowCount } = await client.sql`
               UPDATE nexo_products
               SET stock = stock - ${item.quantity}
               WHERE id = ${item.productId} AND user_id = ${userId} AND stock >= ${item.quantity}
-              RETURNING cost_price
+              RETURNING cost_price, brand
             `;
 
             if (rowCount === 0) {
@@ -177,11 +182,12 @@ export async function POST(req: Request) {
             }
 
             if (rows[0]?.cost_price != null) unitCost = Number(rows[0].cost_price);
+            if (rows[0]?.brand != null) brand = rows[0].brand;
           }
 
           await client.sql`
-            INSERT INTO nexo_sale_items (sale_id, product_id, product_name, quantity, price_at_time, unit_cost, discount, subtotal)
-            VALUES (${newSaleId}, ${item.productId || null}, ${item.productName}, ${item.quantity}, ${item.unitPrice}, ${unitCost}, ${item.discount}, ${item.subtotal})
+            INSERT INTO nexo_sale_items (sale_id, product_id, product_name, quantity, price_at_time, unit_cost, brand, discount, subtotal)
+            VALUES (${newSaleId}, ${item.productId || null}, ${item.productName}, ${item.quantity}, ${item.unitPrice}, ${unitCost}, ${brand}, ${item.discount}, ${item.subtotal})
           `;
         }
 
