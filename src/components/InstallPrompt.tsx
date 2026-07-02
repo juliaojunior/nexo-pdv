@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Download, X } from "lucide-react";
 
 // Evento não-padrão do Chrome (não está no lib.dom). Guardamos para disparar
@@ -13,10 +14,16 @@ type BeforeInstallPromptEvent = Event & {
 // Banner discreto "Instalar o Nexo". Só aparece no Chrome/Android quando o app
 // é instalável e ainda não está instalado (display-mode: standalone).
 export function InstallPrompt() {
+  const pathname = usePathname();
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [dismissed, setDismissed] = useState(false);
 
+  // Vitrine pública (/c/[storeId]) é vista pelo cliente final, não pela lojista
+  // — instalar "o Nexo" não faz sentido pra quem só está fazendo um pedido.
+  const isPublicStorefront = pathname.startsWith("/c/") || pathname === "/c";
+
   useEffect(() => {
+    if (isPublicStorefront) return;
     // Já rodando como app instalado → nunca mostra
     if (window.matchMedia("(display-mode: standalone)").matches) return;
 
@@ -32,9 +39,9 @@ export function InstallPrompt() {
       window.removeEventListener("beforeinstallprompt", onBeforeInstall);
       window.removeEventListener("appinstalled", onInstalled);
     };
-  }, []);
+  }, [isPublicStorefront]);
 
-  if (!deferred || dismissed) return null;
+  if (isPublicStorefront || !deferred || dismissed) return null;
 
   const handleInstall = async () => {
     await deferred.prompt();
