@@ -9,28 +9,27 @@ O código **já está pronto** para a troca: o CSP deriva o domínio do Clerk
 da própria publishable key (`next.config.ts`). Migrar = executar os passos
 abaixo e trocar 2 variáveis de ambiente. Nada de código.
 
-## Pré-requisito: domínio próprio
+## Pré-requisito: domínio próprio — ✅ PRONTO
 
-Clerk production exige um domínio seu (não aceita `*.vercel.app`).
-Sugestão: `nexo.muitomelhor.net` (o domínio já aparece no código da landing).
+`nexo.muitomelhor.net` já está no ar servido pela Vercel (CNAME →
+`cname.vercel-dns.com` na Hostinger + domínio atribuído ao projeto).
+Verificado em 2026-07-01.
+
+Precedente: o subdomínio `flowtime` do mesmo domínio já tem um Clerk
+production completo (clerk.flowtime, accounts.flowtime, DKIM) — o padrão
+de registros para o `nexo` é o mesmo.
 
 ## Passos (só o dono da conta consegue fazer)
-
-1. **Vercel — apontar o domínio pro app**
-   - `npx vercel domains add nexo.muitomelhor.net nexo-pdv`
-   - No painel DNS do registrador do `muitomelhor.net`, criar o CNAME que a
-     Vercel indicar (`cname.vercel-dns.com`).
 
 2. **Clerk Dashboard → criar a instância de produção**
    - dashboard.clerk.com → app Nexo → seletor de instância → **Create production instance**
      (opção de clonar as configurações da dev).
    - Informar o domínio de produção (`nexo.muitomelhor.net`).
 
-3. **DNS do Clerk** — o dashboard vai listar os registros (no registrador):
-   - CNAME `clerk.<domínio>` → Frontend API
-   - CNAME `accounts.<domínio>` → Account portal
-   - CNAMEs de e-mail (DKIM) para os e-mails de verificação
-   - Aguardar o dashboard validar tudo (pode levar alguns minutos após propagar).
+3. **DNS do Clerk** — o dashboard vai listar ~5 CNAMEs (clerk.nexo,
+   accounts.nexo, clk._domainkey.nexo, clk2._domainkey.nexo, clkmail.nexo).
+   Colar os valores aqui no Claude: ele aplica via API da Hostinger
+   (token em `~/.hostinger-token`). Aguardar o dashboard validar.
 
 4. **OAuth (login com Google)** — em produção o Clerk NÃO usa mais as
    credenciais compartilhadas: criar OAuth Client no Google Cloud Console
