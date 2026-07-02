@@ -7,7 +7,7 @@ import { ShoppingCart, Tag, BarChart2, Menu, BellRing } from "lucide-react";
 export function BottomNav() {
   const pathname = usePathname();
 
-  const HIDDEN_ROUTES = ["/menu", "/process", "/sign-in", "/sign-up", "/sso-callback"];
+  const HIDDEN_ROUTES = ["/menu", "/process", "/sign-in", "/sign-up"];
   if (HIDDEN_ROUTES.some(r => pathname.startsWith(r)) || pathname.startsWith('/c')) return null;
 
   const navItems = [

@@ -31,12 +31,7 @@ de registros para o `nexo` é o mesmo.
    Colar os valores aqui no Claude: ele aplica via API da Hostinger
    (token em `~/.hostinger-token`). Aguardar o dashboard validar.
 
-4. **OAuth (login com Google)** — em produção o Clerk NÃO usa mais as
-   credenciais compartilhadas: criar OAuth Client no Google Cloud Console
-   (tipo Web, redirect URI que o dashboard do Clerk mostra) e colar
-   client id/secret no Clerk → SSO connections → Google.
-
-5. **Trocar as envs na Vercel** (com as chaves `pk_live`/`sk_live` em mãos —
+4. **Trocar as envs na Vercel** (com as chaves `pk_live`/`sk_live` em mãos —
    estes comandos o Claude pode rodar por você):
    ```bash
    npx vercel env rm NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY production
@@ -47,10 +42,26 @@ de registros para o `nexo` é o mesmo.
    Preview/development continuam com as chaves de dev (correto: cada
    ambiente na sua instância).
 
-6. **Redeploy de produção** — o CSP se ajusta sozinho ao novo domínio do Clerk.
+5. **Redeploy de produção** — o CSP se ajusta sozinho ao novo domínio do Clerk.
 
 ## Depois de migrar
 
-- Testar: cadastro novo, login Google, logout, `/comecar` → instalar PWA.
+- Testar: cadastro novo (e-mail + código), login, logout, `/comecar` → instalar PWA.
 - Os usuários da instância dev NÃO migram automaticamente (contas de teste
   ficam na dev — decisão consciente: começar produção limpo).
+
+## Login: só e-mail + código (sem Google)
+
+Decisão de 2026-07-02: o app não usa mais login social. `/sign-in` e
+`/sign-up` são telas próprias (não os componentes prontos `<SignIn/>`/`<SignUp/>`
+do Clerk, que injetam botões sociais sozinhos conforme o dashboard) com o
+fluxo e-mail → código de 6 dígitos via `signIn.create()`/`signUp.create()` +
+`*.prepare*Verification()` + `*.attempt*Verification()`. `/sso-callback` foi
+removido (não há mais redirect OAuth).
+
+Ainda assim, **desative o Google (e qualquer outra rede social) em Configure
+→ SSO Connections no dashboard**, nas duas instâncias (dev e production).
+O código não chama mais essas estratégias, mas deixar habilitado no
+dashboard é superfície solta sem uso — e volta a aparecer automaticamente se
+algum componente pronto do Clerk for usado no futuro (ex.: `<UserProfile/>`
+mostrando "conectar conta Google").
