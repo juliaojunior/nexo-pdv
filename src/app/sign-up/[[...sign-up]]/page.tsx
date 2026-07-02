@@ -4,8 +4,8 @@
 // Não usa o <SignUp/> pronto do Clerk de propósito — ele injeta automaticamente
 // o botão "Continuar com Google" com base na config do dashboard, e este app
 // só oferece e-mail + código.
-import { useState } from "react";
-import { ClerkLoaded, ClerkLoading } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
+import { ClerkLoaded, ClerkLoading, useAuth } from "@clerk/nextjs";
 import { useSignUp } from "@clerk/nextjs/legacy";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -18,12 +18,20 @@ const clerkErrMsg = (err: unknown, fallback: string): string => {
 
 export default function Page() {
   const { isLoaded, signUp, setActive } = useSignUp();
+  const { isLoaded: authLoaded, isSignedIn } = useAuth();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [codeSent, setCodeSent] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Já logado (ex.: sessão sobrevivente de voltar no histórico do navegador
+  // para esta tela) — manda pra home em vez de deixar tentar cadastrar de
+  // novo e travar num erro "session already exists" do Clerk.
+  useEffect(() => {
+    if (authLoaded && isSignedIn) router.replace("/");
+  }, [authLoaded, isSignedIn, router]);
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +61,9 @@ export default function Page() {
       const res = await signUp.attemptEmailAddressVerification({ code });
       if (res.status === "complete") {
         await setActive({ session: res.createdSessionId });
-        router.push("/");
+        // replace (não push): "voltar" no navegador não deve reabrir o cadastro
+        // já autenticado — é a origem do trava "session already exists".
+        router.replace("/");
       } else {
         toast.error("Não foi possível concluir o cadastro.");
       }
@@ -63,6 +73,8 @@ export default function Page() {
       setLoading(false);
     }
   };
+
+  if (authLoaded && isSignedIn) return null; // evita piscar o form enquanto redireciona
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">

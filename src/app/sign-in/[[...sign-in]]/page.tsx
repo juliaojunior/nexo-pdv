@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { ClerkLoaded, ClerkLoading } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
+import { ClerkLoaded, ClerkLoading, useAuth } from "@clerk/nextjs";
 // API clássica de sign-in (create/prepareFirstFactor/attemptFirstFactor).
 // O export padrão de @clerk/nextjs passou a ser a API nova de "signals".
 import { useSignIn } from "@clerk/nextjs/legacy";
@@ -17,12 +17,20 @@ const clerkErrMsg = (err: unknown, fallback: string): string => {
 
 export default function Page() {
   const { isLoaded, signIn, setActive } = useSignIn();
+  const { isLoaded: authLoaded, isSignedIn } = useAuth();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [codeSent, setCodeSent] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Já logado (ex.: sessão sobrevivente de voltar no histórico do navegador
+  // para esta tela) — manda pra home em vez de deixar tentar logar de novo
+  // e travar num erro "session already exists" do Clerk.
+  useEffect(() => {
+    if (authLoaded && isSignedIn) router.replace("/");
+  }, [authLoaded, isSignedIn, router]);
 
   // Login sem senha: envia um código de 6 dígitos para o e-mail.
   const handleSendCode = async (e: React.FormEvent) => {
@@ -61,7 +69,9 @@ export default function Page() {
       const res = await signIn.attemptFirstFactor({ strategy: "email_code", code });
       if (res.status === "complete") {
         await setActive({ session: res.createdSessionId });
-        router.push("/");
+        // replace (não push): "voltar" no navegador não deve reabrir o login
+        // já autenticado — é a origem do trava "session already exists".
+        router.replace("/");
       } else {
         toast.error("Não foi possível concluir o login.");
       }
@@ -71,6 +81,8 @@ export default function Page() {
       setLoading(false);
     }
   };
+
+  if (authLoaded && isSignedIn) return null; // evita piscar o form enquanto redireciona
 
   return (
     <div className="flex flex-col min-h-screen selection:bg-primary-bright selection:text-primary-deep overflow-hidden bg-background font-['Inter']">
