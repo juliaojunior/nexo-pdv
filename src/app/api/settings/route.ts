@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
 import { cloudDb } from '@/lib/cloudDb';
 import { auth } from '@clerk/nextjs/server';
-
-// Chaves expostas publicamente (Vitrine sem login). Tudo fora disso só é
-// devolvido para a própria loja autenticada — evita vazamento entre lojas.
-const PUBLIC_KEYS = ['nexo_storeName', 'nexo_storePhone'];
+// Allow-list pública compartilhada com a vitrine (/c/[storeId]). Tudo fora dela
+// só é devolvido para a própria loja autenticada — evita vazamento entre lojas.
+import { PUBLIC_SETTINGS_KEYS, serverError } from '@/lib/serverApi';
 
 // Lê as configurações do usuário da Nuvem
 export async function GET(req: Request) {
@@ -38,14 +37,14 @@ export async function GET(req: Request) {
     // Converte de array [{key: 'name', value: 'LojaX'}] para Object {name: 'LojaX'}
     const settingsMap = rows.reduce((acc, row) => {
       // Requisição pública só enxerga a allow-list; autenticada vê tudo.
-      if (isPublic && !PUBLIC_KEYS.includes(row.key)) return acc;
+      if (isPublic && !PUBLIC_SETTINGS_KEYS.includes(row.key)) return acc;
       acc[row.key] = row.value;
       return acc;
     }, {} as Record<string, string>);
 
     return NextResponse.json(settingsMap);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return serverError(error);
   }
 }
 
@@ -86,7 +85,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return serverError(error);
   }
 }

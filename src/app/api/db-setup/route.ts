@@ -148,6 +148,15 @@ export async function GET() {
       );
     `;
 
+    // 8. Rate limit por IP das rotas públicas (janela fixa; ver /api/orders)
+    await client.sql`
+      CREATE TABLE IF NOT EXISTS nexo_rate_limit (
+        key TEXT PRIMARY KEY,
+        count INTEGER NOT NULL,
+        window_start TIMESTAMPTZ NOT NULL
+      );
+    `;
+
     } finally {
       client.release();
     }

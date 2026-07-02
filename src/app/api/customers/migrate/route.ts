@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cloudDb } from '@/lib/cloudDb';
 import { auth } from '@clerk/nextjs/server';
+import { serverError } from '@/lib/serverApi';
 
 // Migração única dos clientes locais (Dexie) para a nuvem, PRESERVANDO o id por-usuário.
 // Idempotente: ON CONFLICT (user_id, id) DO NOTHING. Não sobrescreve o que já existe.
@@ -38,7 +39,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true, migrated });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return serverError(error);
   }
 }
