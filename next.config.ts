@@ -39,7 +39,7 @@ const csp = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: blob: https://img.clerk.com https://*.public.blob.vercel-storage.com",
   "font-src 'self' https://fonts.gstatic.com",
-  `connect-src 'self' ${clerkOrigin()} https://clerk-telemetry.com`,
+  `connect-src 'self' ${clerkOrigin()} https://clerk-telemetry.com https://challenges.cloudflare.com`,
   "worker-src 'self' blob:",
   "frame-src https://challenges.cloudflare.com",
   "object-src 'none'",
