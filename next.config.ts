@@ -9,6 +9,26 @@ const withPWA = withPWAInit({
   // offline ficam no cache Dexie de proposito: SW cachear API autenticada
   // duplicaria a fonte de verdade e sobreviveria ao logout.
   cacheOnFrontEndNav: true,
+  // A regra padrão de imagens do next-pwa é uma RegExp pura — o Workbox só
+  // casa RegExp contra origem cruzada se o match começar no índice 0, e a URL
+  // do Blob (produto/uuid.jpg) nunca começa assim. Sem esta entrada, fotos de
+  // produto caem no catch-all "cross-origin" genérico (NetworkFirst, 32
+  // entradas somadas com Clerk/Turnstile/etc.) e podem sumir da tela do PWA
+  // instalado quando esse pool de cache estoura ou a rede solta.
+  extendDefaultRuntimeCaching: true,
+  workboxOptions: {
+    runtimeCaching: [
+      {
+        urlPattern: ({ url }: { url: URL }) => url.hostname.endsWith(".public.blob.vercel-storage.com"),
+        handler: "CacheFirst",
+        options: {
+          cacheName: "product-photos",
+          expiration: { maxEntries: 300, maxAgeSeconds: 2592000 }, // 30 dias — cada upload gera um UUID novo, nunca sobrescreve
+          cacheableResponse: { statuses: [0, 200] },
+        },
+      },
+    ],
+  },
 });
 
 // Origem do Clerk derivada da própria publishable key (o domínio do Frontend API
