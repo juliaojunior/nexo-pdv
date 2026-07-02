@@ -8,6 +8,7 @@ import { useState } from "react";
 import { ClerkLoaded, ClerkLoading } from "@clerk/nextjs";
 import { useSignUp } from "@clerk/nextjs/legacy";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { toast } from "sonner";
 
 const clerkErrMsg = (err: unknown, fallback: string): string => {
@@ -81,25 +82,36 @@ export default function Page() {
 
         <ClerkLoaded>
           <div className="w-full bg-surface border border-border/30 shadow-2xl rounded-2xl p-6 flex flex-col gap-3">
-            {!codeSent ? (
-              <form onSubmit={handleSendCode} className="flex flex-col gap-3">
-                <input
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Seu e-mail"
-                  className="w-full bg-surface-raised border border-border/50 focus:border-primary-bright rounded-xl h-12 px-4 text-foreground text-sm font-medium outline-none transition-colors placeholder:text-muted"
-                />
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full h-12 bg-primary-bright hover:bg-primary text-background flex items-center justify-center rounded-xl font-bold uppercase tracking-wide text-sm transition-transform active:scale-95 disabled:opacity-50"
-                >
-                  {loading ? "Enviando..." : "Receber código por e-mail"}
-                </button>
-              </form>
-            ) : (
+            {!codeSent && (
+              <>
+                <form onSubmit={handleSendCode} className="flex flex-col gap-3">
+                  <input
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Seu e-mail"
+                    className="w-full bg-surface-raised border border-border/50 focus:border-primary-bright rounded-xl h-12 px-4 text-foreground text-sm font-medium outline-none transition-colors placeholder:text-muted"
+                  />
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full h-12 bg-primary-bright hover:bg-primary text-background flex items-center justify-center rounded-xl font-bold uppercase tracking-wide text-sm transition-transform active:scale-95 disabled:opacity-50"
+                  >
+                    {loading ? "Enviando..." : "Receber código por e-mail"}
+                  </button>
+                </form>
+
+                <p className="text-center text-muted text-xs">
+                  Já tem conta?{" "}
+                  <Link href="/sign-in" className="text-primary-bright font-bold hover:underline">
+                    Entrar
+                  </Link>
+                </p>
+              </>
+            )}
+
+            {codeSent && (
               <form onSubmit={handleVerifyCode} className="flex flex-col gap-3">
                 <p className="text-muted text-xs text-center">
                   Código enviado para <span className="text-foreground font-bold">{email}</span>.

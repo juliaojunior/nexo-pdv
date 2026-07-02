@@ -6,6 +6,7 @@ import { ClerkLoaded, ClerkLoading } from "@clerk/nextjs";
 // O export padrão de @clerk/nextjs passou a ser a API nova de "signals".
 import { useSignIn } from "@clerk/nextjs/legacy";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { toast } from "sonner";
 
 // Extrai a mensagem de erro do Clerk sem usar `any`
@@ -128,6 +129,13 @@ export default function Page() {
                         {loading ? "Enviando..." : "Receber código por e-mail"}
                       </button>
                     </form>
+
+                    <p className="text-center text-muted text-xs">
+                      Não tem conta?{" "}
+                      <Link href="/sign-up" className="text-primary-bright font-bold hover:underline">
+                        Criar conta
+                      </Link>
+                    </p>
                   </>
                 ) : (
                   /* Etapa 2: verificar código */
