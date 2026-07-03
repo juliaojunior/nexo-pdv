@@ -113,6 +113,9 @@ export default function CatalogClient({
   const [paymentMethod, setPaymentMethod] = useState("PIX");
   const [sendingOrder, setSendingOrder] = useState(false);
   const [orderDoneId, setOrderDoneId] = useState<string | null>(null);
+  // Total congelado no sucesso do pedido: o carrinho é esvaziado em seguida,
+  // então cartTotal vira 0 — a mensagem do WhatsApp precisa do valor real.
+  const [orderDoneTotal, setOrderDoneTotal] = useState<number | null>(null);
 
   const handleFinishOrder = async () => {
      if(!customerName || !customerWpp) {
@@ -144,6 +147,9 @@ export default function CatalogClient({
        const data = await res.json();
 
        setOrderDoneId(data.orderId);
+       // realTotal = total recalculado no servidor com preços do banco
+       // (anti-spoofing) — é o valor autoritativo do pedido.
+       setOrderDoneTotal(Number(data.realTotal) || cartTotal);
        setCart([]); // Esvazia o carrinho local do cliente
      } catch(e) {
        toast.error("Falha ao enviar pedido. Tente novamente.");
@@ -153,7 +159,7 @@ export default function CatalogClient({
   };
 
   const getPoszapLink = () => {
-    const text = `🛍️ *Pedido #${orderDoneId || '000'} - Pagamento: ${paymentMethod}*\nOi, ${storeName}! Acabei de registrar meu pedido de ${formatCurrency(cartTotal)} pelo aplicativo. Me avisa quando aprovar!`;
+    const text = `🛍️ *Pedido #${orderDoneId || '000'} - Pagamento: ${paymentMethod}*\nOi, ${storeName}! Acabei de registrar meu pedido de ${formatCurrency(orderDoneTotal ?? cartTotal)} pelo aplicativo. Me avisa quando aprovar!`;
     return `https://wa.me/55${wppPhone}?text=${encodeURIComponent(text)}`;
   };
 
