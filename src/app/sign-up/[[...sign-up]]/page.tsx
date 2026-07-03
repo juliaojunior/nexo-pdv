@@ -61,9 +61,12 @@ export default function Page() {
       const res = await signUp.attemptEmailAddressVerification({ code });
       if (res.status === "complete") {
         await setActive({ session: res.createdSessionId });
-        // replace (não push): "voltar" no navegador não deve reabrir o cadastro
-        // já autenticado — é a origem do trava "session already exists".
-        router.replace("/");
+        // Recarga completa (não SPA): o <Show when="signed-in"> do layout usa a
+        // API nova (signals) e não vê a sessão ativada pela API legacy sem
+        // reload — sem isso a barra inferior não aparece até um F5.
+        // location.replace também tira o cadastro do histórico (evita o trava
+        // "session already exists" ao voltar).
+        window.location.replace("/");
       } else {
         toast.error("Não foi possível concluir o cadastro.");
       }
