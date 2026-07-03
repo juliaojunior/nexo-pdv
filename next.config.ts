@@ -58,8 +58,12 @@ const csp = [
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""} ${clerkOrigin()} https://challenges.cloudflare.com`,
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: blob: https://img.clerk.com https://*.public.blob.vercel-storage.com",
-  "font-src 'self' https://fonts.gstatic.com",
-  `connect-src 'self' ${clerkOrigin()} https://clerk-telemetry.com https://challenges.cloudflare.com`,
+  // data: em font-src: html-to-image embute fontes como data: ao gerar o recibo
+  "font-src 'self' data: https://fonts.gstatic.com",
+  // Blob em connect-src: no WebKit/Android a requisição de <img> interceptada
+  // pelo service worker é julgada pelo connect-src, não pelo img-src — sem
+  // isso as fotos de produto somem no PWA/mobile (diagnosticado on-device).
+  `connect-src 'self' ${clerkOrigin()} https://clerk-telemetry.com https://challenges.cloudflare.com https://*.public.blob.vercel-storage.com`,
   "worker-src 'self' blob:",
   "frame-src https://challenges.cloudflare.com",
   "object-src 'none'",
