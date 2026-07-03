@@ -23,8 +23,30 @@ export function DebugConsole() {
       window.addEventListener("unhandledrejection", (e) => {
         console.error(`[DIAG] PROMISE REJEITADA: ${e.reason?.message || e.reason}`);
       });
-      const nav = document.querySelector("nav");
-      console.log(`[DIAG] BottomNav no DOM? ${!!nav} | path: ${location.pathname}`);
+      const measure = () => {
+        const nav = document.querySelector("nav");
+        if (!nav) return console.log("[DIAG] nav ausente do DOM");
+        const r = nav.getBoundingClientRect();
+        const cs = getComputedStyle(nav);
+        console.log(
+          `[DIAG] nav rect: top=${Math.round(r.top)} bottom=${Math.round(r.bottom)} h=${Math.round(r.height)} w=${Math.round(r.width)} | janela: innerH=${window.innerHeight} visualH=${Math.round(window.visualViewport?.height ?? 0)}`
+        );
+        console.log(
+          `[DIAG] nav css: pos=${cs.position} bottom=${cs.bottom} display=${cs.display} vis=${cs.visibility} op=${cs.opacity} z=${cs.zIndex} bg=${cs.backgroundColor.slice(0, 40)}`
+        );
+        // position:fixed quebra se um ancestral tem transform/filter/backdrop-filter
+        let el = nav.parentElement; const culpados: string[] = [];
+        while (el) {
+          const s = getComputedStyle(el);
+          if (s.transform !== "none" || s.filter !== "none" || (s as unknown as { backdropFilter?: string }).backdropFilter !== "none" || s.willChange.includes("transform")) {
+            culpados.push(`${el.tagName}.${String(el.className).slice(0, 40)}`);
+          }
+          el = el.parentElement;
+        }
+        console.log(`[DIAG] ancestrais que quebram fixed: ${culpados.length ? culpados.join(" | ") : "NENHUM"}`);
+      };
+      setTimeout(measure, 2000);
+      setTimeout(measure, 6000);
     };
     document.body.appendChild(s);
   }, []);
