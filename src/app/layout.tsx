@@ -4,7 +4,6 @@ import { Toaster } from "sonner";
 import { BottomNav } from "@/components/BottomNav";
 import { SyncProvider } from "@/components/SyncProvider";
 import { InstallPrompt } from "@/components/InstallPrompt";
-import { DebugConsole } from "@/components/DebugConsole";
 import OrderAlerts from "@/components/OrderAlerts";
 import { ClerkProvider, Show } from '@clerk/nextjs';
 import { ptBR } from "@clerk/localizations";
@@ -82,7 +81,6 @@ export default function RootLayout({
 
           {/* Globais que servem também à landing/visitante */}
           <InstallPrompt />
-          <DebugConsole />
           <Toaster position="top-center" theme="light" richColors />
         </body>
       </html>
