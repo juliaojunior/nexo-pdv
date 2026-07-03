@@ -113,6 +113,9 @@ export default function CatalogClient({
   const [paymentMethod, setPaymentMethod] = useState("PIX");
   const [sendingOrder, setSendingOrder] = useState(false);
   const [orderDoneId, setOrderDoneId] = useState<string | null>(null);
+  // Total congelado no sucesso do pedido: o carrinho é esvaziado em seguida,
+  // então cartTotal vira 0 — a mensagem do WhatsApp precisa do valor real.
+  const [orderDoneTotal, setOrderDoneTotal] = useState<number | null>(null);
 
   const handleFinishOrder = async () => {
      if(!customerName || !customerWpp) {
@@ -144,6 +147,9 @@ export default function CatalogClient({
        const data = await res.json();
 
        setOrderDoneId(data.orderId);
+       // realTotal = total recalculado no servidor com preços do banco
+       // (anti-spoofing) — é o valor autoritativo do pedido.
+       setOrderDoneTotal(Number(data.realTotal) || cartTotal);
        setCart([]); // Esvazia o carrinho local do cliente
      } catch(e) {
        toast.error("Falha ao enviar pedido. Tente novamente.");
@@ -153,7 +159,9 @@ export default function CatalogClient({
   };
 
   const getPoszapLink = () => {
-    const text = `🛍️ *Pedido #${orderDoneId || '000'} - Pagamento: ${paymentMethod}*\nOi, ${storeName}! Acabei de registrar meu pedido de ${formatCurrency(cartTotal)} pelo aplicativo. Me avisa quando aprovar!`;
+    // Sem número de pedido: o id é um SERIAL global da plataforma — exibi-lo
+    // vazaria volume de pedidos ao cliente sem nenhum ganho.
+    const text = `🛍️ *Novo pedido - Pagamento: ${paymentMethod}*\nOi, ${storeName}! Acabei de registrar meu pedido de ${formatCurrency(orderDoneTotal ?? cartTotal)} pelo aplicativo. Me avisa quando aprovar!`;
     return `https://wa.me/55${wppPhone}?text=${encodeURIComponent(text)}`;
   };
 
@@ -538,7 +546,7 @@ export default function CatalogClient({
              </div>
            </div>
            
-           <h2 className="text-3xl font-black text-foreground text-center mb-2 tracking-tighter">Pedido Nº {orderDoneId} Recebido!</h2>
+           <h2 className="text-3xl font-black text-foreground text-center mb-2 tracking-tighter">Pedido Recebido!</h2>
            <p className="text-muted text-center mb-8">Sua ordem foi disparada com sucesso para os painéis da loja <strong className="text-foreground">{storeName}</strong>.</p>
 
            <div className="flex flex-col gap-3 w-full max-w-sm">

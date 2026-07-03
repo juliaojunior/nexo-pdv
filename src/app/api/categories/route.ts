@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cloudDb } from '@/lib/cloudDb';
 import { auth } from '@clerk/nextjs/server';
+import { serverError } from '@/lib/serverApi';
 
 export async function GET() {
   try {
@@ -18,8 +19,8 @@ export async function GET() {
     } finally {
       client.release();
     }
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return serverError(error);
   }
 }
 
@@ -54,8 +55,8 @@ export async function POST(req: Request) {
     } finally {
       client.release();
     }
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return serverError(error);
   }
 }
 
@@ -80,7 +81,7 @@ export async function DELETE(req: Request) {
     if (rowCount === 0) return NextResponse.json({ error: "Category not found or unauthorized" }, { status: 404 });
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return serverError(error);
   }
 }

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cloudDb } from '@/lib/cloudDb';
 import { auth } from '@clerk/nextjs/server';
 import { isPaymentMethod } from '@/lib/payments';
+import { serverError } from '@/lib/serverApi';
 
 export async function GET() {
   try {
@@ -61,8 +62,8 @@ export async function GET() {
     }
 
     return NextResponse.json(rows);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return serverError(error);
   }
 }
 
@@ -90,7 +91,9 @@ export async function POST(req: Request) {
       productId: any; productName: any; quantity: number; unitPrice: number; unitCost: number; brand: string; discount: number; subtotal: number;
     }>;
     for (const item of items) {
-      if (typeof item.quantity !== 'number' || item.quantity <= 0) {
+      // Inteiro com teto: 0.5 arredondaria silencioso no stock INTEGER e
+      // quantidades absurdas estourariam o DECIMAL(10,2) do total.
+      if (!Number.isInteger(item.quantity) || item.quantity <= 0 || item.quantity > 9999) {
          return NextResponse.json({ error: `A quantidade do item ${item.productName || 'desconhecido'} é inválida ou negativa.` }, { status: 400 });
       }
       const unitPrice = Number(item.unitPrice);
@@ -202,7 +205,10 @@ export async function POST(req: Request) {
       client.release();
     }
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: error.status ?? 500 });
+    // Erros de negócio lançados com status próprio (ex.: 409 estoque insuficiente)
+    // mantêm a mensagem — a fila offline usa esse texto. Resto vira 500 genérico.
+    if (error?.status) return NextResponse.json({ error: error.message }, { status: error.status });
+    return serverError(error);
   }
 }
 
@@ -230,7 +236,9 @@ export async function DELETE(req: Request) {
         // 2. Apaga a venda (a tabela de itens será apagada automaticamente pelo ON DELETE CASCADE ou nos próximos passos manuais dependendo de como foi a FK)
         const { rowCount } = await client.sql`DELETE FROM nexo_sales WHERE id = ${saleId} AND user_id = ${userId}`;
         if (rowCount === 0) {
-           throw new Error("Venda não encontrada ou sem permissão.");
+           const err = new Error("Venda não encontrada ou sem permissão.") as Error & { status?: number };
+           err.status = 404;
+           throw err;
         }
 
         // 3. Devolve os estoques pros produtos na prateleira!
@@ -255,6 +263,7 @@ export async function DELETE(req: Request) {
       client.release();
     }
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error?.status) return NextResponse.json({ error: error.message }, { status: error.status });
+    return serverError(error);
   }
 }

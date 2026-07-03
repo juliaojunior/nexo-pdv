@@ -2,37 +2,13 @@ import { cloudDb } from '@/lib/cloudDb';
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { getEffectivePrice } from '@/lib/utils';
-
-// Rate Limiter best-effort em memória de processo.
-// AVISO: em serverless (Vercel) cada instância/cold start tem seu próprio Map,
-// então este limite é facilmente contornável e NÃO é proteção forte contra DDoS.
-// Para proteção real, migrar para um limiter persistente (ex.: Upstash/Redis).
-const rateLimitMap = new Map<string, { count: number, lastTime: number }>();
+import { serverError } from '@/lib/serverApi';
 
 export async function POST(request: Request) {
   try {
-    // 0. RATE LIMITING best-effort (atenua spam casual; ver aviso acima)
-    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0] || 'ip-desconhecido';
-    const now = Date.now();
-    const WINDOW_MS = 60 * 1000; // 1 minuto
+    // Na Vercel o x-forwarded-for é escrito pela plataforma (não spoofável pelo cliente)
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'ip-desconhecido';
     const MAX_REQUESTS = 3; // Max 3 pedidos por minuto por IP
-
-    if (clientIp !== 'ip-desconhecido') {
-       const rateData = rateLimitMap.get(clientIp);
-       if (rateData) {
-          if (now - rateData.lastTime < WINDOW_MS) {
-             if (rateData.count >= MAX_REQUESTS) {
-                return NextResponse.json({ error: 'Muitos pedidos seguidos. Aguarde 1 minuto para enviar um novo pedido.' }, { status: 429 });
-             }
-             rateData.count += 1;
-          } else {
-             // Reset após o tempo passar
-             rateLimitMap.set(clientIp, { count: 1, lastTime: now });
-          }
-       } else {
-          rateLimitMap.set(clientIp, { count: 1, lastTime: now });
-       }
-    }
 
     const body = await request.json();
     const { storeId, customerName, customerPhone, paymentMethod, cartItems } = body;
@@ -43,13 +19,43 @@ export async function POST(request: Request) {
 
     // 1. TRAVA DE ESTOQUE NEGATIVO (Bloqueia hackers tentando enviar quantidade negativa)
     for (const item of cartItems) {
-      if (typeof item.quantity !== 'number' || item.quantity <= 0) {
+      // Inteiro com teto: rota pública — sem isso, quantidade fracionada ou
+      // absurda estoura o DECIMAL(10,2) do total e vira 500.
+      if (!Number.isInteger(item.quantity) || item.quantity <= 0 || item.quantity > 9999) {
          return NextResponse.json({ error: `A quantidade do item ${item.name || 'desconhecido'} é inválida.` }, { status: 400 });
       }
     }
 
     const client = await cloudDb.connect();
     try {
+      // 0. RATE LIMITING persistente por IP (janela fixa de 60s) no próprio Postgres:
+      // o contador sobrevive a cold starts e vale para todas as instâncias serverless.
+      // Upsert atômico — sem corrida entre requisições simultâneas.
+      // ponytail: janela fixa em SQL cobre spam/flood casual; migrar p/ Upstash/Redis
+      // se pedidos públicos escalarem a ponto de pesar no banco.
+      if (clientIp !== 'ip-desconhecido') {
+        await client.sql`
+          CREATE TABLE IF NOT EXISTS nexo_rate_limit (
+            key TEXT PRIMARY KEY,
+            count INTEGER NOT NULL,
+            window_start TIMESTAMPTZ NOT NULL
+          )
+        `;
+        const { rows: rl } = await client.sql`
+          INSERT INTO nexo_rate_limit (key, count, window_start)
+          VALUES (${'orders:' + clientIp}, 1, NOW())
+          ON CONFLICT (key) DO UPDATE SET
+            count = CASE WHEN nexo_rate_limit.window_start < NOW() - INTERVAL '60 seconds'
+                         THEN 1 ELSE nexo_rate_limit.count + 1 END,
+            window_start = CASE WHEN nexo_rate_limit.window_start < NOW() - INTERVAL '60 seconds'
+                                THEN NOW() ELSE nexo_rate_limit.window_start END
+          RETURNING count;
+        `;
+        if (rl[0].count > MAX_REQUESTS) {
+          return NextResponse.json({ error: 'Muitos pedidos seguidos. Aguarde 1 minuto para enviar um novo pedido.' }, { status: 429 });
+        }
+      }
+
       // Cria a Tabela se não existir (Mantido)
       await client.sql`
         CREATE TABLE IF NOT EXISTS nexo_orders (
@@ -118,9 +124,8 @@ export async function POST(request: Request) {
     } finally {
       client.release();
     }
-  } catch (error: any) {
-    console.error('Erro ao registrar pedido:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return serverError(error);
   }
 }
 
@@ -146,8 +151,7 @@ export async function GET(request: Request) {
     } finally {
       client.release();
     }
-  } catch (error: any) {
-    console.error('Erro ao buscar pedidos:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return serverError(error);
   }
 }

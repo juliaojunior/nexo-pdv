@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cloudDb } from '@/lib/cloudDb';
 import { auth } from '@clerk/nextjs/server';
+import { serverError } from '@/lib/serverApi';
 import { z } from 'zod';
 
 // Zod Security Shield: Evita invasão de strings maliciosas em campos de número e valores irracionais.
@@ -38,8 +39,8 @@ export async function GET() {
     } finally {
       client.release();
     }
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return serverError(error);
   }
 }
 
@@ -68,8 +69,8 @@ export async function POST(req: Request) {
     } finally {
       client.release();
     }
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return serverError(error);
   }
 }
 
@@ -116,8 +117,8 @@ export async function PATCH(req: Request) {
     if (rows.length === 0) return NextResponse.json({ error: "Product not found or unauthorized" }, { status: 404 });
 
     return NextResponse.json(rows[0]);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return serverError(error);
   }
 }
 
@@ -142,7 +143,7 @@ export async function DELETE(req: Request) {
     if (rowCount === 0) return NextResponse.json({ error: "Product not found or unauthorized" }, { status: 404 });
 
     return NextResponse.json({ success: true, message: "Produto deletado com sucesso!" });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return serverError(error);
   }
 }

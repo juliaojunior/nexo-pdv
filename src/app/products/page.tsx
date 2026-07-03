@@ -7,7 +7,7 @@ import { Search, Plus, X, Trash2, Tag, PercentCircle, Edit3 } from "lucide-react
 import { toast } from "sonner";
 import { requireOnline } from "@/lib/offline/onlineGuard";
 import { formatCurrency, isPromotionActive, getEffectivePrice } from "@/lib/utils";
-import { uploadImageToImgBB } from "@/lib/imgbb";
+import { uploadProductImage } from "@/lib/uploadImage";
 
 import { cachedFetcher as fetcher } from "@/lib/offline/cachedFetcher";
 
@@ -58,7 +58,7 @@ export default function ProductsPage() {
       // Se existir nova imagem local (não é URL definitiva ainda)
       if (data.image && data.image !== editingProduct?.image && data.image.startsWith("data:image")) {
          toast.info("Enviando foto...", { id: 'upload' });
-         finalImageUrl = await uploadImageToImgBB(data.image);
+         finalImageUrl = await uploadProductImage(data.image);
          toast.success("Foto processada!", { id: 'upload' });
       }
 

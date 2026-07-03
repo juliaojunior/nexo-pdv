@@ -1,4 +1,5 @@
 import { cloudDb } from '@/lib/cloudDb';
+import { PUBLIC_SETTINGS_KEYS } from '@/lib/serverApi';
 import CatalogClient from '@/components/CatalogClient';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
@@ -59,10 +60,12 @@ export default async function StoreCatalogPage(props: { params: Promise<{ storeI
        );
     }
 
-    // Mapeamento dinâmico das configurações da loja (nome, zap)
+    // Mapeamento das configurações da loja restrito à allow-list pública:
+    // `settings` vai serializado no HTML da vitrine (client component), então
+    // nexo_storeDocument (CPF/CNPJ) etc. jamais podem entrar aqui.
     const settings: Record<string, string> = {};
     sResult.rows.forEach(row => {
-      settings[row.key] = row.value;
+      if (PUBLIC_SETTINGS_KEYS.includes(row.key)) settings[row.key] = row.value;
     });
 
     return (

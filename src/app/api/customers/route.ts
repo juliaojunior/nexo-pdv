@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cloudDb } from '@/lib/cloudDb';
 import { auth } from '@clerk/nextjs/server';
+import { serverError } from '@/lib/serverApi';
 import { z } from 'zod';
 
 // Cliente na nuvem. id é POR USUÁRIO (preservado do Dexie); chave (user_id, id).
@@ -26,8 +27,8 @@ export async function GET() {
     } finally {
       client.release();
     }
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return serverError(error);
   }
 }
 
@@ -63,8 +64,8 @@ export async function POST(req: Request) {
     } finally {
       client.release();
     }
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return serverError(error);
   }
 }
 
@@ -99,8 +100,8 @@ export async function PUT(req: Request) {
     } finally {
       client.release();
     }
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return serverError(error);
   }
 }
 
@@ -123,7 +124,7 @@ export async function DELETE(req: Request) {
     } finally {
       client.release();
     }
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return serverError(error);
   }
 }

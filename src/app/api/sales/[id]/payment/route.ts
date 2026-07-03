@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cloudDb } from '@/lib/cloudDb';
 import { auth } from '@clerk/nextjs/server';
+import { serverError } from '@/lib/serverApi';
 
 // Registra um pagamento (parcela) de uma venda fiado e incrementa amount_paid.
 // Tudo numa transação: insere a parcela E atualiza o saldo, travado em [0, total].
@@ -80,8 +81,8 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
     } finally {
       client.release();
     }
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return serverError(error);
   }
 }
 
@@ -137,7 +138,7 @@ export async function DELETE(req: Request, props: { params: Promise<{ id: string
     } finally {
       client.release();
     }
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return serverError(error);
   }
 }

@@ -11,7 +11,6 @@ const isPublicRoute = createRouteMatcher([
   '/api/webhook(.*)', 
   '/sign-in(.*)', // Public login page
   '/sign-up(.*)', // Public signup page
-  '/sso-callback(.*)', // SSOCallback para OAuth
   '/comecar(.*)',     // Landing pública (porta de entrada via WhatsApp/Facebook)
   '/privacidade(.*)', // Política de privacidade
   '/termos(.*)',      // Termos de uso
