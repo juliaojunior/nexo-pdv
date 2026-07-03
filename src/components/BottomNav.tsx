@@ -8,7 +8,8 @@ export function BottomNav() {
   const pathname = usePathname();
 
   const HIDDEN_ROUTES = ["/menu", "/process", "/sign-in", "/sign-up"];
-  if (HIDDEN_ROUTES.some(r => pathname.startsWith(r)) || pathname.startsWith('/c')) return null;
+  // Vitrine pública: só /c e /c/<loja> — prefixo "/c" pegava /customers junto
+  if (HIDDEN_ROUTES.some(r => pathname.startsWith(r)) || pathname === "/c" || pathname.startsWith("/c/")) return null;
 
   const navItems = [
     { href: "/", label: "Vendas", icon: ShoppingCart },
